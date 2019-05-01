@@ -3,6 +3,7 @@
 const { remote } = require('electron');
 const { Plugin } = require('powercord/entities');
 const { ContextMenu: { Submenu } } = require('powercord/components');
+const { sleep } = require('powercord/util');
 const { getModuleByDisplayName, getModule, React } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
 
@@ -15,11 +16,12 @@ class QuickActions extends Plugin {
       await this.initializeStore();
     }
 
+    this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.patchSettingsContextMenu();
   }
 
   pluginWillUnload () {
-    uninject('pc-settings-context');
+    uninject('quickActions-ContextMenu');
   }
 
   // Getters
@@ -48,7 +50,7 @@ class QuickActions extends Plugin {
 
   async patchSettingsContextMenu () {
     const SettingsContextMenu = await getModuleByDisplayName('UserSettingsCogContextMenu');
-    inject('pc-settings-context', SettingsContextMenu.prototype, 'render', (_, res) => {
+    inject('quickActions-ContextMenu', SettingsContextMenu.prototype, 'render', (_, res) => {
       const items = [];
 
       this.settingsSections.forEach(item => {
@@ -94,6 +96,7 @@ class QuickActions extends Plugin {
 
     if (plugin) {
       for (const key in plugin.settings) {
+        let pluginDir;
         const setting = plugin.settings[key];
 
         if (setting) {
@@ -113,11 +116,8 @@ class QuickActions extends Plugin {
                   ? setting.func.newValue
                   : setting.default;
 
-                const text = mode === setting.default
-                  ? 'Switch to FFT'
-                  : 'Switch to Amplitude';
-
-                item.name = text;
+                item.name = mode === setting.default ? 'Switch to FFT' : 'Switch to Amplitude';
+                item.hint = mode === setting.default ? 'Amp' : 'FFT';
                 item.onClick = () => {
                   updateSetting(id, key, value);
                   powercord.pluginManager.get(id).reload();
@@ -126,11 +126,44 @@ class QuickActions extends Plugin {
               } else if (key === 'clearCache') {
                 item.onClick = () => remote.getCurrentWindow().webContents.session.clearCache();
                 break;
+              } else if (key === 'updatePlugins') {
+                item.onClick = async () => {
+                  this.showCategory(id);
+
+                  await sleep(500);
+
+                  const updateBtnContainer = document
+                    .getElementsByClassName('plugin-updater-button-container')[0];
+                  const updateBtn = updateBtnContainer.children[0];
+
+                  updateBtn.click();
+                };
+
+                break;
               }
 
               item.onClick = () => powercord.pluginManager.get(id)[setting.func.method]();
               break;
             case 'submenu':
+              if (key === 'hiddenGuilds') {
+                const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
+                this.getGuilds().map(guild => {
+                  const child = {
+                    type: 'checkbox',
+                    name: guild.name,
+                    defaultState: hiddenGuilds.includes(guild.id),
+                    onToggle: (state) => {
+                      this.handleGuildToggle(guild.id);
+                      child.defaultState = state;
+                    }
+                  };
+
+                  return children.push(child);
+                });
+
+                item.getItems = () => children;
+              }
+
               setting.children.forEach(obj => {
                 const child = {
                   type: obj.type ? obj.type : 'checkbox',
@@ -139,6 +172,14 @@ class QuickActions extends Plugin {
 
                 switch (child.type) {
                   case 'button':
+                    if (obj.key === 'pluginDirectory') {
+                      pluginDir = powercord.pluginManager.get(id).cwd.cwd;
+
+                      child.name = pluginDir;
+                      child.onClick = () => false;
+                      break;
+                    }
+
                     child.onClick = () => powercord.pluginManager.get(id)[obj.func.method]();
                     break;
                   default:
@@ -152,7 +193,14 @@ class QuickActions extends Plugin {
                 children.push(child);
               });
 
-              item.width = setting.width || '';
+              item.hint = setting.hint;
+
+              if (key === 'pluginDirectory') {
+                item.width = `${(pluginDir.length * 6.7)}px`;
+              } else {
+                item.width = setting.width || '';
+              }
+
               item.getItems = () => children;
               break;
             case 'slider':
@@ -164,13 +212,35 @@ class QuickActions extends Plugin {
               item.handleSize = 10;
               item.defaultValue = powercord.api.settings.store.getSetting(id, key, setting.default);
 
+              if (typeof setting.disabled !== 'undefined') {
+                if (setting.disabled.func && setting.disabled.func.method.includes('!isEnabled')) {
+                  item.disabled = !powercord.pluginManager.isEnabled(setting.disabled.func.arguments);
+                } else if (setting.disabled.func && setting.disabled.func.method.includes('isEnabled')) {
+                  item.disabled = powercord.pluginManager.isEnabled(setting.disabled.func.arguments);
+                } else {
+                  item.disabled = setting.disabled;
+                }
+              }
+
               item.onValueChange = (value) => {
-                updateSetting(id, key, parseInt(value));
                 item.defaultValue = value;
+
+                if (id === 'advancedTitle') {
+                  return powercord.pluginManager.get('advanced-title-bar').settings.set(key, parseInt(value));
+                }
+
+                return updateSetting(id, key, parseInt(value));
               };
               item.onValueRender = (value) => setting.suffix ? `${value.toFixed(0)}${setting.suffix}` : value.toFixed(0);
               break;
             default:
+              if (
+                (key === 'settingsSync' && !powercord.account) || ((key === 'clearContent' || key === 'useShiftKey') &&
+                powercord.api.settings.store.getSetting(id, 'dualControlEdits', false))
+              ) {
+                continue;
+              }
+
               item.defaultState = powercord.api.settings.store.getSetting(id, key, setting.default);
               item.onToggle = (state) => {
                 toggleSetting(id, key);
@@ -255,6 +325,20 @@ class QuickActions extends Plugin {
 
     return { disabledPlugins,
       plugins };
+  }
+
+  getGuilds () {
+    return this.sortedGuildsStore.getSortedGuilds().map(g => g.guild);
+  }
+
+  handleGuildToggle (guildId) {
+    const hiddenGuilds = powercord.api.settings.store.getSetting('pc-emojiUtility', 'hiddenGuilds', []);
+
+    if (!hiddenGuilds.includes(guildId)) {
+      powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
+    } else {
+      powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+    }
   }
 }
 
