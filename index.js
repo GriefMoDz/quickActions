@@ -3,8 +3,8 @@
 const { remote } = require('electron');
 const { Plugin } = require('powercord/entities');
 const { ContextMenu: { Submenu } } = require('powercord/components');
-const { sleep } = require('powercord/util');
-const { getModuleByDisplayName, getModule, React } = require('powercord/webpack');
+const { forceUpdateElement, sleep } = require('powercord/util');
+const { getModule, getModuleByDisplayName, React, contextMenu } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
 
 const path = require('path');
@@ -49,7 +49,7 @@ class QuickActions extends Plugin {
   }
 
   async patchSettingsContextMenu () {
-    const SettingsContextMenu = await getModuleByDisplayName('UserSettingsCogContextMenu');
+    const SettingsContextMenu = (await getModuleByDisplayName('UserSettingsCogContextMenu'));
     inject('quickActions-ContextMenu', SettingsContextMenu.prototype, 'render', (_, res) => {
       const items = [];
 
@@ -204,6 +204,10 @@ class QuickActions extends Plugin {
               item.getItems = () => children;
               break;
             case 'slider':
+              if (key === 'limit' && process.platform !== 'win32') {
+                continue;
+              }
+
               item.mini = setting.mini || true;
 
               item.minValue = setting.minValue;
@@ -226,11 +230,13 @@ class QuickActions extends Plugin {
                 item.defaultValue = value;
 
                 if (id === 'advancedTitle') {
-                  return powercord.pluginManager.get('advanced-title-bar').settings.set(key, parseInt(value));
+                  powercord.pluginManager.get('advanced-title-bar').settings.set(key, parseInt(value));
+                  forceUpdateElement('.pc-titleBar');
                 }
 
                 return updateSetting(id, key, parseInt(value));
               };
+
               item.onValueRender = (value) => setting.suffix ? `${value.toFixed(0)}${setting.suffix}` : value.toFixed(0);
               break;
             default:
@@ -244,6 +250,11 @@ class QuickActions extends Plugin {
               item.defaultState = powercord.api.settings.store.getSetting(id, key, setting.default);
               item.onToggle = (state) => {
                 toggleSetting(id, key);
+
+                if (key === 'dualControlEdits') {
+                  contextMenu.closeContextMenu();
+                }
+
                 item.defaultState = state;
               };
           }
@@ -282,6 +293,10 @@ class QuickActions extends Plugin {
           onToggle: (state) => {
             item.defaultState = state;
 
+            if (this.settingsStore.get('plugins')[id] || id === 'advanced-title-bar') {
+              contextMenu.closeContextMenu();
+            }
+
             if (state && isPluginDisabled) {
               return powercord.pluginManager.enable(id);
             }
@@ -311,10 +326,8 @@ class QuickActions extends Plugin {
   }
 
   getPlugins () {
-    const { pluginManager } = powercord;
-
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
-    const plugins = [ ...pluginManager.plugins.keys() ]
+    const plugins = [ ...powercord.pluginManager.plugins.keys() ]
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -335,10 +348,10 @@ class QuickActions extends Plugin {
     const hiddenGuilds = powercord.api.settings.store.getSetting('pc-emojiUtility', 'hiddenGuilds', []);
 
     if (!hiddenGuilds.includes(guildId)) {
-      powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
-    } else {
-      powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+      return powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
     }
+    
+    return powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
   }
 }
 
