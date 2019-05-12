@@ -7,6 +7,8 @@ const { forceUpdateElement, sleep } = require('powercord/util');
 const { getModule, getModuleByDisplayName, React, contextMenu } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
 
+const { actions: { toggleSetting, updateSetting } } = powercord.api.settings;
+
 const path = require('path');
 const fs = require('fs');
 
@@ -16,6 +18,7 @@ class QuickActions extends Plugin {
       await this.initializeStore();
     }
 
+    this.utils = require('./core/utils');
     this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.patchSettingsContextMenu();
   }
@@ -54,11 +57,9 @@ class QuickActions extends Plugin {
       const items = [];
 
       this.settingsSections.forEach(item => {
-        const { label, section } = item;
-
-        items.push(section === 'pc-pluginManager'
+        items.push(item.section === 'pc-pluginManager'
           ? this.buildPluginsMenu()
-          : this.buildSettingMenu(label, section));
+          : this.buildSettingMenu(item.label, item.section));
       });
 
       const parent = React.createElement(Submenu, {
@@ -67,6 +68,7 @@ class QuickActions extends Plugin {
           const settingItem = {
             type: item.type,
             name: item.name,
+            width: item.width,
             onClick: item.onClick
           };
 
@@ -96,8 +98,8 @@ class QuickActions extends Plugin {
 
     if (plugin) {
       for (const key in plugin.settings) {
-        let pluginDir;
         const setting = plugin.settings[key];
+        const pluginPath = powercord.pluginManager.pluginDir;
 
         if (setting) {
           const children = [];
@@ -106,10 +108,10 @@ class QuickActions extends Plugin {
             name: setting.name ? setting.name : key
           };
 
-          const { actions: { toggleSetting, updateSetting } } = powercord.api.settings;
-
           switch (setting.type) {
             case 'button':
+              item.highlight = setting.dangerous ? '#F04747' : setting.color || null;
+
               if (id === 'auditory' && setting.func.method === 'updateSetting') {
                 const mode = powercord.api.settings.store.getSetting(id, key, setting.default);
                 const value = mode === setting.default
@@ -117,7 +119,7 @@ class QuickActions extends Plugin {
                   : setting.default;
 
                 item.name = mode === setting.default ? 'Switch to FFT' : 'Switch to Amplitude';
-                item.hint = mode === setting.default ? 'Amp' : 'FFT';
+                item.hint = mode !== setting.default ? 'FFT' : 'Amp';
                 item.onClick = () => {
                   updateSetting(id, key, value);
                   powercord.pluginManager.get(id).reload();
@@ -128,9 +130,9 @@ class QuickActions extends Plugin {
                 break;
               } else if (key === 'updatePlugins') {
                 item.onClick = async () => {
-                  this.showCategory(id);
+                  this.utils.showCategory(id);
 
-                  await sleep(500);
+                  await sleep(1000);
 
                   const updateBtnContainer = document
                     .getElementsByClassName('plugin-updater-button-container')[0];
@@ -153,7 +155,7 @@ class QuickActions extends Plugin {
                     name: guild.name,
                     defaultState: hiddenGuilds.includes(guild.id),
                     onToggle: (state) => {
-                      this.handleGuildToggle(guild.id);
+                      this.handleGuildToggle(id, guild.id);
                       child.defaultState = state;
                     }
                   };
@@ -170,14 +172,37 @@ class QuickActions extends Plugin {
                   name: obj.name
                 };
 
+                if (obj.seperate) {
+                  child.seperate = obj.seperate;
+                }
+
                 switch (child.type) {
                   case 'button':
-                    if (obj.key === 'pluginDirectory') {
-                      pluginDir = powercord.pluginManager.get(id).cwd.cwd;
+                    child.highlight = obj.dangerous ? '#F04747' : obj.color || null;
 
-                      child.name = pluginDir;
-                      child.onClick = () => false;
+                    if (obj.key === 'pluginDirectory') {
+                      child.name = pluginPath;
+                      child.onClick = () => this.utils.openFolder(pluginPath);
                       break;
+                    } else if (
+                      obj.key === 'checking' &&
+                      !powercord.api.settings.store.getSetting(id, 'checkForUpdates', true)
+                    ) {
+                      return;
+                    }
+
+                    if (typeof obj.disabled !== 'undefined') {
+                      if (obj.disabled.func && obj.disabled.func.method.includes('!getSetting')) {
+                        child.disabled = !powercord.api.settings.store
+                          .getSetting(id, obj.key,
+                            setting.children.find(x => x.key === obj.disabled.func.arguments).default);
+                      } else if (obj.disabled.func && obj.disabled.func.method.includes('getSetting')) {
+                        child.disabled = powercord.api.settings.store
+                          .getSetting(id, obj.key,
+                            setting.children.find(x => x.key === obj.disabled.func.arguments).default);
+                      } else {
+                        child.disabled = obj.disabled;
+                      }
                     }
 
                     child.onClick = () => powercord.pluginManager.get(id)[obj.func.method]();
@@ -186,6 +211,11 @@ class QuickActions extends Plugin {
                     child.defaultState = powercord.api.settings.store.getSetting(id, obj.key, obj.default);
                     child.onToggle = (state) => {
                       toggleSetting(id, obj.key, state);
+
+                      if (obj.close) {
+                        contextMenu.closeContextMenu();
+                      }
+
                       item.defaultState = state;
                     };
                 }
@@ -196,7 +226,7 @@ class QuickActions extends Plugin {
               item.hint = setting.hint;
 
               if (key === 'pluginDirectory') {
-                item.width = `${(pluginDir.length * 6.7)}px`;
+                item.width = `${(pluginPath.length * 6.7)}px`;
               } else {
                 item.width = setting.width || '';
               }
@@ -206,6 +236,10 @@ class QuickActions extends Plugin {
             case 'slider':
               if (key === 'limit' && process.platform !== 'win32') {
                 continue;
+              }
+
+              if (key === 'beastiness' || key === 'brightness') {
+                item.color = powercord.api.settings.store.getSetting(id, 'color', null);
               }
 
               item.mini = setting.mini || true;
@@ -231,10 +265,15 @@ class QuickActions extends Plugin {
 
                 if (id === 'advancedTitle') {
                   powercord.pluginManager.get('advanced-title-bar').settings.set(key, parseInt(value));
-                  forceUpdateElement('.pc-titleBar');
+
+                  return forceUpdateElement('.pc-titleBar');
                 }
 
-                return updateSetting(id, key, parseInt(value));
+                updateSetting(id, key, parseInt(value));
+
+                if (id === 'auditory') {
+                  powercord.pluginManager.get(id).reload();
+                }
               };
 
               item.onValueRender = (value) => setting.suffix ? `${value.toFixed(0)}${setting.suffix}` : value.toFixed(0);
@@ -242,7 +281,8 @@ class QuickActions extends Plugin {
             default:
               if (
                 (key === 'settingsSync' && !powercord.account) || ((key === 'clearContent' || key === 'useShiftKey') &&
-                powercord.api.settings.store.getSetting(id, 'dualControlEdits', false))
+                powercord.api.settings.store.getSetting(id, 'dualControlEdits', false)) || (key === 'displayLink' &&
+                powercord.api.settings.store.getSetting(id, 'useEmbeds', false))
               ) {
                 continue;
               }
@@ -251,8 +291,17 @@ class QuickActions extends Plugin {
               item.onToggle = (state) => {
                 toggleSetting(id, key);
 
-                if (key === 'dualControlEdits') {
+                if (setting.close) {
                   contextMenu.closeContextMenu();
+                } else if (typeof setting.func !== 'undefined') {
+                  if (setting.func.method && setting.func.type === 'pluginManager') {
+                    powercord.pluginManager
+                      .get(id)[setting.func.method](setting.func.arguments
+                        ? setting.func.arguments === 'state'
+                          ? state
+                          : setting.func.arguments
+                        : '');
+                  }
                 }
 
                 item.defaultState = state;
@@ -267,11 +316,12 @@ class QuickActions extends Plugin {
     const settingMenu = {
       type: 'button',
       name,
-      onClick: () => this.showCategory(id)
+      onClick: () => this.utils.showCategory(id)
     };
 
     if (items.length > 0) {
       settingMenu.type = 'submenu';
+      settingMenu.width = plugin.width;
       settingMenu.getItems = () => items;
     }
 
@@ -280,7 +330,7 @@ class QuickActions extends Plugin {
 
   buildPluginsMenu () {
     const items = [];
-    const { plugins, disabledPlugins } = this.getPlugins();
+    const { plugins, disabledPlugins } = this.utils.getPlugins();
 
     for (const key in plugins) {
       if (plugins.hasOwnProperty(key)) {
@@ -297,7 +347,7 @@ class QuickActions extends Plugin {
               contextMenu.closeContextMenu();
             }
 
-            if (state && isPluginDisabled) {
+            if (!powercord.pluginManager.isEnabled(id)) {
               return powercord.pluginManager.enable(id);
             }
 
@@ -312,46 +362,26 @@ class QuickActions extends Plugin {
     const pluginsMenu = {
       type: 'submenu',
       name: 'Plugins',
-      onClick: () => this.showCategory('pc-pluginManager'),
+      width: '215px',
+      onClick: () => this.utils.showCategory('pc-pluginManager'),
       getItems: () => items
     };
 
     return pluginsMenu;
   }
 
-  async showCategory (sectionId) {
-    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
-    UserSettingsWindow.open();
-    UserSettingsWindow.setSection(sectionId);
-  }
-
-  getPlugins () {
-    const disabledPlugins = powercord.settings.get('disabledPlugins', []);
-    const plugins = [ ...powercord.pluginManager.plugins.keys() ]
-      .sort((a, b) => {
-        const filter = a < b
-          ? -1
-          : 1 || 0;
-
-        return filter;
-      });
-
-    return { disabledPlugins,
-      plugins };
-  }
-
+  // emoji utility
   getGuilds () {
     return this.sortedGuildsStore.getSortedGuilds().map(g => g.guild);
   }
 
-  handleGuildToggle (guildId) {
-    const hiddenGuilds = powercord.api.settings.store.getSetting('pc-emojiUtility', 'hiddenGuilds', []);
-
+  handleGuildToggle (id, guildId) {
+    const hiddenGuilds = powercord.api.settings.store.getSetting(id, 'hiddenGuilds', []);
     if (!hiddenGuilds.includes(guildId)) {
-      return powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
+      return updateSetting(id, 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
     }
-    
-    return powercord.api.settings.actions.updateSetting('pc-emojiUtility', 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+
+    return updateSetting(id, 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
   }
 }
 
