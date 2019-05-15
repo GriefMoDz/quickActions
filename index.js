@@ -83,9 +83,11 @@ class QuickActions extends Plugin {
         })
       });
 
-      const changelog = res.props.children.find(c => c.key === 'changelog');
+      const changelog = res.props.children[0].find(c => c.key === 'changelog');
       if (changelog) {
-        res.props.children.splice(res.props.children.indexOf(changelog), 0, parent);
+        res.props.children[0].splice(res.props.children[0].indexOf(changelog), 0, parent);
+      } else {
+        res.props.children[0].push(parent);
       }
 
       return res;
