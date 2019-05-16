@@ -20,6 +20,7 @@ class QuickActions extends Plugin {
 
     this.utils = require('./core/utils');
     this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
+    this.lastSelected = '';
     this.patchSettingsContextMenu();
   }
 
@@ -64,6 +65,7 @@ class QuickActions extends Plugin {
 
       const parent = React.createElement(Submenu, {
         name: 'Powercord',
+        onClick: () => this.lastSelected !== '' ? this.utils.showCategory(this.lastSelected) : false,
         getItems: () => items.map(item => {
           const settingItem = {
             type: item.type,
@@ -250,7 +252,9 @@ class QuickActions extends Plugin {
               item.maxValue = setting.maxValue;
 
               item.handleSize = 10;
-              item.defaultValue = powercord.api.settings.store.getSetting(id, key, setting.default);
+              item.defaultValue = powercord.api.settings.store.getSetting(typeof plugin.id !== 'undefined'
+                ? plugin.id
+                : id, key, setting.default);
 
               if (typeof setting.disabled !== 'undefined') {
                 if (setting.disabled.func && setting.disabled.func.method.includes('!isEnabled')) {
@@ -266,7 +270,7 @@ class QuickActions extends Plugin {
                 item.defaultValue = value;
 
                 if (id === 'advancedTitle') {
-                  powercord.pluginManager.get('advanced-title-bar').settings.set(key, parseInt(value));
+                  powercord.pluginManager.get(plugin.id).settings.set(key, parseInt(value));
 
                   return forceUpdateElement('.pc-titleBar');
                 }
@@ -289,9 +293,14 @@ class QuickActions extends Plugin {
                 continue;
               }
 
-              item.defaultState = powercord.api.settings.store.getSetting(id, key, setting.default);
+              item.defaultState = powercord.api.settings.store.getSetting(typeof plugin.id !== 'undefined'
+                ? plugin.id
+                : id, key, setting.default);
+
               item.onToggle = (state) => {
-                toggleSetting(id, key);
+                toggleSetting(typeof plugin.id !== 'undefined'
+                  ? plugin.id
+                  : id, key);
 
                 if (setting.close) {
                   contextMenu.closeContextMenu();
@@ -318,7 +327,10 @@ class QuickActions extends Plugin {
     const settingMenu = {
       type: 'button',
       name,
-      onClick: () => this.utils.showCategory(id)
+      onClick: () => {
+        this.utils.showCategory(id);
+        this.lastSelected = id;
+      }
     };
 
     if (items.length > 0) {
@@ -345,7 +357,7 @@ class QuickActions extends Plugin {
           onToggle: (state) => {
             item.defaultState = state;
 
-            if (this.settingsStore.get('plugins')[id] || id === 'advanced-title-bar') {
+            if (this.settingsStore.get('plugins')[id]) {
               contextMenu.closeContextMenu();
             }
 
