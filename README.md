@@ -20,6 +20,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Settings API            | pc-general               | v1.0.0  | ✔️         | n/a
 | Spotify Modal           | pc-spotify               | v1.0.0  | ✔️         | n/a
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a
+| Wallpaper Changer       | wallpaper-changer        | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 
 \*Plugin is shipped with Powercord by default - will work out of the box once enabled.
 
@@ -30,6 +31,8 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 ## Frequently Asked Questions:
 1. __Help, I'm using a supported plugin from the "[Compatibility Table](https://github.com/GriefMoDz/quickActions/#compatibility)" but I seem to be missing some settings. What do I do?__
 
-   > Due to how context menus are laid out, plugin settings are only limited to buttons, checkboxes (this includes switch items), and sliders. This means that text inputs will be completely unavailable and left ignored for the duration of usage.
+   > ~~Due to how context menus are laid out, plugin settings are only limited to buttons, checkboxes (this includes switch items), and sliders. This means that text inputs will be completely unavailable and left ignored for the duration of usage.~~
    >
-   > However you still be able to quickly access the settings of said a plugin by simply selecting its corresponding sub-menu item, where can edit all kinds of text to your hearts content.
+   > ~~However you still be able to quickly access the settings of said a plugin by simply selecting its corresponding sub-menu item, where can edit all kinds of text to your hearts content.~~
+   >
+   > This plug-in is still heavily in beta, meaning that not all settings you see in the 'User Settings' menu will necessarily be found under the Powercord sub-menu. I'm trying my best and working around the clock to have them pushed out as soon as possible. Please be patient.

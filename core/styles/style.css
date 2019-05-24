@@ -1,0 +1,33 @@
+
+.quickActions-settingModal .pc-divider {
+  display: none;
+}
+
+.quickActions-settingModal .pc-marginBottom20 {
+  margin-bottom: 0;
+}
+
+.quickActions-settingModal .quickActions-hint .pc-icon {
+  width: 16px;
+  margin-left: 2px;
+  height: 16px;
+  position: absolute;
+}
+
+.quickActions-settingModal .quickActions-hint + span {
+  padding-left: 20px;
+}
+
+.quickActions-settingModal .quickActions-hint {
+  display: inline;
+  opacity: .4;
+  transition: ease-out opacity .3s;
+}
+
+.quickActions-settingModal .quickActions-hint:hover {
+  opacity: 1;
+}
+
+.quickActions-slider {
+  margin-top: 12px;
+}

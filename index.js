@@ -3,9 +3,11 @@
 const { remote } = require('electron');
 const { Plugin } = require('powercord/entities');
 const { ContextMenu: { Submenu } } = require('powercord/components');
+const { open: openModal } = require('powercord/modal');
 const { forceUpdateElement, sleep } = require('powercord/util');
 const { getModule, getModuleByDisplayName, React, contextMenu } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
+const { resolve } = require('path');
 
 const { actions: { toggleSetting, updateSetting } } = powercord.api.settings;
 
@@ -14,13 +16,14 @@ const fs = require('fs');
 
 class QuickActions extends Plugin {
   async startPlugin () {
+    this.loadCSS(resolve(__dirname, 'core/styles/style.css'));
+
     if (!this.initializedStore) {
       await this.initializeStore();
     }
 
     this.utils = require('./core/utils');
     this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
-    this.lastSelected = '';
     this.patchSettingsContextMenu();
   }
 
@@ -30,7 +33,7 @@ class QuickActions extends Plugin {
 
   // Getters
   get settingsPath () {
-    return path.join(__dirname, 'store', 'settings.json');
+    return path.join(__dirname, 'core', 'store', 'settings.json');
   }
 
   get settingsStore () {
@@ -65,31 +68,17 @@ class QuickActions extends Plugin {
 
       const parent = React.createElement(Submenu, {
         name: 'Powercord',
-        onClick: () => this.lastSelected !== '' ? this.utils.showCategory(this.lastSelected) : false,
-        getItems: () => items.map(item => {
-          const settingItem = {
-            type: item.type,
-            name: item.name,
-            width: item.width,
-            onClick: item.onClick
-          };
-
-          if (item.type === 'submenu') {
-            settingItem.getItems = () => item.getItems().map(i => {
-              i.seperate = true;
-              return i;
-            });
-          }
-
-          return settingItem;
-        })
+        hint: '\uD83D\uDD0C',
+        onClick: () => this.utils.openUserSettings(),
+        getItems: () => items
       });
 
       const changelog = res.props.children[0].find(c => c.key === 'changelog');
       if (changelog) {
         res.props.children[0].splice(res.props.children[0].indexOf(changelog), 0, parent);
       } else {
-        res.props.children[0].push(parent);
+        this.error('Could not find \'Change Log\' category item - unloading for the remainder of this instance...');
+        this._unload();
       }
 
       return res;
@@ -111,6 +100,10 @@ class QuickActions extends Plugin {
             type: setting.type ? setting.type : 'checkbox',
             name: setting.name ? setting.name : key
           };
+
+          if (setting.seperate) {
+            item.seperate = true;
+          }
 
           switch (setting.type) {
             case 'button':
@@ -146,6 +139,29 @@ class QuickActions extends Plugin {
                 };
 
                 break;
+              } else if (typeof setting.disabled !== 'undefined') {
+                if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
+                  item.disabled = !powercord.api.settings.store
+                    .getSetting(id, setting.disabled.func.arguments);
+                } else if (setting.disabled.func && setting.disabled.func.method.includes('getSetting')) {
+                  item.disabled = powercord.api.settings.store
+                    .getSetting(id, setting.disabled.func.arguments);
+                } else {
+                  item.disabled = setting.disabled;
+                }
+              }
+
+              item.hint = setting.hint;
+
+              if (setting.modal) {
+                item.highlight = '#43B581';
+                item.hint = 'Modal »';
+                item.onClick = () => this.showSettingModal({ name,
+                  id,
+                  setting,
+                  key });
+
+                break;
               }
 
               item.onClick = () => powercord.pluginManager.get(id)[setting.func.method]();
@@ -177,7 +193,7 @@ class QuickActions extends Plugin {
                 };
 
                 if (obj.seperate) {
-                  child.seperate = obj.seperate;
+                  child.seperate = true;
                 }
 
                 switch (child.type) {
@@ -188,25 +204,29 @@ class QuickActions extends Plugin {
                       child.name = pluginPath;
                       child.onClick = () => this.utils.openFolder(pluginPath);
                       break;
-                    } else if (
-                      obj.key === 'checking' &&
-                      !powercord.api.settings.store.getSetting(id, 'checkForUpdates', true)
-                    ) {
-                      return;
                     }
 
                     if (typeof obj.disabled !== 'undefined') {
                       if (obj.disabled.func && obj.disabled.func.method.includes('!getSetting')) {
                         child.disabled = !powercord.api.settings.store
-                          .getSetting(id, obj.key,
-                            setting.children.find(x => x.key === obj.disabled.func.arguments).default);
+                          .getSetting(id, obj.disabled.func.arguments);
                       } else if (obj.disabled.func && obj.disabled.func.method.includes('getSetting')) {
                         child.disabled = powercord.api.settings.store
-                          .getSetting(id, obj.key,
-                            setting.children.find(x => x.key === obj.disabled.func.arguments).default);
+                          .getSetting(id, obj.disabled.func.arguments);
                       } else {
                         child.disabled = obj.disabled;
                       }
+                    }
+
+                    if (obj.modal) {
+                      child.highlight = '#43B581';
+                      child.hint = 'Modal »';
+                      child.onClick = () => this.showSettingModal({ name,
+                        id,
+                        setting: obj,
+                        key: obj.key });
+
+                      break;
                     }
 
                     child.onClick = () => powercord.pluginManager.get(id)[obj.func.method]();
@@ -236,6 +256,7 @@ class QuickActions extends Plugin {
               }
 
               item.getItems = () => children;
+
               break;
             case 'slider':
               if (key === 'limit' && process.platform !== 'win32') {
@@ -247,9 +268,16 @@ class QuickActions extends Plugin {
               }
 
               item.mini = setting.mini || true;
+              item.className = setting.className;
 
               item.minValue = setting.minValue;
               item.maxValue = setting.maxValue;
+
+              if (typeof setting.markers !== 'undefined') {
+                item.equidistant = true;
+                item.stickToMarkers = true;
+                item.markers = setting.markers;
+              }
 
               item.handleSize = 10;
               item.defaultValue = powercord.api.settings.store.getSetting(typeof plugin.id !== 'undefined'
@@ -279,6 +307,14 @@ class QuickActions extends Plugin {
 
                 if (id === 'auditory') {
                   powercord.pluginManager.get(id).reload();
+                } else if (id === 'wallpaper-changer' && key === 'interval') {
+                  powercord.pluginManager.get(id).updateInterval();
+                }
+              };
+
+              item.onMarkerRender = (value) => {
+                if (id === 'wallpaper-changer' && key === 'interval') {
+                  return value < 60 ? `${value}min` : `${(value / 60)}hr`;
                 }
               };
 
@@ -327,10 +363,7 @@ class QuickActions extends Plugin {
     const settingMenu = {
       type: 'button',
       name,
-      onClick: () => {
-        this.utils.showCategory(id);
-        this.lastSelected = id;
-      }
+      onClick: () => this.utils.showCategory(id)
     };
 
     if (items.length > 0) {
@@ -354,6 +387,7 @@ class QuickActions extends Plugin {
           type: 'checkbox',
           name: id,
           defaultState: !isPluginDisabled,
+          seperate: true,
           onToggle: (state) => {
             item.defaultState = state;
 
@@ -396,6 +430,11 @@ class QuickActions extends Plugin {
     }
 
     return updateSetting(id, 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+  }
+
+  showSettingModal (opts) {
+    const SettingModal = require('./core/components/SettingModal');
+    openModal(() => React.createElement(SettingModal, { options: opts }));
   }
 }
 

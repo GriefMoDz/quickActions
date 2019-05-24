@@ -1,6 +1,8 @@
 const { getModule } = require('powercord/webpack');
 const { spawn } = require('child_process');
 
+let initSettings = false;
+
 module.exports = {
   getPlugins () {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
@@ -30,5 +32,15 @@ module.exports = {
     const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
     UserSettingsWindow.open();
     UserSettingsWindow.setSection(sectionId);
+  },
+
+  async openUserSettings () {
+    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
+    UserSettingsWindow.open();
+
+    if (!initSettings) {
+      UserSettingsWindow.setSection('pc-general');
+      initSettings = true;
+    }
   }
 };
