@@ -268,12 +268,13 @@ class QuickActions extends Plugin {
               }
 
               item.mini = setting.mini || true;
-              item.className = setting.className;
 
               item.minValue = setting.minValue;
               item.maxValue = setting.maxValue;
 
               if (typeof setting.markers !== 'undefined') {
+                item.className = 'quickActions-slider';
+
                 item.equidistant = true;
                 item.stickToMarkers = true;
                 item.markers = setting.markers;
@@ -316,6 +317,8 @@ class QuickActions extends Plugin {
                 if (id === 'wallpaper-changer' && key === 'interval') {
                   return value < 60 ? `${value}min` : `${(value / 60)}hr`;
                 }
+
+                return value;
               };
 
               item.onValueRender = (value) => setting.suffix ? `${value.toFixed(0)}${setting.suffix}` : value.toFixed(0);
@@ -434,7 +437,17 @@ class QuickActions extends Plugin {
 
   showSettingModal (opts) {
     const SettingModal = require('./core/components/SettingModal');
-    openModal(() => React.createElement(SettingModal, { options: opts }));
+    openModal(() => React.createElement(SettingModal, {
+      onConfirm: (value) => {
+        updateSetting(opts.id, opts.key, value);
+
+        if (typeof opts.setting.func !== 'undefined') {
+          if (opts.setting.func.method && opts.setting.func.type === 'pluginManager') {
+            powercord.pluginManager.get(opts.id)[opts.setting.func.method]();
+          }
+        }
+      },
+      options: opts }));
   }
 }
 

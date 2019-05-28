@@ -13,12 +13,14 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Better Friends          | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
 | Clickable Message Edits | pc-clickableEdits        | v0.1.4  | ✔️         | n/a
 | Context+                | pc-cadence-contextPlus   | v1.1.0  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-contextPlus)
+| Discord RPC             | discordrpc               | v1.1.0  | ⭕         | [[Link]](../../../../ohlookitsderpy/discordrpc)
 | Emote Utility           | pc-emojiUtility          | v1.3.2  | ✔️         | n/a
 | Hastebin                | pc-hastebin              | v1.0.0  | ✔️         | n/a
 | Plugin Updater          | pc-cadence-pluginUpdater | v1.0.4  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-pluginUpdater)
 | Role Color Everywhere   | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API            | pc-general               | v1.0.0  | ✔️         | n/a
 | Spotify Modal           | pc-spotify               | v1.0.0  | ✔️         | n/a
+| Swerve                  | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a
 | Wallpaper Changer       | wallpaper-changer        | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 

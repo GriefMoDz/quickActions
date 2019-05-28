@@ -1,10 +1,9 @@
+const { existsSync, lstatSync } = require('fs');
 const { React, getModule } = require('powercord/webpack');
 const { Confirm } = require('powercord/components/modal');
 const { Tooltip, Button, Icon } = require('powercord/components');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
-
-const { actions: { updateSetting } } = powercord.api.settings;
 
 module.exports = class SettingModal extends React.Component {
   constructor (props) {
@@ -12,22 +11,27 @@ module.exports = class SettingModal extends React.Component {
 
     this.options = this.props.options;
     this.state = {
-      inputText: ''
+      inputText: powercord.api.settings.store
+        .getSetting(this.options.id, this.options.key, this.options.setting.default),
+      valid: true
     };
   }
 
   async componentDidMount () {
     this.setState({
-      reset: (await getModule([ 'card', 'reset' ])).reset
+      reset: (await getModule([ 'card', 'reset' ])).reset,
+      getGuild: (await getModule([ 'getGuild' ])).getGuild
     });
   }
 
   render () {
-    let { inputText } = this.state;
+    const { inputText, valid } = this.state;
     const { name, id, setting, key } = this.options;
 
     if (!setting.default) {
       setting.default = '';
+    } else if (id === 'swerve' && key === 'words') {
+      setting.placeholder = powercord.pluginManager.get(id).defaultWords.join('|');
     }
 
     return <Confirm
@@ -36,15 +40,11 @@ module.exports = class SettingModal extends React.Component {
       confirmText='Save'
       cancelText='Cancel'
       onConfirm={() => {
-        updateSetting(id, key, inputText);
-
-        if (typeof setting.func !== 'undefined') {
-          if (setting.func.method && setting.func.type === 'pluginManager') {
-            powercord.pluginManager.get(id)[setting.func.method]();
-          }
+        if (!valid) {
+          return;
         }
 
-        closeModal();
+        this.props.onConfirm(inputText);
       }}
       onCancel={() => closeModal()}
     >
@@ -52,14 +52,37 @@ module.exports = class SettingModal extends React.Component {
         <TextInput
           type='text'
           required={setting.required}
-          placeholder={!setting.default ? setting.placeholder || '' : setting.default}
-          defaultValue={powercord.api.settings.store.getSetting(id, key, setting.default) === setting.default
+          style={!valid ? { borderColor: '#E53935' } : {}}
+          placeholder={setting.default && setting.placeholder
+            ? setting.placeholder
+            : !setting.default ? setting.placeholder || '' : setting.default}
+          defaultValue={inputText === (setting.default || setting.placeholder)
             ? ''
-            : powercord.api.settings.store.getSetting(id, key, setting.default)}
-          onChange={(value) => value.length > 0 ? inputText = this.validate(value) : inputText = setting.default}
+            : inputText}
+          onChange={(value) => {
+            if (setting.modal.realtime) {
+              this.validate(value);
+            }
+          }}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              this.validate(e.target.value);
+
+              if (!setting.modal.custom) {
+                e.target.value = this.validate(e.target.value);
+
+                return this.setState({ inputText: e.target.value });
+              }
+            }
+          }}
           onBlur={(e) => {
-            e.target.value = this.validate(e.target.value);
-            return e.target.value.length > 0 ? inputText = e.target.value : inputText = setting.default;
+            this.validate(e.target.value);
+
+            if (!setting.modal.custom) {
+              e.target.value = this.validate(e.target.value);
+
+              return this.setState({ inputText: e.target.value });
+            }
           }}
         >
           {setting.name}
@@ -79,7 +102,9 @@ module.exports = class SettingModal extends React.Component {
           look={Button.Looks.LINK}
           size={Button.Sizes.SMALL}
           onClick={() => {
-            inputText = setting.default;
+            this.setState({ inputText: setting.default,
+              valid: true });
+
             document.querySelector('input').value = '';
           }}
         >
@@ -90,17 +115,63 @@ module.exports = class SettingModal extends React.Component {
   }
 
   validate (value) {
+    const { setting } = this.options;
+    const domain = /^https?:\/\/[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
     const validators = {
-      domain: [ value.endsWith('/') ? value.slice(0, -1) : value ],
-      interval: [ (Number(value) && Number(value) >= 1) ? Number(value) : 15 ]
+      interval: (Number(value) && Number(value) >= 1) ? Number(value) : 15
     };
 
-    for (const key in validators) {
-      if (this.options.key === key) {
-        return validators[key];
+    if (value.length <= 0) {
+      return setting.default;
+    } else if (setting.domain) {
+      if (!domain.test(value)) {
+        return this.setState({ valid: false });
       }
+
+      return this.setState({ inputText: value,
+        valid: true });
     }
 
-    return value;
+    switch (this.options.key) {
+      case 'defaultCloneId':
+        if (this.state.getGuild(value)) {
+          return this.setState({ inputText: value,
+            valid: true });
+        }
+
+        this.setState({ valid: false });
+
+        break;
+      case 'filePath':
+        if (existsSync(value) && lstatSync(value).isDirectory()) {
+          return this.setState({ inputText: value,
+            valid: true });
+        }
+
+        this.setState({ valid: false });
+
+        break;
+      case 'words':
+        if (value.split('|').filter(Boolean).some(word => word.length < 4)) {
+          return this.setState({ valid: false });
+        }
+
+        value = value.split('|').filter(Boolean).length
+          ? value.split('|').filter(Boolean)
+          : setting.placeholder;
+
+        this.setState({ inputText: value,
+          valid: true });
+
+        break;
+      default:
+        for (const key in validators) {
+          if (this.options.key === key) {
+            return validators[key];
+          }
+        }
+
+        return value;
+    }
   }
 };
