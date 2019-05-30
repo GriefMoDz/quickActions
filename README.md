@@ -4,7 +4,7 @@ Adds an extensible tab to the 'User Settings' context menu that enables Powercor
 ## Compatibility:
 Quick Actions supports a vast selection of settings utilized by the following plugins below.
 
-**DISCLAIMER**: Not all settings will be available due to limitations - please see "[Frequently Asked Questions](https://github.com/GriefMoDz/quickActions/#frequently-asked-questions)".
+**DISCLAIMER**: Not all settings will be available due to workload and limitations - please see "[Frequently Asked Questions](https://github.com/GriefMoDz/quickActions/#frequently-asked-questions)".
 
 | Plugin Name             | Plugin Shortcode (URI)   | Version | Official\* | Repository URL                                             |
 | ----------------------- | ------------------------ |:-------:|:----------:|:----------------------------------------------------------:|
@@ -33,8 +33,8 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 ## Frequently Asked Questions:
 1. __Help, I'm using a supported plugin from the "[Compatibility Table](https://github.com/GriefMoDz/quickActions/#compatibility)" but I seem to be missing some settings. What do I do?__
 
-   > ~~Due to how context menus are laid out, plugin settings are only limited to buttons, checkboxes (this includes switch items), and sliders. This means that text inputs will be completely unavailable and left ignored for the duration of usage.~~
+   > ~~Due to how context menus are laid out, plugin settings are only limited to buttons, checkboxes (this includes switch items), and sliders. This means that text inputs are completely unavailable and left ignored until further notice.~~
    >
-   > ~~However you still be able to quickly access the settings of said a plugin by simply selecting its corresponding sub-menu item, where can edit all kinds of text to your hearts content.~~
+   > ~~You should still be able to quickly access the settings of a said plugin by simply selecting its corresponding sub-menu item, where you can find and edit all kinds of text to your hearts content. c:~~
    >
    > This plug-in is still heavily in beta, meaning that not all settings you see in the 'User Settings' menu will necessarily be found under the Powercord sub-menu. I'm trying my best and working around the clock to have them pushed out as soon as possible. Please be patient.

@@ -90,7 +90,7 @@ module.exports = class SettingModal extends React.Component {
           {setting.desc && (
             <Tooltip text={setting.desc} position='top'>
               <div className="quickActions-hint">
-                <Icon className="pc-icon" name="Info" />
+                <Icon name="Info" />
               </div>
             </Tooltip>
           )}

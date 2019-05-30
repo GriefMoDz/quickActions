@@ -1,0 +1,69 @@
+
+.quickActions-slider {
+  margin-top: 12px;
+}
+
+.quickActions-icon {
+  display: inline;
+
+  svg {
+    width: 16px;
+    margin-left: 2px;
+    height: 16px;
+    position: absolute;
+  }
+}
+
+.quickActions-hint {
+  display: inline;
+  opacity: .4;
+  transition: ease-out opacity .3s;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 16px;
+    margin-left: 2px;
+    height: 16px;
+    position: absolute;
+  }
+
+  &+ span {
+    padding-left: 20px;
+  }
+}
+
+.quickActions-modal {
+  color: #c7c9cc;
+
+  .pc-divider {
+    display: none;
+  }
+
+  .pc-marginBottom20 {
+    margin-bottom: 0;
+  }
+
+  &-desc[id='update-passphrase'] {
+    margin-bottom: 20px;
+  }
+
+  &-desc-hint {
+    b {
+      color: #43b581;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.quickActions-settingModal {
+  .pc-divider {
+    display: none;
+  }
+
+  .pc-marginBottom20 {
+    margin-bottom: 0;
+  }
+}

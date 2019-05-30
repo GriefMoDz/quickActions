@@ -3,7 +3,7 @@
 const { remote } = require('electron');
 const { Plugin } = require('powercord/entities');
 const { ContextMenu: { Submenu } } = require('powercord/components');
-const { open: openModal } = require('powercord/modal');
+const { open: openModal, close: closeModal } = require('powercord/modal');
 const { forceUpdateElement, sleep } = require('powercord/util');
 const { getModule, getModuleByDisplayName, React, contextMenu } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
@@ -11,12 +11,14 @@ const { resolve } = require('path');
 
 const { actions: { toggleSetting, updateSetting } } = powercord.api.settings;
 
+const GenericModal = require('./core/components/Modal');
+
 const path = require('path');
 const fs = require('fs');
 
 class QuickActions extends Plugin {
   async startPlugin () {
-    this.loadCSS(resolve(__dirname, 'core/styles/style.css'));
+    this.loadCSS(resolve(__dirname, 'core/styles/style.scss'));
 
     if (!this.initializedStore) {
       await this.initializeStore();
@@ -123,7 +125,34 @@ class QuickActions extends Plugin {
                 };
                 break;
               } else if (key === 'clearCache') {
-                item.onClick = () => remote.getCurrentWindow().webContents.session.clearCache();
+                item.onClick = () => openModal(() => React.createElement(GenericModal, {
+                  header: 'Clear cache',
+                  confirmText: 'Clear Cache',
+                  cancelText: 'Cancel',
+                  onConfirm: () => remote.getCurrentWindow().webContents.session.clearCache()
+                }));
+
+                break;
+              } else if (key === 'pluginDirectory') {
+                item.highlight = '#43B581';
+                item.hint = 'Modal »';
+                item.onClick = () => openModal(() => React.createElement(GenericModal, {
+                  red: false,
+                  header: `Plugin Directory—${name}`,
+                  confirmText: 'Done',
+                  input: {
+                    title: 'Current Working Directory (cwd)',
+                    text: pluginPath,
+                    disabled: true
+                  },
+                  button: {
+                    text: 'Open Plugin Directory',
+                    icon: 'ExternalLink',
+                    onClick: () => this.utils.openFolder(pluginPath)
+                  },
+                  onConfirm: () => closeModal()
+                }));
+
                 break;
               } else if (key === 'updatePlugins') {
                 item.onClick = async () => {
@@ -167,6 +196,10 @@ class QuickActions extends Plugin {
               item.onClick = () => powercord.pluginManager.get(id)[setting.func.method]();
               break;
             case 'submenu':
+              if (key === 'settingsSync' && !powercord.account) {
+                continue;
+              }
+
               if (key === 'hiddenGuilds') {
                 const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
                 this.getGuilds().map(guild => {
@@ -200,17 +233,25 @@ class QuickActions extends Plugin {
                   case 'button':
                     child.highlight = obj.dangerous ? '#F04747' : obj.color || null;
 
-                    if (obj.key === 'pluginDirectory') {
-                      child.name = pluginPath;
-                      child.onClick = () => this.utils.openFolder(pluginPath);
-                      break;
-                    }
-
                     if (typeof obj.disabled !== 'undefined') {
                       if (obj.disabled.func && obj.disabled.func.method.includes('!getSetting')) {
+                        if (
+                          !powercord.api.settings.store
+                            .getSetting(id, obj.disabled.func.arguments) && obj.disabled.hide
+                        ) {
+                          return false;
+                        }
+
                         child.disabled = !powercord.api.settings.store
                           .getSetting(id, obj.disabled.func.arguments);
                       } else if (obj.disabled.func && obj.disabled.func.method.includes('getSetting')) {
+                        if (
+                          powercord.api.settings.store
+                            .getSetting(id, obj.disabled.func.arguments) && obj.disabled.hide
+                        ) {
+                          return false;
+                        }
+
                         child.disabled = powercord.api.settings.store
                           .getSetting(id, obj.disabled.func.arguments);
                       } else {
@@ -221,10 +262,16 @@ class QuickActions extends Plugin {
                     if (obj.modal) {
                       child.highlight = '#43B581';
                       child.hint = 'Modal »';
-                      child.onClick = () => this.showSettingModal({ name,
-                        id,
-                        setting: obj,
-                        key: obj.key });
+                      child.onClick = () => {
+                        if (obj.key === 'passphrase') {
+                          return this.showPassphraseModal({ setting: obj });
+                        }
+
+                        this.showSettingModal({ name,
+                          id,
+                          setting: obj,
+                          key: obj.key });
+                      };
 
                       break;
                     }
@@ -240,6 +287,10 @@ class QuickActions extends Plugin {
                         contextMenu.closeContextMenu();
                       }
 
+                      if (obj.key === 'settingsSync' && state) {
+                        this.showPassphraseModal({ setting: obj });
+                      }
+
                       item.defaultState = state;
                     };
                 }
@@ -248,13 +299,7 @@ class QuickActions extends Plugin {
               });
 
               item.hint = setting.hint;
-
-              if (key === 'pluginDirectory') {
-                item.width = `${(pluginPath.length * 6.7)}px`;
-              } else {
-                item.width = setting.width || '';
-              }
-
+              item.width = setting.width || '';
               item.getItems = () => children;
 
               break;
@@ -325,7 +370,7 @@ class QuickActions extends Plugin {
               break;
             default:
               if (
-                (key === 'settingsSync' && !powercord.account) || ((key === 'clearContent' || key === 'useShiftKey') &&
+                ((key === 'clearContent' || key === 'useShiftKey') &&
                 powercord.api.settings.store.getSetting(id, 'dualControlEdits', false)) || (key === 'displayLink' &&
                 powercord.api.settings.store.getSetting(id, 'useEmbeds', false))
               ) {
@@ -433,6 +478,33 @@ class QuickActions extends Plugin {
     }
 
     return updateSetting(id, 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+  }
+
+  // settings sync
+  showPassphraseModal (opts) {
+    openModal(() => React.createElement(GenericModal, {
+      red: false,
+      header: 'Update passphrase',
+      confirmText: 'Update',
+      cancelText: 'Cancel',
+      input: {
+        title: 'Passphrase',
+        text: powercord.api.settings.store.getSetting('pc-general', 'passphrase'),
+        type: 'password',
+        icon: {
+          name: 'Eye',
+          tooltip: 'Show Password'
+        }
+      },
+      button: {
+        text: 'Reset to Default'
+      },
+      onConfirm: (value) => {
+        updateSetting('pc-general', 'passphrase', value);
+        closeModal();
+      },
+      options: opts
+    }));
   }
 
   showSettingModal (opts) {
