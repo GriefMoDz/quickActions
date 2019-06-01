@@ -109,7 +109,7 @@ class QuickActions extends Plugin {
 
           switch (setting.type) {
             case 'button':
-              item.highlight = setting.dangerous ? '#F04747' : setting.color || null;
+              item.highlight = setting.dangerous ? '#f04747' : setting.color || null;
 
               if (id === 'auditory' && setting.func.method === 'updateSetting') {
                 const mode = powercord.api.settings.store.getSetting(id, key, setting.default);
@@ -135,7 +135,7 @@ class QuickActions extends Plugin {
 
                 break;
               } else if (key === 'pluginDirectory') {
-                item.highlight = '#43B581';
+                item.highlight = '#43b581';
                 item.hint = 'Modal »';
                 item.onClick = () => openModal(() => React.createElement(GenericModal, {
                   red: false,
@@ -172,10 +172,12 @@ class QuickActions extends Plugin {
               } else if (typeof setting.disabled !== 'undefined') {
                 if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
                   item.disabled = !powercord.api.settings.store
-                    .getSetting(id, setting.disabled.func.arguments);
+                    .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings)
+                      .find(x => x[0] === setting.disabled.func.arguments)[1].default);
                 } else if (setting.disabled.func && setting.disabled.func.method.includes('getSetting')) {
                   item.disabled = powercord.api.settings.store
-                    .getSetting(id, setting.disabled.func.arguments);
+                    .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings)
+                      .find(x => x[0] === setting.disabled.func.arguments)[1].default);
                 } else {
                   item.disabled = setting.disabled;
                 }
@@ -184,7 +186,7 @@ class QuickActions extends Plugin {
               item.hint = setting.hint;
 
               if (setting.modal) {
-                item.highlight = '#43B581';
+                item.highlight = '#43b581';
                 item.hint = 'Modal »';
                 item.onClick = () => this.showSettingModal({ name,
                   id,
@@ -233,36 +235,40 @@ class QuickActions extends Plugin {
 
                 switch (child.type) {
                   case 'button':
-                    child.highlight = setting.dangerous ? '#F04747' : setting.color || null;
+                    child.highlight = setting.dangerous ? '#f04747' : setting.color || null;
 
                     if (typeof setting.disabled !== 'undefined') {
                       if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
                         if (
                           !powercord.api.settings.store
-                            .getSetting(id, setting.disabled.func.arguments) && setting.disabled.hide
+                            .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings[key].children)
+                              .find(x => x[0] === setting.disabled.func.arguments)[1].default) && setting.disabled.hide
                         ) {
-                          return false;
+                          continue;
                         }
 
                         child.disabled = !powercord.api.settings.store
-                          .getSetting(id, setting.disabled.func.arguments);
+                          .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings[key].children)
+                            .find(x => x[0] === setting.disabled.func.arguments)[1].default);
                       } else if (setting.disabled.func && setting.disabled.func.method.includes('getSetting')) {
                         if (
                           powercord.api.settings.store
-                            .getSetting(id, setting.disabled.func.arguments) && setting.disabled.hide
+                            .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings[key].children)
+                              .find(x => x[0] === setting.disabled.func.arguments)[1].default) && setting.disabled.hide
                         ) {
-                          return false;
+                          continue;
                         }
 
                         child.disabled = powercord.api.settings.store
-                          .getSetting(id, setting.disabled.func.arguments);
+                          .getSetting(id, setting.disabled.func.arguments, Object.entries(plugin.settings[key].children)
+                            .find(x => x[0] === setting.disabled.func.arguments)[1].default);
                       } else {
                         child.disabled = setting.disabled;
                       }
                     }
 
                     if (setting.modal) {
-                      child.highlight = '#43B581';
+                      child.highlight = '#43b581';
                       child.hint = 'Modal »';
                       child.onClick = () => {
                         if (childKey === 'passphrase') {
