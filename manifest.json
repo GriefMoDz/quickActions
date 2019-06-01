@@ -1,6 +1,6 @@
 {
   "name": "Quick Actions",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Adds an extensible tab to the 'User Settings' context menu that enables Powercord shortcuts.",
   "author": "Harley#1051",
   "license": "MIT"

@@ -79,7 +79,7 @@ class QuickActions extends Plugin {
       if (changelog) {
         res.props.children[0].splice(res.props.children[0].indexOf(changelog), 0, parent);
       } else {
-        this.error('Could not find \'Change Log\' category item - unloading for the remainder of this instance...');
+        this.error('Could not find \'Change Log\' category; unloading for the remainder of this instance...');
         this._unload();
       }
 
@@ -123,6 +123,7 @@ class QuickActions extends Plugin {
                   updateSetting(id, key, value);
                   powercord.pluginManager.get(id).reload();
                 };
+
                 break;
               } else if (key === 'clearCache') {
                 item.onClick = () => openModal(() => React.createElement(GenericModal, {
@@ -219,76 +220,77 @@ class QuickActions extends Plugin {
                 item.getItems = () => children;
               }
 
-              setting.children.forEach(obj => {
+              for (const childKey in setting.children) {
+                const setting = plugin.settings[key].children[childKey];
                 const child = {
-                  type: obj.type ? obj.type : 'checkbox',
-                  name: obj.name
+                  type: setting.type ? setting.type : 'checkbox',
+                  name: setting.name
                 };
 
-                if (obj.seperate) {
+                if (setting.seperate) {
                   child.seperate = true;
                 }
 
                 switch (child.type) {
                   case 'button':
-                    child.highlight = obj.dangerous ? '#F04747' : obj.color || null;
+                    child.highlight = setting.dangerous ? '#F04747' : setting.color || null;
 
-                    if (typeof obj.disabled !== 'undefined') {
-                      if (obj.disabled.func && obj.disabled.func.method.includes('!getSetting')) {
+                    if (typeof setting.disabled !== 'undefined') {
+                      if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
                         if (
                           !powercord.api.settings.store
-                            .getSetting(id, obj.disabled.func.arguments) && obj.disabled.hide
+                            .getSetting(id, setting.disabled.func.arguments) && setting.disabled.hide
                         ) {
                           return false;
                         }
 
                         child.disabled = !powercord.api.settings.store
-                          .getSetting(id, obj.disabled.func.arguments);
-                      } else if (obj.disabled.func && obj.disabled.func.method.includes('getSetting')) {
+                          .getSetting(id, setting.disabled.func.arguments);
+                      } else if (setting.disabled.func && setting.disabled.func.method.includes('getSetting')) {
                         if (
                           powercord.api.settings.store
-                            .getSetting(id, obj.disabled.func.arguments) && obj.disabled.hide
+                            .getSetting(id, setting.disabled.func.arguments) && setting.disabled.hide
                         ) {
                           return false;
                         }
 
                         child.disabled = powercord.api.settings.store
-                          .getSetting(id, obj.disabled.func.arguments);
+                          .getSetting(id, setting.disabled.func.arguments);
                       } else {
-                        child.disabled = obj.disabled;
+                        child.disabled = setting.disabled;
                       }
                     }
 
-                    if (obj.modal) {
+                    if (setting.modal) {
                       child.highlight = '#43B581';
                       child.hint = 'Modal »';
                       child.onClick = () => {
-                        if (obj.key === 'passphrase') {
-                          return this.showPassphraseModal({ setting: obj });
+                        if (childKey === 'passphrase') {
+                          return this.showPassphraseModal({ setting });
                         }
 
                         this.showSettingModal({ name,
                           id,
-                          setting: obj,
-                          key: obj.key });
+                          setting,
+                          key: childKey });
                       };
 
                       break;
                     }
 
-                    child.onClick = () => powercord.pluginManager.get(id)[obj.func.method]();
+                    child.onClick = () => powercord.pluginManager.get(id)[setting.func.method]();
                     break;
                   default:
-                    child.defaultState = powercord.api.settings.store.getSetting(id, obj.key, obj.default);
+                    child.defaultState = powercord.api.settings.store.getSetting(id, childKey, setting.default);
                     child.onToggle = (state) => {
-                      toggleSetting(id, obj.key, state);
+                      toggleSetting(id, childKey, state);
 
-                      if (obj.close) {
+                      if (setting.close) {
                         contextMenu.closeContextMenu();
                       }
 
-                      if (obj.key === 'settingsSync' && state) {
-                        this.showPassphraseModal({ setting: obj });
+                      if (childKey === 'settingsSync' && state) {
+                        this.showPassphraseModal({ setting });
                       }
 
                       item.defaultState = state;
@@ -296,7 +298,7 @@ class QuickActions extends Plugin {
                 }
 
                 children.push(child);
-              });
+              }
 
               item.hint = setting.hint;
               item.width = setting.width || '';

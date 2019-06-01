@@ -1,7 +1,7 @@
 const { existsSync, lstatSync } = require('fs');
 const { React, getModule } = require('powercord/webpack');
-const { Confirm } = require('powercord/components/modal');
 const { Tooltip, Button, Icon } = require('powercord/components');
+const { Confirm } = require('powercord/components/modal');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
 
@@ -52,7 +52,7 @@ module.exports = class SettingModal extends React.Component {
         <TextInput
           type='text'
           required={setting.required}
-          style={!valid ? { borderColor: '#E53935' } : {}}
+          style={!valid ? { borderColor: '#f04747' } : {}}
           placeholder={setting.default && setting.placeholder
             ? setting.placeholder
             : !setting.default ? setting.placeholder || '' : setting.default}
@@ -122,7 +122,17 @@ module.exports = class SettingModal extends React.Component {
     };
 
     if (value.length <= 0) {
+      this.setState({ inputText: setting.default,
+        valid: true });
+
       return setting.default;
+    } else if (setting.hex) {
+      if (!(/^#[a-f0-9]{3}(?:[a-f0-9]{3})?$/).test(value)) {
+        return this.setState({ valid: false });
+      }
+
+      return this.setState({ inputText: value,
+        valid: true });
     } else if (setting.domain) {
       if (!domain.test(value)) {
         return this.setState({ valid: false });

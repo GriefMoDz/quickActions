@@ -1,6 +1,6 @@
 const { React, getModule } = require('powercord/webpack');
-const { Confirm } = require('powercord/components/modal');
 const { Tooltip, Button, Icon } = require('powercord/components');
+const { Confirm } = require('powercord/components/modal');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
 
@@ -45,7 +45,8 @@ module.exports = class SettingModal extends React.Component {
       <div class='quickActions-modal'>
         {this.props.header === 'Clear cache' && (
           <div className='quickActions-modal-desc'>
-            Are you sure you want to clear cache?<br /><br />
+            Are you sure you want to clear cache?
+            <div class='quickActions-modal-spacer' />
             Proceeding will remove <b>everything</b> stored in your Discord's cache folder resulting in slower performance, as all
 
             <Tooltip text='(i.e. images, videos and avatars)' position='top'>
@@ -60,12 +61,12 @@ module.exports = class SettingModal extends React.Component {
           <div id='update-passphrase' className='quickActions-modal-desc'>
             This passphrase will be used to encrypt your data before sending it to Powercord's servers. It's recommended to
             use it, but you can just leave this empty and your data will be sent unencrypted.
-            <br /><br />
+            <div class='quickActions-modal-spacer' />
             If you're already using sync on other machines, put the same passphrase you used.
             <b>Using another passphrase will overwrite old data, so be careful</b>
-            <br /><br />
+            <div class='quickActions-modal-spacer' />
             <div class='quickActions-modal-desc-hint'>
-              <b>Protip</b>: You can click the "eye" symbol found below to show/hide your passphrase.
+              <b>Protip</b>: You can click the "eye" symbol below to show/hide your passphrase.
             </div>
           </div>
         )}
