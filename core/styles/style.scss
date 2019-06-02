@@ -3,6 +3,18 @@
   margin-top: 12px;
 }
 
+.pc-itemSubMenu {
+  .quickActions-contextMenu-icon {
+    opacity: 0.6;
+  }
+
+  &:hover {
+    .quickActions-contextMenu-icon {
+      opacity: 1;
+    }
+  }
+}
+
 .quickActions-icon {
   display: inline;
 

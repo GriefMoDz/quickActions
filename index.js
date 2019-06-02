@@ -70,7 +70,8 @@ class QuickActions extends Plugin {
 
       const parent = React.createElement(Submenu, {
         name: 'Powercord',
-        hint: '\uD83D\uDD0C',
+        className: 'quickActions-contextMenu-icon',
+        image: this.utils.getPowercordIcon(),
         onClick: () => this.utils.openUserSettings(),
         getItems: () => items
       });
@@ -110,6 +111,12 @@ class QuickActions extends Plugin {
           switch (setting.type) {
             case 'button':
               item.highlight = setting.dangerous ? '#f04747' : setting.color || null;
+
+              if (!setting.image) {
+                item.hint = setting.hint;
+              } else {
+                item.image = setting.image;
+              }
 
               if (id === 'auditory' && setting.func.method === 'updateSetting') {
                 const mode = powercord.api.settings.store.getSetting(id, key, setting.default);
@@ -183,11 +190,15 @@ class QuickActions extends Plugin {
                 }
               }
 
-              item.hint = setting.hint;
-
               if (setting.modal) {
                 item.highlight = '#43b581';
-                item.hint = 'Modal »';
+
+                if (!setting.image) {
+                  item.hint = 'Modal »';
+                } else {
+                  item.image = setting.image;
+                }
+
                 item.onClick = () => this.showSettingModal({ name,
                   id,
                   setting,
@@ -237,6 +248,12 @@ class QuickActions extends Plugin {
                   case 'button':
                     child.highlight = setting.dangerous ? '#f04747' : setting.color || null;
 
+                    if (!setting.image) {
+                      child.hint = setting.hint;
+                    } else {
+                      child.image = setting.image;
+                    }
+
                     if (typeof setting.disabled !== 'undefined') {
                       if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
                         if (
@@ -269,7 +286,13 @@ class QuickActions extends Plugin {
 
                     if (setting.modal) {
                       child.highlight = '#43b581';
-                      child.hint = 'Modal »';
+
+                      if (!setting.image) {
+                        child.hint = 'Modal »';
+                      } else {
+                        child.image = setting.image;
+                      }
+
                       child.onClick = () => {
                         if (childKey === 'passphrase') {
                           return this.showPassphraseModal({ setting });
