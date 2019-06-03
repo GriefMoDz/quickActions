@@ -3,6 +3,12 @@
   margin-top: 12px;
 }
 
+.pc-itemImage {
+  .pc-label {
+    max-width: fit-content;
+  }
+}
+
 .pc-itemSubMenu {
   .quickActions-contextMenu-icon {
     opacity: 0.6;
