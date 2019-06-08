@@ -68,6 +68,15 @@ class QuickActions extends Plugin {
           : this.buildSettingMenu(item.label, item.section));
       });
 
+      if (powercord.pluginManager.isEnabled('pc-styleManager')) {
+        const plugins = items.find(c => c.name === 'Plugins');
+        if (plugins) {
+          items.splice(items.indexOf(plugins) + 1, 0, this.buildStylesMenu());
+        } else {
+          items.push(this.buildStylesMenu());
+        }
+      }
+
       const parent = React.createElement(Submenu, {
         name: 'Powercord',
         className: 'quickActions-contextMenu-icon',
@@ -176,6 +185,37 @@ class QuickActions extends Plugin {
                 };
 
                 break;
+              } else if (key === 'addUser') {
+                item.highlight = '#43b581';
+                item.hint = 'Modal »';
+                item.onClick = () => openModal(() => React.createElement(GenericModal, {
+                  red: false,
+                  header: `Add New User—${name}`,
+                  confirmText: 'Add User',
+                  cancelText: 'Cancel',
+                  input: {
+                    title: 'User Account Token',
+                    text: ''
+                  },
+                  button: {
+                    text: 'Reset to Default'
+                  },
+                  onConfirm: (token) => {
+                    const users = powercord.api.settings.store.getSetting(plugin.id, 'users', []);
+
+                    if (token) {
+                      updateSetting(plugin.id, 'users', users.concat([ {
+                        nickname: null,
+                        token
+                      } ]));
+                    }
+
+                    closeModal();
+                  },
+                  options: { setting }
+                }));
+
+                break;
               } else if (typeof setting.disabled !== 'undefined') {
                 if (setting.disabled.func && setting.disabled.func.method.includes('!getSetting')) {
                   item.disabled = !powercord.api.settings.store
@@ -225,6 +265,43 @@ class QuickActions extends Plugin {
                       this.handleGuildToggle(id, guild.id);
                       child.defaultState = state;
                     }
+                  };
+
+                  return children.push(child);
+                });
+
+                item.getItems = () => children;
+              } else if (key === 'users') {
+                const users = powercord.api.settings.store.getSetting(plugin.id, key, []);
+                users.map(user => {
+                  const child = {
+                    type: 'button',
+                    name: user.nickname || 'Untitled',
+                    seperate: true,
+                    onClick: () => openModal(() => React.createElement(GenericModal, {
+                      id: 'quickActions-mu-users',
+                      red: false,
+                      header: `${user.nickname || 'Untitled'}—${name}`,
+                      confirmText: 'Done',
+                      cancelText: 'Remove User',
+                      input: {
+                        title: 'Account Token',
+                        text: user.token,
+                        disabled: true,
+                        hidden: {
+                          text: 'Show account token',
+                          icon: 'Eye'
+                        }
+                      },
+                      onConfirm: () => closeModal(),
+                      onCancel: () => {
+                        const index = users.indexOf(user);
+
+                        if (index > 0) {
+                          updateSetting(plugin.id, 'users', users.filter(u => u !== user));
+                        }
+                      }
+                    }))
                   };
 
                   return children.push(child);
@@ -470,7 +547,7 @@ class QuickActions extends Plugin {
           onToggle: (state) => {
             item.defaultState = state;
 
-            if (this.settingsStore.get('plugins')[id]) {
+            if (id === 'pc-styleManager' || this.settingsStore.get('plugins')[id]) {
               contextMenu.closeContextMenu();
             }
 
@@ -495,6 +572,45 @@ class QuickActions extends Plugin {
     };
 
     return pluginsMenu;
+  }
+
+  buildStylesMenu () {
+    const items = [];
+    const { themes, disabledThemes } = this.utils.getThemes();
+
+    for (const key in themes) {
+      if (themes.hasOwnProperty(key)) {
+        const id = themes[key];
+        const isThemeDisabled = disabledThemes.includes(id);
+        const item = {
+          type: 'checkbox',
+          name: id,
+          defaultState: !isThemeDisabled,
+          seperate: true,
+          onToggle: (state) => {
+            item.defaultState = state;
+
+            if (!powercord.styleManager.isEnabled(id)) {
+              return powercord.styleManager.enable(id);
+            }
+
+            return powercord.styleManager.disable(id);
+          }
+        };
+
+        items.push(item);
+      }
+    }
+
+    const themesMenu = {
+      type: 'submenu',
+      name: 'Themes',
+      width: '215px',
+      onClick: () => this.utils.openFolder(powercord.styleManager.themesDir),
+      getItems: () => items
+    };
+
+    return themesMenu;
   }
 
   // emoji utility

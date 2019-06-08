@@ -54,29 +54,44 @@
 }
 
 .quickActions-modal {
-  color: #c7c9cc;
+  &[id='quickActions-mu-users'] {
+    button:not(.pc-reset):last-child {
+      color: #f04747;
 
-  .pc-divider {
-    display: none;
-  }
-
-  .pc-marginBottom20 {
-    margin-bottom: 0;
-  }
-
-  &-desc[id='update-passphrase'] {
-    margin-bottom: 20px;
-  }
-
-  &-desc-hint {
-    b {
-      color: #43b581;
-      text-transform: uppercase;
+      &:hover {
+        .pc-contents {
+          background-image: linear-gradient(0deg, transparent, transparent 1px ,#f04747 0,
+            #f04747 2px, transparent 0);
+        }
+      }
     }
   }
 
-  &-spacer {
-    margin-top: 20px;
+  &-inner {
+    color: #c7c9cc;
+
+    .pc-divider {
+      display: none;
+    }
+  
+    .pc-marginBottom20 {
+      margin-bottom: 0;
+    }
+
+    &-desc[id='update-passphrase'] {
+      margin-bottom: 20px;
+    }
+  
+    &-desc-hint {
+      b {
+        color: #43b581;
+        text-transform: uppercase;
+      }
+    }
+  
+    &-spacer {
+      margin-top: 20px;
+    }
   }
 }
 

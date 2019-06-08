@@ -19,6 +19,22 @@ module.exports = {
       plugins };
   },
 
+  getThemes () {
+    const disabledThemes = powercord.settings.get('disabledThemes', []);
+    const themes = [ ...powercord.styleManager.themes.keys() ]
+      .filter(theme => theme !== 'powercord-core' && !powercord.pluginManager.plugins.has(theme))
+      .sort((a, b) => {
+        const filter = a < b
+          ? -1
+          : 1 || 0;
+
+        return filter;
+      });
+
+    return { disabledThemes,
+      themes };
+  },
+
   openFolder (dir) {
     const cmds = {
       win32: 'explorer',
