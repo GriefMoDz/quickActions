@@ -125,16 +125,14 @@ module.exports = class SettingModal extends React.Component {
                   this.props.input.hidden.icon = 'EyeHidden';
 
                   document.querySelector('input').value = this.props.input.text;
-
-                  return this.forceUpdate();
                 } else if (this.props.input.hidden.text.includes('Hide')) {
                   this.props.input.hidden.text = this.props.input.hidden.text.replace('Hide', 'Show');
                   this.props.input.hidden.icon = 'Eye';
 
                   document.querySelector('input').value = '';
-
-                  return this.forceUpdate();
                 }
+
+                return this.forceUpdate();
               }}
             >
               {this.props.input.hidden.text}

@@ -9,8 +9,16 @@
   }
 }
 
-.pc-itemSubMenu {
-  .quickActions-contextMenu-icon {
+.quickActions-contextMenu {
+  > .pc-contextMenu {
+    cursor: pointer;
+
+    > .scroller {
+      max-height: fit-content;
+    }
+  }
+
+  &-icon {
     opacity: 0.6;
   }
 

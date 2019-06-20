@@ -16,6 +16,8 @@ const GenericModal = require('./core/components/Modal');
 const path = require('path');
 const fs = require('fs');
 
+let pressed = false;
+
 class QuickActions extends Plugin {
   async startPlugin () {
     this.loadCSS(resolve(__dirname, 'core/styles/style.scss'));
@@ -27,10 +29,12 @@ class QuickActions extends Plugin {
     this.utils = require('./core/utils');
     this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.patchSettingsContextMenu();
+    this.patchSettingsSections();
   }
 
   pluginWillUnload () {
     uninject('quickActions-ContextMenu');
+    uninject('quickActions-SettingsSections');
   }
 
   // Getters
@@ -64,8 +68,8 @@ class QuickActions extends Plugin {
 
       this.settingsSections.forEach(item => {
         items.push(item.section === 'pc-pluginManager'
-          ? this.buildPluginsMenu()
-          : this.buildSettingMenu(item.label, item.section));
+        ? this.buildPluginsMenu()
+        : this.buildSettingMenu(item.label, item.section));
       });
 
       if (powercord.pluginManager.isEnabled('pc-styleManager')) {
@@ -79,9 +83,13 @@ class QuickActions extends Plugin {
 
       const parent = React.createElement(Submenu, {
         name: 'Powercord',
-        className: 'quickActions-contextMenu-icon',
+        className: 'quickActions-contextMenu',
+        iconClassName: 'quickActions-contextMenu-icon',
         image: this.utils.getPowercordIcon(),
-        onClick: () => this.utils.openUserSettings(),
+        onClick: () => {
+          pressed = true;
+          this.utils.openUserSettings();
+        },
         getItems: () => items
       });
 
@@ -91,6 +99,19 @@ class QuickActions extends Plugin {
       } else {
         this.error('Could not find \'Change Log\' category; unloading for the remainder of this instance...');
         this._unload();
+      }
+
+      return res;
+    });
+  }
+
+  async patchSettingsSections () {
+    const UserSettingsSections = (await getModule([ 'getUserSettingsSections' ]));
+
+    inject('quickActions-SettingsSections', UserSettingsSections.prototype, 'render', (_, res) => {
+      if (pressed && res.props && !res.props.section) {
+        res.props.section = 'pc-general';
+        pressed = false;
       }
 
       return res;
@@ -239,7 +260,7 @@ class QuickActions extends Plugin {
                   item.image = setting.image;
                 }
 
-                item.onClick = () => this.showSettingModal({ name,
+                item.onClick = () => this.utils.showSettingModal({ name,
                   id,
                   setting,
                   key });
@@ -375,7 +396,7 @@ class QuickActions extends Plugin {
                           return this.showPassphraseModal({ setting });
                         }
 
-                        this.showSettingModal({ name,
+                        this.utils.showSettingModal({ name,
                           id,
                           setting,
                           key: childKey });
@@ -652,21 +673,6 @@ class QuickActions extends Plugin {
       },
       options: opts
     }));
-  }
-
-  showSettingModal (opts) {
-    const SettingModal = require('./core/components/SettingModal');
-    openModal(() => React.createElement(SettingModal, {
-      onConfirm: (value) => {
-        updateSetting(opts.id, opts.key, value);
-
-        if (typeof opts.setting.func !== 'undefined') {
-          if (opts.setting.func.method && opts.setting.func.type === 'pluginManager') {
-            powercord.pluginManager.get(opts.id)[opts.setting.func.method]();
-          }
-        }
-      },
-      options: opts }));
   }
 }
 
