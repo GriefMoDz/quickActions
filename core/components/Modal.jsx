@@ -33,7 +33,7 @@ module.exports = class SettingModal extends React.Component {
       }
     }
 
-    return <div id={`${this.props.id || null}`} class='quickActions-modal'>
+    return <div id={`${this.props.id || ''}`} class='quickActions-modal'>
       <Confirm
         red={this.props.red}
         header={this.props.header || null}
@@ -43,7 +43,10 @@ module.exports = class SettingModal extends React.Component {
         onCancel={() => typeof this.props.onCancel !== 'undefined'
           ? this.props.onCancel()
           : closeModal()}
-        size={Confirm.Sizes[this.props.size] || Confirm.Sizes.SMALL}
+        size={Confirm.Sizes[this.props.size
+          ? this.props.size.toUpperCase()
+          : null
+        ] || Confirm.Sizes.SMALL}
       >
         <div class='quickActions-modal-inner'>
           {this.props.header === 'Clear cache' && (
@@ -76,6 +79,7 @@ module.exports = class SettingModal extends React.Component {
 
           {this.props.input && (
             <TextInput
+              id='quickActions-textBox'
               type={this.props.input.type || 'text'}
               disabled={this.props.input.disabled}
               defaultValue={this.props.input.hidden ? '' : this.props.input.text}
@@ -124,15 +128,15 @@ module.exports = class SettingModal extends React.Component {
                   this.props.input.hidden.text = this.props.input.hidden.text.replace('Show', 'Hide');
                   this.props.input.hidden.icon = 'EyeHidden';
 
-                  document.querySelector('input').value = this.props.input.text;
+                  document.getElementById('quickActions-textBox').value = this.props.input.text;
                 } else if (this.props.input.hidden.text.includes('Hide')) {
                   this.props.input.hidden.text = this.props.input.hidden.text.replace('Hide', 'Show');
                   this.props.input.hidden.icon = 'Eye';
 
-                  document.querySelector('input').value = '';
+                  document.getElementById('quickActions-textBox').value = '';
                 }
 
-                return this.forceUpdate();
+                this.forceUpdate();
               }}
             >
               {this.props.input.hidden.text}
@@ -153,7 +157,7 @@ module.exports = class SettingModal extends React.Component {
                 if (this.props.button.text === 'Reset to Default') {
                   this.setState({ inputText: setting.default });
 
-                  return document.querySelector('input').value = '';
+                  return document.getElementById('quickActions-textBox').value = '';
                 }
 
                 this.props.button.onClick();

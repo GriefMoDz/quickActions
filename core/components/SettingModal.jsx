@@ -1,9 +1,12 @@
 const { existsSync, lstatSync } = require('fs');
-const { React, getModule } = require('powercord/webpack');
-const { Tooltip, Button, Icon } = require('powercord/components');
+const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
+const { AsyncComponent, Tooltip, Button, Icon } = require('powercord/components');
 const { Confirm } = require('powercord/components/modal');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
+
+const FormTitle = AsyncComponent.from(getModuleByDisplayName('FormTitle'));
+const SelectTempWrapper = AsyncComponent.from(getModuleByDisplayName('SelectTempWrapper'));
 
 module.exports = class SettingModal extends React.Component {
   constructor (props) {
@@ -34,84 +37,134 @@ module.exports = class SettingModal extends React.Component {
       setting.placeholder = powercord.pluginManager.get(id).defaultWords.join('|');
     }
 
-    return <Confirm
-      red={false}
-      header={`Plugin Settings—${name || null}`}
-      confirmText='Save'
-      cancelText='Cancel'
-      onConfirm={() => {
-        if (!valid) {
-          return;
-        }
+    return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} class='quickActions-modal'>
+      <Confirm
+        red={false}
+        header={`Plugin Settings—${name || null}`}
+        confirmText='Save'
+        cancelText='Cancel'
+        onConfirm={() => {
+          if (!valid) {
+            return;
+          }
 
-        this.props.onConfirm(inputText);
-      }}
-      onCancel={() => closeModal()}
-    >
-      <div class='quickActions-settingModal'>
-        <TextInput
-          type='text'
-          required={setting.required}
-          style={!valid ? { borderColor: '#f04747' } : {}}
-          placeholder={setting.default && setting.placeholder
-            ? setting.placeholder
-            : !setting.default ? setting.placeholder || '' : setting.default}
-          defaultValue={inputText === (setting.default || setting.placeholder)
-            ? ''
-            : inputText}
-          onChange={(value) => {
-            if (setting.modal.realtime) {
-              this.validate(value);
-            }
-          }}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
-              this.validate(e.target.value);
+          this.props.onConfirm(inputText);
+        }}
+        onCancel={() => closeModal()}
+        size={Confirm.Sizes[setting.modal.size
+          ? setting.modal.size.toUpperCase()
+          : null
+        ] || Confirm.Sizes.SMALL}
+      >
+        <div class='quickActions-settingModal'>
+          {key === 'defaultCloneId' &&
+            <div>
+              <FormTitle>{setting.name}</FormTitle>
+              <SelectTempWrapper
+                id='quickActions-selectBox'
+                options={this.getGuilds()}
+                value={inputText}
+                placeholder='Select a server...'
+                clearable={true}
+                onMenuOpen={() => document.querySelector('.quickActions-modal > form')
+                  .setAttribute('style', 'height: 385px;')}
+                onMenuClose={() => document.querySelector('.quickActions-modal > form')
+                  .removeAttribute('style')}
+                onChange={(item) => {
+                  if (!item) {
+                    return this.setState({ inputText: setting.default });
+                  }
 
-              if (!setting.modal.custom) {
-                e.target.value = this.validate(e.target.value);
+                  this.setState({ inputText: item.value });
+                }}
+              />
+            </div>
+          }
 
-                return this.setState({ inputText: e.target.value });
-              }
-            }
-          }}
-          onBlur={(e) => {
-            this.validate(e.target.value);
+          {key !== 'defaultCloneId' &&
+            <div>
+              <TextInput
+                id='quickActions-textBox'
+                type='text'
+                required={setting.required}
+                style={!valid ? { borderColor: '#f04747' } : {}}
+                placeholder={setting.default && setting.placeholder
+                  ? setting.placeholder
+                  : !setting.default ? setting.placeholder || '' : setting.default}
+                defaultValue={inputText === (setting.default || setting.placeholder)
+                  ? ''
+                  : inputText}
+                onChange={(value) => {
+                  if (setting.modal.realtime) {
+                    this.validate(value);
+                  }
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    this.validate(e.target.value);
 
-            if (!setting.modal.custom) {
-              e.target.value = this.validate(e.target.value);
+                    if (!setting.modal.custom) {
+                      e.target.value = this.validate(e.target.value);
 
-              return this.setState({ inputText: e.target.value });
-            }
-          }}
-        >
-          {setting.name}
+                      return this.setState({ inputText: e.target.value });
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  this.validate(e.target.value);
 
-          {setting.desc && (
-            <Tooltip text={setting.desc} position='top'>
-              <div className="quickActions-hint">
-                <Icon name="Info" />
-              </div>
-            </Tooltip>
-          )}
-        </TextInput>
+                  if (!setting.modal.custom) {
+                    e.target.value = this.validate(e.target.value);
 
-        <Button
-          className={this.state.reset}
-          color={Button.Colors.PRIMARY}
-          look={Button.Looks.LINK}
-          size={Button.Sizes.SMALL}
-          onClick={() => {
-            this.setState({ inputText: setting.default,
-              valid: true });
+                    return this.setState({ inputText: e.target.value });
+                  }
+                }}
+              >
+                {setting.name}
 
-            document.querySelector('input').value = '';
-          }}
-        >
-          Reset to Default
-        </Button>
-      </div>
-    </Confirm>;
+                {setting.desc && (
+                  <Tooltip text={setting.desc} position='top'>
+                    <div className="quickActions-hint">
+                      <Icon name="Info" />
+                    </div>
+                  </Tooltip>
+                )}
+              </TextInput>
+
+              <Button
+                className={this.state.reset}
+                color={Button.Colors.PRIMARY}
+                look={Button.Looks.LINK}
+                size={Button.Sizes.SMALL}
+                onClick={() => {
+                  this.setState({ inputText: setting.default,
+                    valid: true });
+
+                  document.getElementById('quickActions-textBox').value = '';
+                }}
+                >
+                Reset to Default
+              </Button>
+            </div>
+          }
+        </div>
+      </Confirm>
+    </div>;
+  }
+
+  getGuilds () {
+    const guilds = [];
+
+    powercord.pluginManager.get('quickActions').getGuilds().map(g => {
+      const guild = {
+        label: `${g.id} (${g.name})`,
+        value: g.id
+      };
+
+      guilds.push(guild);
+    });
+
+    return guilds;
   }
 
   validate (value) {

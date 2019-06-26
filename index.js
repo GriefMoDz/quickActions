@@ -28,6 +28,8 @@ class QuickActions extends Plugin {
 
     this.utils = require('./core/utils');
     this.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
+    this.titleBarClasses = (await getModule([ 'titleBar' ]));
+
     this.patchSettingsContextMenu();
     this.patchSettingsSections();
   }
@@ -68,8 +70,8 @@ class QuickActions extends Plugin {
 
       this.settingsSections.forEach(item => {
         items.push(item.section === 'pc-pluginManager'
-        ? this.buildPluginsMenu()
-        : this.buildSettingMenu(item.label, item.section));
+          ? this.buildPluginsMenu()
+          : this.buildSettingMenu(item.label, item.section));
       });
 
       if (powercord.pluginManager.isEnabled('pc-styleManager')) {
@@ -473,9 +475,11 @@ class QuickActions extends Plugin {
                 item.defaultValue = value;
 
                 if (id === 'advancedTitle') {
+                  const titleBar = `.${this.titleBarClasses.titleBar.replace(/ /g, '.')}`;
+
                   powercord.pluginManager.get(plugin.id).settings.set(key, parseInt(value));
 
-                  return forceUpdateElement('.pc-titleBar');
+                  return forceUpdateElement(titleBar);
                 }
 
                 updateSetting(id, key, parseInt(value));
