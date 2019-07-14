@@ -49,7 +49,7 @@ module.exports = class SettingModal extends React.Component {
         ] || Confirm.Sizes.SMALL}
       >
         <div class='quickActions-modal-inner'>
-          {this.props.header === 'Clear cache' && (
+          {this.options && this.options.key === 'clearCache' && (
             <div className='quickActions-modal-inner-desc'>
               Are you sure you want to clear cache?
               <div class='quickActions-modal-inner-spacer' />
@@ -63,13 +63,13 @@ module.exports = class SettingModal extends React.Component {
             </div>
           )}
 
-          {this.props.header === 'Update passphrase' && (
+          {this.options && (this.options.key === 'passphrase' || this.options.key === 'settingsSync') && (
             <div id='update-passphrase' className='quickActions-modal-inner-desc'>
               This passphrase will be used to encrypt your data before sending it to Powercord's servers. It's recommended to
               use it, but you can just leave this empty and your data will be sent unencrypted.
               <div class='quickActions-modal-inner-spacer' />
               If you're already using sync on other machines, put the same passphrase you used.
-              <b>Using another passphrase will overwrite old data, so be careful</b>
+              <b>Using another passphrase will overwrite old data, so be careful</b>.
               <div class='quickActions-modal-inner-spacer' />
               <div class='quickActions-modal-inner-desc-hint'>
                 <b>Protip</b>: You can click the "eye" symbol below to show/hide your passphrase.
@@ -82,14 +82,15 @@ module.exports = class SettingModal extends React.Component {
               id='quickActions-textBox'
               type={this.props.input.type || 'text'}
               disabled={this.props.input.disabled}
-              defaultValue={this.props.input.hidden ? '' : this.props.input.text}
+              defaultValue={this.props.input.hidden ? `Click '${this.props.input.hidden.text}' ` +
+                'to reveal.' : this.props.input.text}
               onChange={value => this.setState({ inputText: value })}
             >
               {this.props.input.title}
 
               {this.props.input.icon && (
-                <Tooltip text={this.props.input.icon.tooltip || null} position='top'>
-                  <div className="quickActions-hint">
+                <div className='quickActions-hint'>
+                  <Tooltip text={this.props.input.icon.tooltip || null} position='top'>
                     <Icon
                       name={this.props.input.icon.name}
                       onClick={() => {
@@ -111,8 +112,8 @@ module.exports = class SettingModal extends React.Component {
 
                         return false;
                       }} />
-                  </div>
-                </Tooltip>
+                  </Tooltip>
+                </div>
               )}
             </TextInput>
           )}
@@ -133,7 +134,8 @@ module.exports = class SettingModal extends React.Component {
                   this.props.input.hidden.text = this.props.input.hidden.text.replace('Hide', 'Show');
                   this.props.input.hidden.icon = 'Eye';
 
-                  document.getElementById('quickActions-textBox').value = '';
+                  document.getElementById('quickActions-textBox').value = `Click '${this.props.input.hidden.text}' ` +
+                    'to reveal.';
                 }
 
                 this.forceUpdate();
@@ -141,7 +143,7 @@ module.exports = class SettingModal extends React.Component {
             >
               {this.props.input.hidden.text}
 
-              <div className="quickActions-icon">
+              <div className='quickActions-icon'>
                 <Icon name={this.props.input.hidden.icon} />
               </div>
             </Button>
@@ -165,7 +167,7 @@ module.exports = class SettingModal extends React.Component {
             >
               {this.props.button.text}
 
-              <div className="quickActions-icon">
+              <div className='quickActions-icon'>
                 <Icon name={this.props.button.icon || ''} />
               </div>
             </Button>

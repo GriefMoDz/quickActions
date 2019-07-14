@@ -1,10 +1,14 @@
-const { getModule } = require('powercord/webpack');
+const { open: openModal, close: closeModal } = require('powercord/modal');
+const { forceUpdateElement } = require('powercord/util');
+const { React, contextMenu, getModule } = require('powercord/webpack');
 const { spawn } = require('child_process');
+const { actions: { updateSetting } } = powercord.api.settings;
 
 module.exports = {
   getPlugins () {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
     const plugins = [ ...powercord.pluginManager.plugins.keys() ]
+      .filter(plugin => plugin !== 'quickActions')
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -33,6 +37,48 @@ module.exports = {
       themes };
   },
 
+  togglePlugin (pluginId) {
+    if (!powercord.pluginManager.isEnabled(pluginId)) {
+      powercord.pluginManager.enable(pluginId);
+    } else {
+      powercord.pluginManager.disable(pluginId);
+    }
+  },
+
+  toggleTheme (themeId) {
+    contextMenu.closeContextMenu();
+
+    if (!powercord.styleManager.isEnabled(themeId)) {
+      powercord.styleManager.enable(themeId);
+    } else {
+      powercord.styleManager.disable(themeId);
+    }
+  },
+
+  toggleButtonMode(pluginId, settingKey, setting) {
+    const mode = powercord.api.settings.store.getSetting(pluginId, settingKey, setting.default);
+    const value = mode === setting.default
+      ? setting.newValue
+      : setting.default;
+
+    updateSetting(pluginId, settingKey, value);
+
+    if (pluginId === 'auditory') {
+      powercord.pluginManager.get(pluginId).reload();
+    }
+
+    this.forceUpdate();
+  },
+
+  handleGuildToggle (id, guildId) {
+    const hiddenGuilds = powercord.api.settings.store.getSetting(id, 'hiddenGuilds', []);
+    if (!hiddenGuilds.includes(guildId)) {
+      return updateSetting(id, 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
+    }
+  
+    return updateSetting(id, 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+  },
+
   openFolder (dir) {
     const cmds = {
       win32: 'explorer',
@@ -44,26 +90,38 @@ module.exports = {
   },
 
   async showCategory (sectionId) {
-    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
-    UserSettingsWindow.open();
-    UserSettingsWindow.setSection(sectionId);
+    contextMenu.closeContextMenu();
+
+    const userSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
+    userSettingsWindow.open();
+    userSettingsWindow.setSection(sectionId);
   },
 
   async openUserSettings () {
+    contextMenu.closeContextMenu();
+
     const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
     UserSettingsWindow.open();
   },
 
-  getPowercordIcon () {
-    return 'data:image/png;base64,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';
+  openModal (elem) {
+    contextMenu.closeContextMenu();
+
+    openModal(() => elem);
+  },
+
+  async forceUpdate (updateAll = true) {
+    const contextMenuClasses = (await getModule([ 'itemToggle', 'checkbox' ]));
+    const contextMenuQuery = `.${contextMenuClasses.contextMenu.replace(/ /g, '.')}`;
+
+    if (document.querySelector(contextMenuQuery)) {
+      forceUpdateElement(contextMenuQuery, updateAll);
+    }
   },
 
   showSettingModal (opts) {
-    const { open: openModal } = require('powercord/modal');
-    const { React } = require('powercord/webpack');
-
-    const SettingModal = require('./../core/components/SettingModal');
-    openModal(() => React.createElement(SettingModal, {
+    const SettingModal = require('./components/SettingModal');
+    this.openModal(React.createElement(SettingModal, {
       onConfirm: (value) => {
         powercord.api.settings.actions.updateSetting(opts.id, opts.key, value);
 
@@ -73,6 +131,38 @@ module.exports = {
           }
         }
       },
-      options: opts }));
+      options: opts
+    }));
+  },
+
+  showPassphraseModal (opts) {
+    const GenericModal = require('./components/Modal');
+    this.openModal(React.createElement(GenericModal, {
+      red: false,
+      header: 'Update passphrase',
+      confirmText: 'Update',
+      cancelText: 'Cancel',
+      input: {
+        title: 'Passphrase',
+        text: powercord.api.settings.store.getSetting('pc-general', 'passphrase'),
+        type: 'password',
+        icon: {
+          name: 'Eye',
+          tooltip: 'Show Password'
+        }
+      },
+      button: {
+        text: 'Reset to Default'
+      },
+      onConfirm: (value) => {
+        updateSetting('pc-general', 'passphrase', value);
+        closeModal();
+      },
+      onCancel: () => {
+        updateSetting('pc-general', 'settingsSync', false);
+        closeModal();
+      },
+      options: opts
+    }));
   }
 };

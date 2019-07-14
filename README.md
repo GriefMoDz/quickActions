@@ -1,4 +1,4 @@
-# Quick Actions
+# Quick Actions — Rewritten (v2)
 Adds an extensible tab to the 'User Settings' context menu that enables Powercord shortcuts.
 
 ## Compatibility:
@@ -16,6 +16,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Discord RPC             | discordrpc               | v1.1.0  | ⭕         | [[Link]](../../../../ohlookitsderpy/discordrpc)
 | Emote Utility           | pc-emojiUtility          | v1.3.2  | ✔️         | n/a
 | Hastebin                | pc-hastebin              | v1.0.0  | ✔️         | n/a
+| Helpful Utilities       | pc-helpful-utilities     | v1.0.0  | ⭕         | [[Link]](../../../../axelgreavette/pc-helpful-utilities)
 | Mu                      | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
 | Plugin Updater          | pc-cadence-pluginUpdater | v1.0.4  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-pluginUpdater)
 | Role Color Everywhere   | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)

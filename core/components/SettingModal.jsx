@@ -37,7 +37,7 @@ module.exports = class SettingModal extends React.Component {
       setting.placeholder = powercord.pluginManager.get(id).defaultWords.join('|');
     }
 
-    return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} class='quickActions-modal'>
+    return <div id={id ? `${id.replace('pc-', '')}-${key}` : null} class='quickActions-modal'>
       <Confirm
         red={false}
         header={`Plugin Settings—${name || null}`}
@@ -66,8 +66,11 @@ module.exports = class SettingModal extends React.Component {
                 value={inputText}
                 placeholder='Select a server...'
                 clearable={true}
+                maxMenuHeight={170}
                 onMenuOpen={() => document.querySelector('.quickActions-modal > form')
-                  .setAttribute('style', 'height: 385px;')}
+                  .setAttribute('style', `height: ${this.getGuilds().length > 0
+                    ? 220 + (40 * (this.getGuilds().length < 4 ? this.getGuilds().length : 4))
+                    : 253}px;`)}
                 onMenuClose={() => document.querySelector('.quickActions-modal > form')
                   .removeAttribute('style')}
                 onChange={(item) => {
@@ -123,11 +126,11 @@ module.exports = class SettingModal extends React.Component {
                 {setting.name}
 
                 {setting.desc && (
-                  <Tooltip text={setting.desc} position='top'>
-                    <div className="quickActions-hint">
-                      <Icon name="Info" />
-                    </div>
-                  </Tooltip>
+                  <div className='quickActions-hint'>
+                    <Tooltip text={setting.desc} position='top'>
+                      <Icon name='Info' />
+                    </Tooltip>
+                  </div>
                 )}
               </TextInput>
 
