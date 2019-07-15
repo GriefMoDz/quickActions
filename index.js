@@ -88,7 +88,7 @@ class QuickActionsR extends Plugin {
       if (changelog) {
         res.props.children[0].splice(res.props.children[0].indexOf(changelog), 0, parent);
       } else {
-        this.warn('Could not find \'Change Log\' category; unloading for the remainder of this instance.');
+        this.error('Could not find \'Change Log\' category; unloading for the remainder of this instance.');
         this._unload();
       }
 

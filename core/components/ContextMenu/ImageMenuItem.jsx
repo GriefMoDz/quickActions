@@ -1,4 +1,5 @@
 const { React } = require('powercord/webpack');
+const { Tooltip } = require('powercord/components');
 
 const utils = require('../../utils');
 
@@ -15,19 +16,21 @@ module.exports = class ImageMenuItem extends React.Component {
 
   render () {
     const item = (
-      <div
-        className={`quickActions-contextMenu-button item-1Yvehc itemImage-htIz_v
-        ${this.props.disabled ? 'disabled' : ''}`}
-        onClick={this.handleClick.bind(this)}
-      >
-        <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
-          {this.props.label}
-        </span>
+      <Tooltip text={this.props.label.length > 21 ? this.props.label : ''} position='right'>
+        <div
+          className={`quickActions-contextMenu-button item-1Yvehc itemImage-htIz_v
+          ${this.props.disabled ? 'disabled' : ''}`}
+          onClick={this.handleClick.bind(this)}
+        >
+          <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
+            {this.props.label}
+          </span>
 
-        {this.props.image
-          ? this.getItemImage()
-          : <div className='hint-22uc-R'>{this.props.hint}</div>}
-      </div>
+          {this.props.image
+            ? this.getItemImage()
+            : <div className='hint-22uc-R'>{this.props.hint}</div>}
+        </div>
+      </Tooltip>
     );
 
     if (this.props.seperated) {

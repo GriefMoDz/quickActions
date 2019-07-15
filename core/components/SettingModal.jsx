@@ -37,7 +37,7 @@ module.exports = class SettingModal extends React.Component {
       setting.placeholder = powercord.pluginManager.get(id).defaultWords.join('|');
     }
 
-    return <div id={id ? `${id.replace('pc-', '')}-${key}` : null} class='quickActions-modal'>
+    return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} class='quickActions-modal'>
       <Confirm
         red={false}
         header={`Plugin Settings—${name || null}`}
