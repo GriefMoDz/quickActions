@@ -225,7 +225,7 @@ class QuickActionsR extends Plugin {
   }
 
   getGuilds () {
-    return this.state.sortedGuildsStore.getSortedGuilds().map(g => g.guild);
+    return this.state.sortedGuildsStore.getSortedGuilds().map(g => g.guilds[0]);
   }
 }
 
