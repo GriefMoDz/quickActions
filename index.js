@@ -44,7 +44,7 @@ class QuickActionsR extends Plugin {
     this.utils.forceUpdate(false);
   }
 
-  async initializeStore () {
+  initializeStore () {
     this.state.settings.forEach(plugin => {
       this.settingsStore.set('plugins', plugin);
     });
@@ -78,10 +78,7 @@ class QuickActionsR extends Plugin {
         label: 'Powercord',
         invertChildY: true,
         render: items,
-        action: () => {
-          this.state.pressed = true;
-          this.utils.openUserSettings();
-        }
+        action: () => (this.state.pressed = true, this.utils.openUserSettings())
       });
 
       const changelog = res.props.children[0].find(child => child.key === 'changelog');
@@ -135,7 +132,7 @@ class QuickActionsR extends Plugin {
           let item;
 
           switch(setting.type) {
-            case 'button':  
+            case 'button':
               item = require('./core/types/button').bind(this, id, key, plugin, setting, name)();
 
               break;
@@ -179,9 +176,7 @@ class QuickActionsR extends Plugin {
       label: checkForPlugins ? 'Plugins' : 'Themes',
       invertChildY: true,
       render: items,
-      action: () => checkForPlugins
-        ? this.utils.showCategory('pc-pluginManager')
-        : null
+      action: () => checkForPlugins ? this.utils.showCategory('pc-pluginManager') : null
     });
 
     const children = [];
@@ -198,17 +193,21 @@ class QuickActionsR extends Plugin {
       const child = React.createElement(ToggleMenuItem, {
         label: id,
         active: !isContentDisabled,
-        action: () => {
-          if (checkForPlugins) {
-            this.utils.togglePlugin(id);
-            this.utils.forceUpdate();
-          } else {
-            this.utils.toggleTheme(id);
-          }
-        }
+        seperated: children.length < 1 ? true : '',
+        action: () => checkForPlugins
+          ? (this.utils.togglePlugin(id), this.utils.forceUpdate())
+          : this.utils.toggleTheme(id)
       });
 
       children.push(child);
+    }
+
+    if (checkForPlugins) {
+      children.splice(0, 0, React.createElement(ToggleMenuItem, {
+        label: 'Show Hidden Plugins',
+        active: this.settings.get('showHiddenPlugins', false),
+        action: (state) => (this.settings.set('showHiddenPlugins', state), this.utils.forceUpdate())
+      }));
     }
 
     items.push(React.createElement(ImageMenuItem, {
@@ -216,9 +215,9 @@ class QuickActionsR extends Plugin {
       image: 'fa-folder-open',
       styles: { color: '#7289da' },
       seperated: true,
-      action: () => checkForPlugins
-        ? this.utils.openFolder(powercord.pluginManager.pluginDir)
-        : this.utils.openFolder(powercord.styleManager.themesDir)
+      action: () => this.utils.openFolder(`${checkForPlugins
+        ? powercord.pluginManager.pluginDir
+        : powercord.styleManager.themesDir}`)
     }));
 
     return submenu;

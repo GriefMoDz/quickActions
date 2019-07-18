@@ -7,8 +7,12 @@ const { actions: { updateSetting } } = powercord.api.settings;
 module.exports = {
   getPlugins () {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
+    const hiddenPlugins = powercord.settings.get('hiddenPlugins', []);
     const plugins = [ ...powercord.pluginManager.plugins.keys() ]
-      .filter(plugin => plugin !== 'quickActions')
+      .filter(plugin => !powercord.pluginManager.get('quickActions').settings
+        .get('showHiddenPlugins', false)
+          ? plugin !== 'quickActions' && !hiddenPlugins.includes(plugin)
+          : plugin !== 'quickActions')
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -38,21 +42,17 @@ module.exports = {
   },
 
   togglePlugin (pluginId) {
-    if (!powercord.pluginManager.isEnabled(pluginId)) {
-      powercord.pluginManager.enable(pluginId);
-    } else {
-      powercord.pluginManager.disable(pluginId);
-    }
+    return !powercord.pluginManager.isEnabled(pluginId)
+      ? powercord.pluginManager.enable(pluginId)
+      : powercord.pluginManager.disable(pluginId);
   },
 
   toggleTheme (themeId) {
     contextMenu.closeContextMenu();
 
-    if (!powercord.styleManager.isEnabled(themeId)) {
-      powercord.styleManager.enable(themeId);
-    } else {
-      powercord.styleManager.disable(themeId);
-    }
+    return !powercord.styleManager.isEnabled(themeId)
+      ? powercord.styleManager.enable(themeId)
+      : powercord.styleManager.disable(themeId);
   },
 
   toggleButtonMode(pluginId, settingKey, setting) {
@@ -63,20 +63,14 @@ module.exports = {
 
     updateSetting(pluginId, settingKey, value);
 
-    if (pluginId === 'auditory') {
-      powercord.pluginManager.get(pluginId).reload();
-    }
-
     this.forceUpdate();
   },
 
   handleGuildToggle (id, guildId) {
     const hiddenGuilds = powercord.api.settings.store.getSetting(id, 'hiddenGuilds', []);
-    if (!hiddenGuilds.includes(guildId)) {
-      return updateSetting(id, 'hiddenGuilds', [ ...hiddenGuilds, guildId ]);
-    }
-  
-    return updateSetting(id, 'hiddenGuilds', hiddenGuilds.filter(guild => guild !== guildId));
+    return updateSetting(id, 'hiddenGuilds', !hiddenGuilds.includes(guildId)
+      ? [ ...hiddenGuilds, guildId ]
+      : hiddenGuilds.filter(guild => guild !== guildId));
   },
 
   openFolder (dir) {
@@ -100,8 +94,8 @@ module.exports = {
   async openUserSettings () {
     contextMenu.closeContextMenu();
 
-    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
-    UserSettingsWindow.open();
+    const userSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
+    userSettingsWindow.open();
   },
 
   openModal (elem) {

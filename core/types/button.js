@@ -19,7 +19,17 @@ module.exports = (id, key, plugin, setting, name) => {
     image: setting.image || '',
     styles: { color: setting.modal ? '#43b581' : setting.color },
     action: setting.modal && !setting.action ? () => utils.showSettingModal({ id, key, setting, name }) : setting.newValue
-      ? () => utils.toggleButtonMode(id, key, setting)
+      ? () => {
+        utils.toggleButtonMode(id, key, setting);
+
+        if (typeof setting.func !== 'undefined') {
+          if (setting.func.method && setting.func.type === 'pluginManager') {
+            powercord.pluginManager.get(id)[setting.func.method](setting.func.arguments
+              ? setting.func.arguments
+              : '');
+          }
+        }
+      }
       : typeof setting.action === 'function' ? setting.action.bind(this, (plugin.id
         ? id = plugin.id
         : id), key, setting, name) : () => void 0

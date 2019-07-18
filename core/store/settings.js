@@ -47,6 +47,10 @@ module.exports = () => [
           new: {
             name: 'Amplitude',
             hint: 'FFT'
+          },
+          func: {
+            method: 'reload',
+            type: 'pluginManager'
           }
         },
         beastiness: {
