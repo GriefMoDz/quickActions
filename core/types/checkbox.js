@@ -14,7 +14,7 @@ module.exports = (id, key, plugin, setting) => {
     seperated: setting.seperate ? true : '',
     action: (state) => {
       toggleSetting((plugin.id ? id = plugin.id : id), key);
-  
+
       if (setting.action) {
         setting.action.bind(this, state, id, key, setting).call();
       }
@@ -26,8 +26,8 @@ module.exports = (id, key, plugin, setting) => {
             : '');
         }
       }
-  
-      utils.forceUpdate();
+
+      utils.forceUpdate(false, setting.updateHeight || '');
     }
-  });  
+  });
 }

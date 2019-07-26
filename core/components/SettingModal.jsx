@@ -7,6 +7,7 @@ const { close: closeModal } = require('powercord/modal');
 
 const FormTitle = AsyncComponent.from(getModuleByDisplayName('FormTitle'));
 const SelectTempWrapper = AsyncComponent.from(getModuleByDisplayName('SelectTempWrapper'));
+const TextArea = AsyncComponent.from(getModuleByDisplayName('TextArea'));
 
 module.exports = class SettingModal extends React.Component {
   constructor (props) {
@@ -84,7 +85,65 @@ module.exports = class SettingModal extends React.Component {
             </div>
           }
 
-          {key !== 'defaultCloneId' &&
+          {key === 'format' &&
+            <div>
+              <FormTitle>{setting.name}</FormTitle>
+
+              <SelectTempWrapper
+                id='quickActions-selectBox'
+                options={setting.modal.options}
+                placeholder='Quick Insert: Select a variable...'
+                maxMenuHeight={170}
+                onMenuOpen={() => document.querySelector('.quickActions-modal > form')
+                  .setAttribute('style', `height: ${220 + (40 * 4)}px;`)}
+                onMenuClose={() => document.querySelector('.quickActions-modal > form')
+                  .removeAttribute('style')}
+                onChange={(item) => {
+                  const textArea = document.getElementById('quickActions-textArea');
+                  textArea.focus();
+                  powercord.pluginManager.get('quickActions-rewrite').utils
+                    .insertAtCaret(textArea, item.value);
+
+                  this.setState({ inputText: textArea.value })
+                }}
+              />
+
+              <TextArea
+                id='quickActions-textArea'
+                value={inputText === setting.default ? '' : inputText}
+                placeholder={setting.default}
+                rows={1}
+                onChange={(value) => {
+                  const textArea = document.getElementById('quickActions-textArea');
+                  textArea.style.height = 'auto';
+                  textArea.style.height = `${(textArea.scrollHeight) + 2}px`;
+
+                  this.setState({ inputText: value })
+                }}
+                onFocus={() => {
+                  const textArea = document.getElementById('quickActions-textArea');
+                  textArea.style.height = 'auto';
+                  textArea.style.height = `${(textArea.scrollHeight + 2)}px`;
+                }}
+              />
+
+              <Button
+                className={this.state.reset}
+                color={Button.Colors.PRIMARY}
+                look={Button.Looks.LINK}
+                size={Button.Sizes.SMALL}
+                onClick={() => {
+                  this.setState({ inputText: setting.default });
+
+                  document.getElementById('quickActions-textArea').innerHTML = '';
+                }}
+                >
+                Reset to Default
+              </Button>
+            </div>
+          }
+
+          {key !== 'defaultCloneId' && key !== 'format' &&
             <div>
               <TextInput
                 id='quickActions-textBox'

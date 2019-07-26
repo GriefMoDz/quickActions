@@ -6,7 +6,7 @@ const { actions: { updateSetting } } = powercord.api.settings;
 const utils = require('../utils');
 const GenericModal = require('../components/Modal');
 
-const { ImageMenuItem, ToggleMenuItem } = require('../components/ContextMenu');
+const { ImageMenuItem, SubMenuItem, ToggleMenuItem } = require('../components/ContextMenu');
 
 module.exports = () => [
   {
@@ -475,13 +475,40 @@ module.exports = () => [
           children: (id, key) => {
             const children = [];
             const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
+            const { sortedGuildsStore } = powercord.pluginManager
+              .get('quickActions').state;
 
-            powercord.pluginManager.get('quickActions').getGuilds().map(guild => {
-              const child = React.createElement(ToggleMenuItem, {
-                label: guild.name,
-                active: hiddenGuilds.includes(guild.id),
-                action: () => utils.handleGuildToggle(id, guild.id)
-              });
+            sortedGuildsStore.getSortedGuilds().map(guild => {
+              let child;
+              const { guilds } = guild;
+
+              if (guild.folderId) {
+                const servers = [];
+
+                guilds.map(server => {
+                  servers.push(React.createElement(ToggleMenuItem, {
+                    label: server.name,
+                    active: hiddenGuilds.includes(server.id),
+                    action: () => utils.handleGuildToggle(id, server.id)
+                  }));
+                })
+
+                child = React.createElement(SubMenuItem, {
+                  label: guild.folderName,
+                  invertChildY: true,
+                  seperated: true,
+                  render: servers
+                });
+              } else {
+                child = React.createElement(ToggleMenuItem, {
+                  label: guilds[0].name,
+                  active: hiddenGuilds.includes(guilds[0].id),
+                  action: () => utils.handleGuildToggle(id, guilds[0].id),
+                  seperated: children.length > 0 && children[children.length - 1].type.name === 'NewSubMenuItem'
+                    ? true
+                    : '',
+                });
+              }
 
               children.push(child);
             });
@@ -559,7 +586,8 @@ module.exports = () => [
             },
             experiments: {
               name: 'Discord Experiments',
-              default: false
+              default: false,
+              updateHeight: true
             }
           },
           type: 'submenu',
@@ -668,6 +696,85 @@ module.exports = () => [
           image: 'fa-clock',
           seperate: true,
           modal: true
+        }
+      }
+    },
+    quote: {
+      unofficial: true,
+      settings: {
+        format: {
+          name: 'Quote Message Format',
+          default: '[auto]',
+          type: 'button',
+          image: 'fa-quote-left',
+          modal: {
+            options: [
+              {
+                label: '*[userMention]* • Mentions the quoted user.',
+                value: '[userMention]'
+              },
+              {
+                label: '*[userDisplayName]* • Displays the quoted user\'s display name.',
+                value: '[userDisplayName]'
+              },
+              {
+                label: '*[username]* • Displays the quoted user\'s username.',
+                value: '[username]'
+              },
+              {
+                label: '*[userID]* • Displays the quoted user\'s ID.',
+                value: '[userID]'
+              },
+              {
+                label: '*[userDiscriminator]* • Displays the quoted user\'s discriminator.',
+                value: '[userDiscriminator]'
+              },
+              {
+                label: '*[userTag]* • Displays the quoted user\'s tag (i.e. Clyde#0000).',
+                value: '[userTag]'
+              },
+              {
+                label: '*[channelMention]* • Mentions the channel of the quoted message.',
+                value: '[channelMention]'
+              },
+              {
+                label: '*[channelID]* • Displays the channel ID of the quoted message.',
+                value: '[channelID]'
+              },
+              {
+                label: '*[channelName]* • Displays the channel name of the quoted message.',
+                value: '[channelName]'
+              },
+              {
+                label: '*[guildID]* • Displays the guild ID of the quoted message.',
+                value: '[guildID]'
+              },
+              {
+                label: '*[message]* • Displays the content of the quoted message.',
+                value: '[message]'
+              },
+              {
+                label: '*[messageURL]* • Displays the URL of the quoted message.',
+                value: '[messageURL]'
+              },
+              {
+                label: '*[messageDate]* • Displays the creation date of the quoted message.',
+                value: '[messageDate]'
+              },
+              {
+                label: '*[messageTime]* • Displays the creation time of the quoted message.',
+                value: '[messageTime]'
+              },
+              {
+                label: '*[messageTimestamp]* • Displays the timestamp (an unformatted date and time) of the quoted message.',
+                value: '[messageTimestamp]'
+              },
+              {
+                label: '*[auto]* • Use the built-in format (perfect for lazy people like you! UwU).',
+                value: '[auto]'
+              }
+            ]
+          }
         }
       }
     },

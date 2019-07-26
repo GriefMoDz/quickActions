@@ -81,12 +81,18 @@ class QuickActionsR extends Plugin {
         action: () => (this.state.pressed = true, this.utils.openUserSettings())
       });
 
-      const changelog = res.props.children[0].find(child => child.key === 'changelog');
-      if (changelog) {
-        res.props.children[0].splice(res.props.children[0].indexOf(changelog), 0, parent);
+      let changelogIndex;
+
+      res.props.children.forEach(key => {
+        key ? changelogIndex = key.findIndex(child => child && child.key === 'changelog') : null;
+      });
+
+      if (changelogIndex !== -1) {
+        res.props.children[0].splice(changelogIndex, 0, parent);
       } else {
-        this.error('Could not find \'Change Log\' category; unloading for the remainder of this instance.');
-        this._unload();
+        this.error('Could not find \'Change Log\' category; pushing element to main children instead!');
+
+        res.props.children.push(parent);
       }
 
       return res;

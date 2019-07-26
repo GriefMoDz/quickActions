@@ -19,6 +19,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Helpful Utilities       | pc-helpful-utilities     | v1.0.0  | ⭕         | [[Link]](../../../../axelgreavette/pc-helpful-utilities)
 | Mu                      | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
 | Plugin Updater          | pc-cadence-pluginUpdater | v1.0.4  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-pluginUpdater)
+| Quote                   | quote                    | v1.4.2  | ⭕         | [[Link]](../../../../NurMarvin/quote)
 | Role Color Everywhere   | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API            | pc-general               | v1.0.0  | ✔️         | n/a
 | Spotify Modal           | pc-spotify               | v1.0.0  | ✔️         | n/a
@@ -27,7 +28,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a
 | Wallpaper Changer       | wallpaper-changer        | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 
-\*Plugin is shipped with Powercord by default - will work out of the box once enabled.
+\*Plugin is shipped with Powercord by default (will work straight out of the box once enabled).
 
 ## Usage/Instructions:
 1. Right-click the 'User Settings' button (third icon starting from the left; the little cog symbol) found under the 'User Account Details' container.

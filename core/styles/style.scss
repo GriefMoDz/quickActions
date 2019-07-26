@@ -46,6 +46,11 @@
     transition: height 0.15s ease-in-out 0s;
   }
 
+  &#quote-format > form {
+    height: 298.7px;
+    transition: height 0.15s ease-in-out 0s;
+  }
+
   #quickActions-selectBox div[class*='-indicatorContainer'] > svg {
     transform: rotate(0deg);
     transition: transform .3s ease;
@@ -53,6 +58,11 @@
 
   #quickActions-selectBox > .css-2yldzf-control .css-1flfamv-indicatorContainer > svg {
     transform: rotate(-180deg);
+  }
+
+  #quickActions-textArea {
+    resize: none;
+    overflow: hidden;
   }
 
   &#quickActions-mu-users {

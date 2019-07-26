@@ -1,5 +1,5 @@
 const { open: openModal, close: closeModal } = require('powercord/modal');
-const { forceUpdateElement } = require('powercord/util');
+const { forceUpdateElement, getOwnerInstance } = require('powercord/util');
 const { React, contextMenu, getModule } = require('powercord/webpack');
 const { spawn } = require('child_process');
 const { actions: { updateSetting } } = powercord.api.settings;
@@ -83,6 +83,13 @@ module.exports = {
     spawn(cmds[process.platform], [ dir ]);
   },
 
+  insertAtCaret(elem, text) {
+    const caretPos = elem.selectionStart;
+    const textAreaText = elem.value;
+
+    elem.value = textAreaText.substring(0, caretPos) + text + textAreaText.substring(caretPos);
+  },
+
   async showCategory (sectionId) {
     contextMenu.closeContextMenu();
 
@@ -94,8 +101,8 @@ module.exports = {
   async openUserSettings () {
     contextMenu.closeContextMenu();
 
-    const userSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
-    userSettingsWindow.open();
+    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
+    UserSettingsWindow.open();
   },
 
   openModal (elem) {
@@ -104,12 +111,21 @@ module.exports = {
     openModal(() => elem);
   },
 
-  async forceUpdate (updateAll = true) {
+  async forceUpdate (updateAll = true, updateHeight = false) {
     const contextMenuClasses = (await getModule([ 'itemToggle', 'checkbox' ]));
     const contextMenuQuery = `.${contextMenuClasses.contextMenu.replace(/ /g, '.')}`;
 
     if (document.querySelector(contextMenuQuery)) {
       forceUpdateElement(contextMenuQuery, updateAll);
+
+      if (updateHeight) {
+        for (const elem of document.querySelectorAll(contextMenuQuery)) {
+          const updater = getOwnerInstance(elem).props.onHeightUpdate;
+          if (typeof updater === 'function') {
+            updater();
+          }
+        }
+      }
     }
   },
 

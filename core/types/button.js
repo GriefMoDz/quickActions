@@ -30,8 +30,8 @@ module.exports = (id, key, plugin, setting, name) => {
           }
         }
       }
-      : typeof setting.action === 'function' ? setting.action.bind(this, (plugin.id
-        ? id = plugin.id
-        : id), key, setting, name) : () => void 0
+    : typeof setting.action === 'function' ? setting.action.bind(this, (plugin.id
+      ? id = plugin.id
+      : id), key, setting, name) : () => void 0
   });
 }
