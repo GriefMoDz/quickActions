@@ -40,13 +40,8 @@ module.exports = class SettingModal extends React.Component {
         confirmText={this.props.confirmText || 'Done'}
         cancelText={this.props.cancelText || null}
         onConfirm={() => this.props.onConfirm(inputText)}
-        onCancel={() => typeof this.props.onCancel !== 'undefined'
-          ? this.props.onCancel()
-          : closeModal()}
-        size={Confirm.Sizes[this.props.size
-          ? this.props.size.toUpperCase()
-          : null
-        ] || Confirm.Sizes.SMALL}
+        onCancel={() => typeof this.props.onCancel !== 'undefined' ? this.props.onCancel() : closeModal()}
+        size={Confirm.Sizes[this.props.size ? this.props.size.toUpperCase() : null] || Confirm.Sizes.SMALL}
       >
         <div class='quickActions-modal-inner'>
           {this.options && this.options.key === 'clearCache' && (
@@ -82,8 +77,9 @@ module.exports = class SettingModal extends React.Component {
               id='quickActions-textBox'
               type={this.props.input.type || 'text'}
               disabled={this.props.input.disabled}
-              defaultValue={this.props.input.hidden ? `Click '${this.props.input.hidden.text}' ` +
-                'to reveal.' : this.props.input.text}
+              defaultValue={this.props.input.hidden
+                ? `Click '${this.props.input.hidden.text}' to reveal.`
+                : this.props.input.text}
               onChange={value => this.setState({ inputText: value })}
             >
               {this.props.input.title}

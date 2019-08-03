@@ -38,7 +38,7 @@ module.exports = class ImageMenuItem extends React.Component {
         <div className='itemGroup-1tL0uz seperated'>
           {item}
         </div>
-      )
+      );
     }
 
     return item;
@@ -58,4 +58,4 @@ module.exports = class ImageMenuItem extends React.Component {
           src={this.props.image} />
     );
   }
-}
+};

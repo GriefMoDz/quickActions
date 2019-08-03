@@ -29,9 +29,9 @@ module.exports = class NewToggleMenuItem extends React.Component {
         <div className='itemGroup-1tL0uz seperated'>
           {itemToggle}
         </div>
-      )
+      );
     }
 
     return itemToggle;
   }
-}
+};

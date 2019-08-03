@@ -6,18 +6,18 @@ module.exports = (id, key, plugin, setting, name) => {
   const submenu = React.createElement(SubMenuItem, {
     label: setting.name,
     invertChildY: true,
-    seperated: setting.seperate ? true : '',
-    render: typeof setting.children === 'function' ? setting.children.bind(this, (plugin.id
-      ? id = plugin.id
-      : id), key) : children,
+    seperated: setting.seperate,
+    render: typeof setting.children === 'function'
+      ? setting.children.bind(this, (plugin.id ? { id } = plugin.id : id), key)
+      : children,
     action: typeof setting.action === 'function' ? setting.action.bind(this, id, key) : null
   });
 
-  for (childKey in setting.children) {
+  for (const childKey in setting.children) {
     let child;
     const setting = plugin.settings[key].children[childKey];
 
-    switch(setting.type) {
+    switch (setting.type) {
       case 'button':
         child = require('./button')(id, childKey, plugin, setting, name);
 
@@ -40,4 +40,4 @@ module.exports = (id, key, plugin, setting, name) => {
   }
 
   return submenu;
-}
+};

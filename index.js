@@ -11,7 +11,6 @@ class QuickActionsR extends Plugin {
     super(props);
 
     this.state = {
-      pressed: false,
       initializedStore: false,
       settings: require('./core/store/settings')()
     };
@@ -27,19 +26,17 @@ class QuickActionsR extends Plugin {
     this.loadCSS(require('path').resolve(__dirname, 'core/styles/style.scss'));
 
     if (!this.state.initializedStore) {
-      await this.initializeStore();
+      this.initializeStore();
     }
 
     this.state.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.state.SubMenuItem = (await getModuleByDisplayName('FluxContainer(SubMenuItem)'));
 
     this.patchSettingsContextMenu();
-    this.patchSettingsSections();
   }
 
   pluginWillUnload () {
     uninject('quickActions-SettingsContextMenu');
-    uninject('quickActions-SettingsSections');
 
     this.utils.forceUpdate(false);
   }
@@ -78,17 +75,13 @@ class QuickActionsR extends Plugin {
         label: 'Powercord',
         invertChildY: true,
         render: items,
-        action: () => (this.state.pressed = true, this.utils.openUserSettings())
+        action: () => ((this.state.pressed = true, this.utils.openUserSettings()))
       });
 
-      let changelogIndex;
-
-      res.props.children.forEach(key => {
-        key ? changelogIndex = key.findIndex(child => child && child.key === 'changelog') : null;
-      });
-
-      if (changelogIndex !== -1) {
-        res.props.children[0].splice(changelogIndex, 0, parent);
+      const children = res.props.children.find(child => child);
+      const changelog = children.find(child => child && child.key === 'changelog');
+      if (changelog) {
+        children.splice(children.indexOf(changelog), 0, parent);
       } else {
         this.error('Could not find \'Change Log\' category; pushing element to main children instead!');
 
@@ -101,35 +94,10 @@ class QuickActionsR extends Plugin {
     this.utils.forceUpdate();
   }
 
-  async patchSettingsSections () {
-    const UserSettingsSections = (await getModule([ 'getUserSettingsSections' ]));
-    inject('quickActions-SettingsSections', UserSettingsSections.prototype, 'render', (_, res) => {
-      if (this.state.pressed && res.props && !res.props.section) {
-        res.props.section = 'pc-general';
-
-        this.state.pressed = false;
-      }
-
-      return res;
-    });
-  }
-
   buildSettingMenu (name, id) {
     const { SubMenuItem } = this.state;
 
     const items = [];
-    const submenu = React.createElement(SubMenuItem, {
-      label: name,
-      invertChildY: true,
-      render: items,
-      action: () => this.utils.showCategory(id)
-    });
-
-    const menu = React.createElement(MenuItem, {
-      label: name,
-      action: () => this.utils.showCategory(id)
-    });
-
     const plugin = this.settingsStore.get('plugins')[id];
     if (plugin) {
       for (const key in plugin.settings) {
@@ -137,14 +105,15 @@ class QuickActionsR extends Plugin {
         if (setting) {
           let item;
 
-          switch(setting.type) {
+          switch (setting.type) {
             case 'button':
               item = require('./core/types/button').bind(this, id, key, plugin, setting, name)();
 
               break;
             case 'submenu':
-              if (typeof setting.hide === 'function' ? setting.hide.bind(this,
-                (plugin.id ? id = plugin.id : id)).call() : setting.hide
+              if (typeof setting.hide === 'function'
+                ? setting.hide.bind(this, (plugin.id ? { id } = plugin.id : id)).call()
+                : setting.hide
               ) {
                 continue;
               }
@@ -160,16 +129,26 @@ class QuickActionsR extends Plugin {
               item = require('./core/types/checkbox').bind(this, id, key, plugin, setting)();
           }
 
+          Object.keys(item.props).forEach(key => !item.props[key] ? delete item.props[key] : '');
+
           items.push(item);
         }
       }
     }
 
     if (items.length > 0) {
-      return submenu;
+      return React.createElement(SubMenuItem, {
+        label: name,
+        invertChildY: true,
+        render: items,
+        action: () => this.utils.showCategory(id)
+      });
     }
 
-    return menu;
+    return React.createElement(MenuItem, {
+      label: name,
+      action: () => this.utils.showCategory(id)
+    });
   }
 
   buildContentMenu (checkForPlugins) {
@@ -212,7 +191,7 @@ class QuickActionsR extends Plugin {
       children.splice(0, 0, React.createElement(ToggleMenuItem, {
         label: 'Show Hidden Plugins',
         active: this.settings.get('showHiddenPlugins', false),
-        action: (state) => (this.settings.set('showHiddenPlugins', state), this.utils.forceUpdate())
+        action: (state) => ((this.settings.set('showHiddenPlugins', state), this.utils.forceUpdate()))
       }));
     }
 

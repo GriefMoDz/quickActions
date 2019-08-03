@@ -2,17 +2,19 @@ const { existsSync, lstatSync } = require('fs');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 const { AsyncComponent, Tooltip, Button, Icon } = require('powercord/components');
 const { Confirm } = require('powercord/components/modal');
-const { TextInput } = require('powercord/components/settings');
+const { TextInput, SliderInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
 
 const FormTitle = AsyncComponent.from(getModuleByDisplayName('FormTitle'));
 const SelectTempWrapper = AsyncComponent.from(getModuleByDisplayName('SelectTempWrapper'));
 const TextArea = AsyncComponent.from(getModuleByDisplayName('TextArea'));
+const ColorPicker = AsyncComponent.from(getModuleByDisplayName('ColorPicker'));
 
 module.exports = class SettingModal extends React.Component {
   constructor (props) {
     super(props);
 
+    this.utils = this.props.utils;
     this.options = this.props.options;
     this.state = {
       inputText: powercord.api.settings.store
@@ -34,28 +36,22 @@ module.exports = class SettingModal extends React.Component {
 
     if (!setting.default) {
       setting.default = '';
-    } else if (id === 'swerve' && key === 'words') {
-      setting.placeholder = powercord.pluginManager.get(id).defaultWords.join('|');
+    } else if (typeof setting.placeholder === 'function') {
+      setting.placeholder = setting.placeholder.bind(this, id).call();
     }
+
+    const textArea = document.getElementById('quickActions-textArea');
 
     return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} class='quickActions-modal'>
       <Confirm
         red={false}
-        header={`Plugin Settings—${name || null}`}
+        header={`Plugin Settings${`—${name}` || null}`}
         confirmText='Save'
         cancelText='Cancel'
-        onConfirm={() => {
-          if (!valid) {
-            return;
-          }
-
-          this.props.onConfirm(inputText);
-        }}
+        onConfirm={() => valid ? this.props.onConfirm(inputText) : ''}
         onCancel={() => closeModal()}
-        size={Confirm.Sizes[setting.modal.size
-          ? setting.modal.size.toUpperCase()
-          : null
-        ] || Confirm.Sizes.SMALL}
+        size={Confirm.Sizes[setting.modal.size ? setting.modal.size.toUpperCase() : null] ||
+          Confirm.Sizes.SMALL}
       >
         <div class='quickActions-settingModal'>
           {key === 'defaultCloneId' &&
@@ -74,13 +70,7 @@ module.exports = class SettingModal extends React.Component {
                     : 253}px;`)}
                 onMenuClose={() => document.querySelector('.quickActions-modal > form')
                   .removeAttribute('style')}
-                onChange={(item) => {
-                  if (!item) {
-                    return this.setState({ inputText: setting.default });
-                  }
-
-                  this.setState({ inputText: item.value });
-                }}
+                onChange={(item) => this.setState({ inputText: `${item ? item.value : setting.default}` })}
               />
             </div>
           }
@@ -88,25 +78,24 @@ module.exports = class SettingModal extends React.Component {
           {key === 'format' &&
             <div>
               <FormTitle>{setting.name}</FormTitle>
-
               <SelectTempWrapper
                 id='quickActions-selectBox'
                 options={setting.modal.options}
                 placeholder='Quick Insert: Select a variable...'
                 maxMenuHeight={170}
                 onMenuOpen={() => document.querySelector('.quickActions-modal > form')
-                  .setAttribute('style', `height: ${220 + (40 * 4)}px;`)}
+                  .setAttribute('style', `height: ${225 + (40 * 4)}px;`)}
                 onMenuClose={() => document.querySelector('.quickActions-modal > form')
                   .removeAttribute('style')}
                 onChange={(item) => {
-                  const textArea = document.getElementById('quickActions-textArea');
                   textArea.focus();
-                  powercord.pluginManager.get('quickActions-rewrite').utils
-                    .insertAtCaret(textArea, item.value);
 
-                  this.setState({ inputText: textArea.value })
+                  this.utils.insertAtCaret(textArea, item.value);
+                  this.setState({ inputText: textArea.value });
                 }}
               />
+
+              <div style={{ marginBottom: '5px' }}></div>
 
               <TextArea
                 id='quickActions-textArea'
@@ -114,14 +103,12 @@ module.exports = class SettingModal extends React.Component {
                 placeholder={setting.default}
                 rows={1}
                 onChange={(value) => {
-                  const textArea = document.getElementById('quickActions-textArea');
                   textArea.style.height = 'auto';
                   textArea.style.height = `${(textArea.scrollHeight) + 2}px`;
 
-                  this.setState({ inputText: value })
+                  this.setState({ inputText: value });
                 }}
                 onFocus={() => {
-                  const textArea = document.getElementById('quickActions-textArea');
                   textArea.style.height = 'auto';
                   textArea.style.height = `${(textArea.scrollHeight + 2)}px`;
                 }}
@@ -135,15 +122,45 @@ module.exports = class SettingModal extends React.Component {
                 onClick={() => {
                   this.setState({ inputText: setting.default });
 
-                  document.getElementById('quickActions-textArea').innerHTML = '';
+                  textArea.innerHTML = '';
                 }}
-                >
+              >
                 Reset to Default
               </Button>
             </div>
           }
 
-          {key !== 'defaultCloneId' && key !== 'format' &&
+          {setting.modal.colorPicker &&
+            <div>
+              <FormTitle>{setting.name}</FormTitle>
+              <ColorPicker
+                colors={this.utils.getDefaultColors() || setting.colors}
+                defaultColor={parseInt(setting.default.replace('#', ''), 16) || 0}
+                onChange={(value) => this.setState({ color: value,
+                  inputText: `#${value !== 0 ? parseInt(String(value)).toString(16) : '000000'}` })}
+                value={this.state.color || parseInt(inputText.replace('#', ''), 16) || 0}
+              >
+              </ColorPicker>
+            </div>
+          }
+
+          {setting.modal.slider &&
+            <SliderInput
+              className={'quickActions-slider'}
+              equidistant={setting.markers !== false}
+              stickToMarkers={setting.markers !== false}
+              defaultValue={inputText}
+              markers={setting.markers}
+              minValue={setting.minValue}
+              maxValue={setting.maxValue}
+              onMarkerRender={setting.onMarkerRender ? setting.onMarkerRender.bind(this) : ''}
+              onValueChange={(value) => this.setState({ inputText: parseInt(value) })}
+            >
+              {setting.name}
+            </SliderInput>
+          }
+
+          {key !== 'defaultCloneId' && key !== 'format' && !setting.modal.colorPicker && !setting.modal.slider &&
             <div>
               <TextInput
                 id='quickActions-textBox'
@@ -204,7 +221,7 @@ module.exports = class SettingModal extends React.Component {
 
                   document.getElementById('quickActions-textBox').value = '';
                 }}
-                >
+              >
                 Reset to Default
               </Button>
             </div>
@@ -223,7 +240,7 @@ module.exports = class SettingModal extends React.Component {
         value: g.id
       };
 
-      guilds.push(guild);
+      return guilds.push(guild);
     });
 
     return guilds;

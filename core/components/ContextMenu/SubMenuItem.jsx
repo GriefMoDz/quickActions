@@ -13,9 +13,9 @@ module.exports = class NewSubMenuItem extends React.Component {
         <div className='itemGroup-1tL0uz seperated'>
           {itemSubMenu}
         </div>
-      )
+      );
     }
 
     return itemSubMenu;
   }
-}
+};

@@ -34,16 +34,16 @@ module.exports = class SliderMenuItem extends React.Component {
           />
         )}
       </div>
-    )
+    );
 
     if (this.props.seperated) {
       return (
         <div className='itemGroup-1tL0uz seperated'>
           {slider}
         </div>
-      )
+      );
     }
 
     return slider;
   }
-}
+};

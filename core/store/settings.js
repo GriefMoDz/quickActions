@@ -30,7 +30,7 @@ module.exports = () => [
             utils.forceUpdate();
           },
           hide: () => powercord.pluginManager.isEnabled('pc-titleBarGames') ||
-            process.platform !== 'win32',
+            process.platform !== 'win32'
         }
       }
     },
@@ -57,15 +57,9 @@ module.exports = () => [
           name: 'Beastiness',
           default: 1,
           type: 'slider',
-          color: powercord.api.settings.store.getSetting('auditory', 'color', null),
+          color: (id) => powercord.api.settings.store.getSetting(id, 'color', null),
           seperate: true,
-          markers: [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
+          markers: [ 1, 2, 3, 4, 5 ],
           onValueChange: (id, key, value) => {
             updateSetting(id, key, parseInt(value));
 
@@ -78,7 +72,7 @@ module.exports = () => [
           name: 'Brightness (%)',
           default: 1,
           type: 'slider',
-          color: powercord.api.settings.store.getSetting('auditory', 'color', null),
+          color: (id) => powercord.api.settings.store.getSetting(id, 'color', null),
           onValueChange: (id, key, value) => {
             updateSetting(id, key, parseInt(value));
 
@@ -98,14 +92,12 @@ module.exports = () => [
         },
         color: {
           name: 'Visualizer Color',
-          placeholder: 'Enter a hex code (e.g. #31fa41).',
           type: 'button',
           image: 'fa-eye',
           seperate: true,
-          hex: true,
+          default: '#7289da',
           modal: {
-            realtime: true,
-            custom: true
+            colorPicker: true
           },
           func: {
             method: 'reload',
@@ -114,14 +106,11 @@ module.exports = () => [
         },
         defaultcolor: {
           name: 'Idle Color',
-          desc: 'Leave this blank to default to the Discord grey.',
-          placeholder: 'Enter a hex code (e.g. #31fa41).',
           type: 'button',
           image: 'fa-eye-slash',
-          hex: true,
+          default: '#202225',
           modal: {
-            realtime: true,
-            custom: true
+            colorPicker: true
           },
           func: {
             method: 'reload',
@@ -231,7 +220,7 @@ module.exports = () => [
                 }))
               });
 
-              children.push(child);
+              return children.push(child);
             });
 
             return children;
@@ -485,13 +474,13 @@ module.exports = () => [
               if (guild.folderId) {
                 const servers = [];
 
-                guilds.map(server => {
+                guilds.map(server =>
                   servers.push(React.createElement(ToggleMenuItem, {
                     label: server.name,
                     active: hiddenGuilds.includes(server.id),
                     action: () => utils.handleGuildToggle(id, server.id)
-                  }));
-                })
+                  }))
+                );
 
                 child = React.createElement(SubMenuItem, {
                   label: guild.folderName,
@@ -506,11 +495,11 @@ module.exports = () => [
                   action: () => utils.handleGuildToggle(id, guilds[0].id),
                   seperated: children.length > 0 && children[children.length - 1].type.name === 'NewSubMenuItem'
                     ? true
-                    : '',
+                    : ''
                 });
               }
 
-              children.push(child);
+              return children.push(child);
             });
 
             return children;
@@ -535,7 +524,11 @@ module.exports = () => [
             settingsSync: {
               name: 'Enabled',
               default: false,
-              action: (state, _, key, setting) => state ? utils.showPassphraseModal({ key, setting }) : null
+              action: (state, _, key, setting) => state
+                ? utils.showPassphraseModal({ key,
+                  setting,
+                  cancel: true })
+                : null
             },
             passphrase: {
               name: 'Passphrase',
@@ -545,7 +538,8 @@ module.exports = () => [
               modal: true,
               disabled: (id) => !powercord.api.settings.store.getSetting(id,
                 'settingsSync', false),
-              action: (_, key, setting) => utils.showPassphraseModal({ key, setting })
+              action: (_, key, setting) => utils.showPassphraseModal({ key,
+                setting })
             }
           },
           type: 'submenu',
@@ -810,6 +804,7 @@ module.exports = () => [
         words: {
           name: 'Words to Censor',
           desc: 'Delimit new words with pipes (\'|\'). Words must be longer than 3 characters.',
+          placeholder: (id) => powercord.pluginManager.get(id).defaultWords.join('|'),
           default: [],
           type: 'button',
           image: 'fa-filter',
@@ -823,6 +818,22 @@ module.exports = () => [
     'wallpaper-changer': {
       unofficial: true,
       settings: {
+        interval: {
+          name: 'Wallpaper Interval',
+          default: 60,
+          type: 'button',
+          image: 'fa-clock',
+          seperate: true,
+          markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
+          onMarkerRender: (value) => value < 60 ? `${value}min` : `${value / 60}hr`,
+          modal: {
+            slider: true
+          },
+          func: {
+            method: 'updateInterval',
+            type: 'pluginManager'
+          }
+        },
         selector: {
           name: 'Selector',
           desc: 'CSS selector where the \'background-image\' will be applied',
@@ -847,4 +858,4 @@ module.exports = () => [
       }
     }
   }
-]
+];

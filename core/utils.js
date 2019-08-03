@@ -9,10 +9,9 @@ module.exports = {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
     const hiddenPlugins = powercord.settings.get('hiddenPlugins', []);
     const plugins = [ ...powercord.pluginManager.plugins.keys() ]
-      .filter(plugin => !powercord.pluginManager.get('quickActions').settings
-        .get('showHiddenPlugins', false)
-          ? plugin !== 'quickActions' && !hiddenPlugins.includes(plugin)
-          : plugin !== 'quickActions')
+      .filter(plugin => !powercord.pluginManager.get('quickActions').settings.get('showHiddenPlugins', false)
+        ? plugin !== 'quickActions' && !hiddenPlugins.includes(plugin)
+        : plugin !== 'quickActions')
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -55,7 +54,7 @@ module.exports = {
       : powercord.styleManager.disable(themeId);
   },
 
-  toggleButtonMode(pluginId, settingKey, setting) {
+  toggleButtonMode (pluginId, settingKey, setting) {
     const mode = powercord.api.settings.store.getSetting(pluginId, settingKey, setting.default);
     const value = mode === setting.default
       ? setting.newValue
@@ -83,7 +82,7 @@ module.exports = {
     spawn(cmds[process.platform], [ dir ]);
   },
 
-  insertAtCaret(elem, text) {
+  insertAtCaret (elem, text) {
     const caretPos = elem.selectionStart;
     const textAreaText = elem.value;
 
@@ -101,8 +100,17 @@ module.exports = {
   async openUserSettings () {
     contextMenu.closeContextMenu();
 
-    const UserSettingsWindow = (await getModule([ 'open', 'updateAccount' ]));
-    UserSettingsWindow.open();
+    const userSettingsWindow = {
+      open: (await getModule([ 'open', 'updateAccount' ])).open,
+      getSection: (await getModule([ 'getSection', 'shouldOpenWithoutBackstack' ])).getSection,
+      setSection: (await getModule([ 'open', 'updateAccount' ])).setSection
+    };
+
+    userSettingsWindow.open();
+
+    if (!powercord.api.settings.tabs.find(tab => tab.section === userSettingsWindow.getSection())) {
+      userSettingsWindow.setSection('pc-general');
+    }
   },
 
   openModal (elem) {
@@ -133,7 +141,7 @@ module.exports = {
     const SettingModal = require('./components/SettingModal');
     this.openModal(React.createElement(SettingModal, {
       onConfirm: (value) => {
-        powercord.api.settings.actions.updateSetting(opts.id, opts.key, value);
+        updateSetting(opts.id, opts.key, value);
 
         if (typeof opts.setting.func !== 'undefined') {
           if (opts.setting.func.method && opts.setting.func.type === 'pluginManager') {
@@ -141,6 +149,7 @@ module.exports = {
           }
         }
       },
+      utils: this,
       options: opts
     }));
   },
@@ -169,10 +178,19 @@ module.exports = {
         closeModal();
       },
       onCancel: () => {
-        updateSetting('pc-general', 'settingsSync', false);
+        if (opts.cancel) {
+          updateSetting('pc-general', 'settingsSync', false);
+        }
+
         closeModal();
       },
       options: opts
     }));
+  },
+
+  getDefaultColors () {
+    return [ '1752220', '3066993', '3447003', '10181046', '15277667', '15844367', '15105570',
+      '15158332', '9807270', '6323595', '1146986', '2067276', '2123412', '7419530', '11342935',
+      '12745742', '11027200', '10038562', '9936031', '5533306' ];
   }
 };
