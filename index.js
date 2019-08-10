@@ -57,9 +57,9 @@ class QuickActionsR extends Plugin {
       const items = [];
 
       powercord.api.settings.tabs.forEach(item => {
-        items.push(item.section === 'pc-pluginManager'
-          ? this.buildContentMenu(true)
-          : this.buildSettingMenu(item.label, item.section));
+          items.push(item.section === 'pc-pluginManager'
+            ? this.buildContentMenu(true)
+            : this.buildSettingMenu(item.label, item.section));
       });
 
       if (powercord.pluginManager.isEnabled('pc-styleManager')) {
@@ -75,7 +75,7 @@ class QuickActionsR extends Plugin {
         label: 'Powercord',
         invertChildY: true,
         render: items,
-        action: () => ((this.state.pressed = true, this.utils.openUserSettings()))
+        action: () => this.utils.openUserSettings()
       });
 
       const children = res.props.children.find(child => child);
@@ -136,18 +136,21 @@ class QuickActionsR extends Plugin {
       }
     }
 
+    const props = {
+      label: name,
+      action: () => this.utils.showCategory(id)
+    };
+
     if (items.length > 0) {
       return React.createElement(SubMenuItem, {
-        label: name,
+        ...props,
         invertChildY: true,
-        render: items,
-        action: () => this.utils.showCategory(id)
+        render: items
       });
     }
 
     return React.createElement(MenuItem, {
-      label: name,
-      action: () => this.utils.showCategory(id)
+      ...props
     });
   }
 

@@ -29,7 +29,7 @@ module.exports = () => [
 
             utils.forceUpdate();
           },
-          hide: () => powercord.pluginManager.isEnabled('pc-titleBarGames') ||
+          hide: () => !powercord.pluginManager.isEnabled('pc-titleBarGames') ||
             process.platform !== 'win32'
         }
       }
@@ -106,6 +106,7 @@ module.exports = () => [
         },
         defaultcolor: {
           name: 'Idle Color',
+          desc: '(When no audio is playing)',
           type: 'button',
           image: 'fa-eye-slash',
           default: '#202225',
@@ -177,6 +178,75 @@ module.exports = () => [
         }
       }
     },
+    lightify: {
+      unofficial: true,
+      settings: {
+        YeeLight: {
+          name: 'YeeLight',
+          default: false
+        },
+        Lifx: {
+          name: 'Lifx',
+          default: false
+        },
+        AutoOn: {
+          name: 'Auto-On',
+          default: false
+        },
+        BulbIP: {
+          name: 'YeeLight Device IP',
+          desc: 'Set the IP address of the YeeLight light you want to use!',
+          type: 'button',
+          image: 'fa-globe',
+          default: '192.168.0.100',
+          seperate: true,
+          modal: true
+        },
+        LifxName: {
+          name: 'Lifx Device Name',
+          desc: 'Enter the device name of the Lifx lamp you want to pulse!',
+          type: 'button',
+          image: 'fa-font',
+          default: 'MyCeilingLight',
+          modal: true
+        },
+        BulbBright: {
+          name: 'YeeLight Brightness (%)',
+          default: 100,
+          type: 'slider',
+          seperate: true,
+          onValueChange: (id, key, value) => {
+            updateSetting(id, key, parseInt(value));
+
+            utils.forceUpdate();
+          }
+        },
+        BulbColor: {
+          name: 'Lamp Color',
+          desc: 'Set the color you want the light to flash when you get mentioned. For example, #00ff00 would make it green.',
+          type: 'button',
+          image: 'fa-palette',
+          default: '#7289da',
+          seperate: true,
+          modal: {
+            colorPicker: true
+          }
+        },
+        BulbDuration: {
+          name: 'Pulse Duration',
+          default: 250,
+          type: 'slider',
+          seperate: true,
+          maxValue: 60000,
+          onValueRender: (value) => `${parseFloat(value / 1000).toFixed(2)}s`,
+          onValueChange: (id, key, value) => {
+            updateSetting(id, key, parseInt(value));
+
+            utils.forceUpdate();
+          }
+        }
+      }
+    },
     mu: {
       id: 'powercord-multiuser',
       unofficial: true,
@@ -194,20 +264,33 @@ module.exports = () => [
                 modal: true,
                 action: () => utils.openModal(React.createElement(GenericModal, {
                   id: 'quickActions-mu-users',
-                  red: false,
                   header: `${user.nickname || 'Untitled'}—Mu`,
                   confirmText: 'Done',
                   cancelText: 'Remove User',
-                  input: {
-                    title: 'Account Token',
-                    text: user.token,
-                    disabled: true,
-                    hidden: {
-                      text: 'Show account token',
-                      icon: 'Eye'
+                  input: [
+                    {
+                      title: 'Account Name',
+                      text: user.nickname
+                    },
+                    {
+                      title: 'Account Token',
+                      text: user.token,
+                      disabled: true,
+                      hidden: {
+                        text: 'Show account token',
+                        icon: 'Eye'
+                      }
                     }
+                  ],
+                  onConfirm: (nickname) => {
+                    if (nickname !== '' && users.includes(user)) {
+                      user.nickname = nickname;
+
+                      updateSetting(id, key, users);
+                    }
+
+                    closeModal();
                   },
-                  onConfirm: () => closeModal(),
                   onCancel: () => {
                     const index = users.indexOf(user);
 
@@ -234,14 +317,15 @@ module.exports = () => [
           seperate: true,
           modal: true,
           action: (id, _, setting, name) => utils.openModal(React.createElement(GenericModal, {
-            red: false,
             header: `Add New User—${name}`,
             confirmText: 'Add User',
             cancelText: 'Cancel',
-            input: {
-              title: 'User Account Token',
-              text: ''
-            },
+            input: [
+              {
+                title: 'User Account Token',
+                text: ''
+              }
+            ],
             button: {
               text: 'Reset to Default'
             },
@@ -295,14 +379,15 @@ module.exports = () => [
           image: 'fa-folder-open',
           modal: true,
           action: (_, __, ___, name) => utils.openModal(React.createElement(GenericModal, {
-            red: false,
             header: `Plugin Directory—${name}`,
             confirmText: 'Done',
-            input: {
-              title: 'Current Working Directory (cwd)',
-              text: powercord.pluginManager.pluginDir,
-              disabled: true
-            },
+            input: [
+              {
+                title: 'Current Working Directory (cwd)',
+                text: powercord.pluginManager.pluginDir,
+                disabled: true
+              }
+            ],
             button: {
               text: 'Open Plugin Directory',
               icon: 'ExternalLink',
@@ -452,10 +537,7 @@ module.exports = () => [
           type: 'button',
           image: 'fa-hdd',
           seperate: true,
-          modal: {
-            realtime: true,
-            custom: true
-          },
+          modal: true,
           disabled: (id) => powercord.api.settings.store.getSetting(id,
             'defaultCloneIdUseCurrent', false)
         },
@@ -478,7 +560,7 @@ module.exports = () => [
                   servers.push(React.createElement(ToggleMenuItem, {
                     label: server.name,
                     active: hiddenGuilds.includes(server.id),
-                    action: () => utils.handleGuildToggle(id, server.id)
+                    action: () => utils.handleGuildToggle(server.id)
                   }))
                 );
 
@@ -492,7 +574,7 @@ module.exports = () => [
                 child = React.createElement(ToggleMenuItem, {
                   label: guilds[0].name,
                   active: hiddenGuilds.includes(guilds[0].id),
-                  action: () => utils.handleGuildToggle(id, guilds[0].id),
+                  action: () => utils.handleGuildToggle(guilds[0].id),
                   seperated: children.length > 0 && children[children.length - 1].type.name === 'NewSubMenuItem'
                     ? true
                     : ''
@@ -595,6 +677,7 @@ module.exports = () => [
           seperate: true,
           modal: true,
           action: (_, key) => utils.openModal(React.createElement(GenericModal, {
+            red: true,
             header: 'Clear cache',
             confirmText: 'Clear Cache',
             cancelText: 'Cancel',

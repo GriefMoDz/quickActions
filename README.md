@@ -11,18 +11,20 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | advancedTitleBar        | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar) |
 | Auditory                | auditory                 | v1.0.6  | ⭕         | [[Link]](../../../../powercord-community/auditory)
 | Better Friends          | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
-| Clickable Message Edits | pc-clickableEdits        | v0.1.4  | ✔️         | n/a
+| Clickable Message Edits | pc-clickableEdits        | v0.2.0  | ✔️         | n/a
 | Context+                | pc-cadence-contextPlus   | v1.1.0  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-contextPlus)
 | Discord RPC             | discordrpc               | v1.1.0  | ⭕         | [[Link]](../../../../ohlookitsderpy/discordrpc)
-| Emote Utility           | pc-emojiUtility          | v1.3.2  | ✔️         | n/a
+| Emote Utility           | pc-emojiUtility          | v1.3.3  | ✔️         | n/a
 | Hastebin                | pc-hastebin              | v1.0.0  | ✔️         | n/a
 | Helpful Utilities       | pc-helpful-utilities     | v1.0.0  | ⭕         | [[Link]](../../../../axelgreavette/pc-helpful-utilities)
+| Lightify                | lightify                 | v0.0.1  | ⭕         | [[Link]](../../../../GeoffreyWesthoff/lightify)
 | Mu                      | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
+| Plugin Manager          | pc-pluginManager         | v0.1.1  | ✔️         | n/a
 | Plugin Updater          | pc-cadence-pluginUpdater | v1.0.4  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-pluginUpdater)
 | Quote                   | quote                    | v1.4.2  | ⭕         | [[Link]](../../../../NurMarvin/quote)
 | Role Color Everywhere   | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API            | pc-general               | v1.0.0  | ✔️         | n/a
-| Spotify Modal           | pc-spotify               | v1.0.0  | ✔️         | n/a
+| Spotify Modal           | pc-spotify               | v1.1.0  | ✔️         | n/a
 | Style Manager           | pc-styleManager          | v1.1.1  | ✔️         | n/a
 | Swerve                  | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a

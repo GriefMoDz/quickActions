@@ -35,7 +35,7 @@ module.exports = class SettingModal extends React.Component {
 
     return <div id={`${this.props.id || ''}`} class='quickActions-modal'>
       <Confirm
-        red={this.props.red}
+        red={this.props.red || false}
         header={this.props.header || null}
         confirmText={this.props.confirmText || 'Done'}
         cancelText={this.props.cancelText || null}
@@ -72,26 +72,25 @@ module.exports = class SettingModal extends React.Component {
             </div>
           )}
 
-          {this.props.input && (
+          {this.props.input && this.props.input.map((input, index) => (
             <TextInput
               id='quickActions-textBox'
-              type={this.props.input.type || 'text'}
-              disabled={this.props.input.disabled}
-              defaultValue={this.props.input.hidden
-                ? `Click '${this.props.input.hidden.text}' to reveal.`
-                : this.props.input.text}
+              style={index !== (this.props.input.length - 1) ? { marginBottom: '15px' } : {}}
+              type={input.type || 'text'}
+              disabled={input.disabled}
+              defaultValue={input.hidden
+                ? `Click '${input.hidden.text}' to reveal.`
+                : input.text}
               onChange={value => this.setState({ inputText: value })}
             >
-              {this.props.input.title}
+              {input.title}
 
-              {this.props.input.icon && (
+              {input.icon && (
                 <div className='quickActions-hint'>
-                  <Tooltip text={this.props.input.icon.tooltip || null} position='top'>
+                  <Tooltip text={input.icon.tooltip || null} position='top'>
                     <Icon
-                      name={this.props.input.icon.name}
+                      name={input.icon.name}
                       onClick={() => {
-                        const { input } = this.props;
-
                         if (input.icon.tooltip === 'Show Password') {
                           input.icon.tooltip = 'Hide Password';
                           input.icon.name = 'EyeHidden';
@@ -112,37 +111,38 @@ module.exports = class SettingModal extends React.Component {
                 </div>
               )}
             </TextInput>
-          )}
+          ))}
 
-          {this.props.input && this.props.input.hidden && (
-            <Button
+          {this.props.input && this.props.input.map((input, index) => input.hidden
+            ? <Button
               className={this.state.reset}
               color={Button.Colors.PRIMARY}
               look={Button.Looks.LINK}
               size={Button.Sizes.SMALL}
               onClick={() => {
-                if (this.props.input.hidden.text.includes('Show')) {
-                  this.props.input.hidden.text = this.props.input.hidden.text.replace('Show', 'Hide');
-                  this.props.input.hidden.icon = 'EyeHidden';
+                if (input.hidden.text.includes('Show')) {
+                  input.hidden.text = input.hidden.text.replace('Show', 'Hide');
+                  input.hidden.icon = 'EyeHidden';
 
-                  document.getElementById('quickActions-textBox').value = this.props.input.text;
-                } else if (this.props.input.hidden.text.includes('Hide')) {
-                  this.props.input.hidden.text = this.props.input.hidden.text.replace('Hide', 'Show');
-                  this.props.input.hidden.icon = 'Eye';
+                  document.querySelectorAll('#quickActions-textBox')[index].value = input.text;
+                } else if (input.hidden.text.includes('Hide')) {
+                  input.hidden.text = input.hidden.text.replace('Hide', 'Show');
+                  input.hidden.icon = 'Eye';
 
-                  document.getElementById('quickActions-textBox').value = `Click '${this.props.input.hidden.text}' ` +
+                  document.querySelectorAll('#quickActions-textBox')[index].value = `Click '${input.hidden.text}' ` +
                     'to reveal.';
                 }
 
                 this.forceUpdate();
               }}
             >
-              {this.props.input.hidden.text}
+              {input.hidden.text}
 
               <div className='quickActions-icon'>
-                <Icon name={this.props.input.hidden.icon} />
+                <Icon name={input.hidden.icon} />
               </div>
             </Button>
+            : ''
           )}
 
           {this.props.button && (

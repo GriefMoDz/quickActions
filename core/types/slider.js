@@ -12,6 +12,7 @@ module.exports = (id, key, plugin, setting) => React.createElement(SliderMenuIte
   minValue: setting.minValue,
   maxValue: setting.maxValue,
   seperated: setting.seperate,
+  onValueRender: setting.onValueRender,
   onValueChange: setting.onValueChange.bind(this, (plugin.id ? { id } = plugin.id : id), key),
   onMarkerRender: setting.onMarkerRender
 });

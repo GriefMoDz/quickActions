@@ -18,7 +18,7 @@ module.exports = (id, key, plugin, setting) => React.createElement(ToggleMenuIte
 
     if (typeof setting.func !== 'undefined') {
       if (setting.func.method && setting.func.type === 'pluginManager') {
-        powercord.pluginManager.get(id)[setting.func.method](setting.func.arguments
+        powercord.pluginManager.get((plugin.id ? { id } = plugin.id : id))[setting.func.method](setting.func.arguments
           ? setting.func.arguments === 'state' ? state : setting.func.arguments
           : '');
       }

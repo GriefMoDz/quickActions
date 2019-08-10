@@ -9,9 +9,9 @@ module.exports = {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
     const hiddenPlugins = powercord.settings.get('hiddenPlugins', []);
     const plugins = [ ...powercord.pluginManager.plugins.keys() ]
-      .filter(plugin => !powercord.pluginManager.get('quickActions').settings.get('showHiddenPlugins', false)
-        ? plugin !== 'quickActions' && !hiddenPlugins.includes(plugin)
-        : plugin !== 'quickActions')
+      .filter(pluginId => !powercord.pluginManager.get('quickActions').settings.get('showHiddenPlugins', false)
+        ? pluginId !== 'quickActions' && !hiddenPlugins.includes(pluginId)
+        : pluginId !== 'quickActions')
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -27,7 +27,7 @@ module.exports = {
   getThemes () {
     const disabledThemes = powercord.settings.get('disabledThemes', []);
     const themes = [ ...powercord.styleManager.themes.keys() ]
-      .filter(theme => theme !== 'powercord-core' && !powercord.pluginManager.plugins.has(theme))
+      .filter(themeId => themeId !== 'powercord-core' && !powercord.pluginManager.plugins.has(themeId))
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -65,9 +65,9 @@ module.exports = {
     this.forceUpdate();
   },
 
-  handleGuildToggle (id, guildId) {
-    const hiddenGuilds = powercord.api.settings.store.getSetting(id, 'hiddenGuilds', []);
-    return updateSetting(id, 'hiddenGuilds', !hiddenGuilds.includes(guildId)
+  handleGuildToggle (guildId) {
+    const hiddenGuilds = powercord.api.settings.store.getSetting('pc-emojiUtility', 'hiddenGuilds', []);
+    return updateSetting('pc-emojiUtility', 'hiddenGuilds', !hiddenGuilds.includes(guildId)
       ? [ ...hiddenGuilds, guildId ]
       : hiddenGuilds.filter(guild => guild !== guildId));
   },
@@ -119,7 +119,7 @@ module.exports = {
     openModal(() => elem);
   },
 
-  async forceUpdate (updateAll = true, updateHeight = false) {
+  async forceUpdate (updateAll = true, updateHeight) {
     const contextMenuClasses = (await getModule([ 'itemToggle', 'checkbox' ]));
     const contextMenuQuery = `.${contextMenuClasses.contextMenu.replace(/ /g, '.')}`;
 
@@ -161,20 +161,25 @@ module.exports = {
       header: 'Update passphrase',
       confirmText: 'Update',
       cancelText: 'Cancel',
-      input: {
-        title: 'Passphrase',
-        text: powercord.api.settings.store.getSetting('pc-general', 'passphrase'),
-        type: 'password',
-        icon: {
-          name: 'Eye',
-          tooltip: 'Show Password'
+      input: [
+        {
+          title: 'Passphrase',
+          text: powercord.api.settings.store.getSetting('pc-general', 'passphrase'),
+          type: 'password',
+          icon: {
+            name: 'Eye',
+            tooltip: 'Show Password'
+          }
         }
-      },
+      ],
       button: {
         text: 'Reset to Default'
       },
       onConfirm: (value) => {
-        updateSetting('pc-general', 'passphrase', value);
+        if (value !== '') {
+          updateSetting('pc-general', 'passphrase', value);
+        }
+
         closeModal();
       },
       onCancel: () => {

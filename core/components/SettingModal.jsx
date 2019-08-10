@@ -132,7 +132,15 @@ module.exports = class SettingModal extends React.Component {
 
           {setting.modal.colorPicker &&
             <div>
-              <FormTitle>{setting.name}</FormTitle>
+              <FormTitle>{setting.name}
+                {setting.desc && (
+                  <div className='quickActions-hint'>
+                    <Tooltip text={setting.desc} position='top'>
+                      <Icon name='Info' />
+                    </Tooltip>
+                  </div>
+                )}
+              </FormTitle>
               <ColorPicker
                 colors={this.utils.getDefaultColors() || setting.colors}
                 defaultColor={parseInt(setting.default.replace('#', ''), 16) || 0}
