@@ -155,13 +155,13 @@ module.exports = class SettingModal extends React.Component {
           {setting.modal.slider &&
             <SliderInput
               className={'quickActions-slider'}
-              equidistant={setting.markers !== false}
-              stickToMarkers={setting.markers !== false}
+              equidistant={setting.modal.slider.markers !== false}
+              stickToMarkers={setting.modal.slider.markers !== false}
               defaultValue={inputText}
-              markers={setting.markers}
-              minValue={setting.minValue}
-              maxValue={setting.maxValue}
-              onMarkerRender={setting.onMarkerRender ? setting.onMarkerRender.bind(this) : ''}
+              markers={setting.modal.slider.markers}
+              minValue={setting.modal.slider.minValue}
+              maxValue={setting.modal.slider.maxValue}
+              onMarkerRender={setting.modal.slider.onMarkerRender ? setting.modal.slider.onMarkerRender.bind(this) : ''}
               onValueChange={(value) => this.setState({ inputText: parseInt(value) })}
             >
               {setting.name}

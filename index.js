@@ -46,6 +46,7 @@ class QuickActionsR extends Plugin {
       this.settingsStore.set('plugins', plugin);
     });
 
+    this.utils.checkForUpdates.bind(this)();
     this.state.initializedStore = true;
   }
 
@@ -57,9 +58,9 @@ class QuickActionsR extends Plugin {
       const items = [];
 
       powercord.api.settings.tabs.forEach(item => {
-          items.push(item.section === 'pc-pluginManager'
-            ? this.buildContentMenu(true)
-            : this.buildSettingMenu(item.label, item.section));
+        items.push(item.section === 'pc-pluginManager'
+          ? this.buildContentMenu(true)
+          : this.buildSettingMenu(item.label, item.section));
       });
 
       if (powercord.pluginManager.isEnabled('pc-styleManager')) {

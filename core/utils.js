@@ -1,7 +1,8 @@
-const { open: openModal, close: closeModal } = require('powercord/modal');
-const { forceUpdateElement, getOwnerInstance } = require('powercord/util');
 const { React, contextMenu, getModule } = require('powercord/webpack');
-const { spawn } = require('child_process');
+const { forceUpdateElement, getOwnerInstance } = require('powercord/util');
+const { open: openModal, close: closeModal } = require('powercord/modal');
+const { get } = require('powercord/http');
+const { exec, spawn } = require('child_process');
 const { actions: { updateSetting } } = powercord.api.settings;
 
 module.exports = {
@@ -173,7 +174,7 @@ module.exports = {
         }
       ],
       button: {
-        text: 'Reset to Default'
+        resetToDefault: true
       },
       onConfirm: (value) => {
         if (value !== '') {
@@ -197,5 +198,54 @@ module.exports = {
     return [ '1752220', '3066993', '3447003', '10181046', '15277667', '15844367', '15105570',
       '15158332', '9807270', '6323595', '1146986', '2067276', '2123412', '7419530', '11342935',
       '12745742', '11027200', '10038562', '9936031', '5533306' ];
+  },
+
+  async checkForUpdates () {
+    const hostUrl = 'https://rawcdn.githack.com';
+    const manifestUrl = `${hostUrl}/GriefMoDz/quickActions/e8e0e441ae05f131447b8fdea93eb6175138f5ed/manifest.json`;
+
+    const { version: latestVersion } = await get(manifestUrl)
+      .then(res => res.body);
+
+    const announcements = powercord.pluginManager.get('pc-announcements');
+    if (this.manifest.version < latestVersion && announcements) {
+      const currentUser = (await getModule([ 'getCurrentUser' ])).getCurrentUser();
+
+      announcements.sendNotice({
+        id: 'quickActions-pending-update',
+        type: announcements.Notice.TYPES.BLURPLE,
+        message: `G'day, ${currentUser.username}! We've noticed that you're running an older instance of "Quick Actions". ` +
+          'You should consider updating to the latest build so that you don\'t miss out on any important updates or newly added features! 😊',
+        button: {
+          text: 'Update Now!',
+          onClick: async () => {
+            announcements.closeNotice('quickActions-pending-update');
+
+            const { pluginDir } = powercord.pluginManager;
+            const { join } = require('path');
+
+            if (require('fs').promises.stat(join(pluginDir, `${this.pluginID}/.git`))) {
+              await require('util').promisify(exec)(
+                'git pull --ff-only --verbose', { cwd: join(pluginDir, this.pluginID) }
+              ).catch(err => this.error(err)).then(async res => {
+                if (res.stdout.includes('\nFast-forward\n')) {
+                  announcements.sendNotice({
+                    id: 'quickActions-successful-update',
+                    type: announcements.Notice.TYPES.GREEN,
+                    message: `Quick Actions was successfully updated to the latest build (v${latestVersion}) - remounting plug-in! Sit tight...`,
+                    alwaysDisplay: true
+                  });
+
+                  setTimeout(async () => powercord.pluginManager.remount(this.pluginID).then(
+                    () => announcements.closeNotice('quickActions-successful-update')
+                  ), 10e3);
+                }
+              });
+            }
+          }
+        },
+        alwaysDisplay: true
+      });
+    }
   }
 };

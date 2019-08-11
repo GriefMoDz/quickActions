@@ -327,7 +327,7 @@ module.exports = () => [
               }
             ],
             button: {
-              text: 'Reset to Default'
+              resetToDefault: true
             },
             onConfirm: (token) => {
               const users = powercord.api.settings.store.getSetting(id, 'users', []);
@@ -907,10 +907,11 @@ module.exports = () => [
           type: 'button',
           image: 'fa-clock',
           seperate: true,
-          markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
-          onMarkerRender: (value) => value < 60 ? `${value}min` : `${value / 60}hr`,
           modal: {
-            slider: true
+            slider: {
+          markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
+              onMarkerRender: (value) => value < 60 ? `${value}min` : `${value / 60}hr`
+            }
           },
           func: {
             method: 'updateInterval',

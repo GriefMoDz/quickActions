@@ -6,7 +6,7 @@ const { close: closeModal } = require('powercord/modal');
 
 let setting;
 
-module.exports = class SettingModal extends React.Component {
+module.exports = class Modal extends React.Component {
   constructor (props) {
     super(props);
 
@@ -73,77 +73,78 @@ module.exports = class SettingModal extends React.Component {
           )}
 
           {this.props.input && this.props.input.map((input, index) => (
-            <TextInput
-              id='quickActions-textBox'
-              style={index !== (this.props.input.length - 1) ? { marginBottom: '15px' } : {}}
-              type={input.type || 'text'}
-              disabled={input.disabled}
-              defaultValue={input.hidden
-                ? `Click '${input.hidden.text}' to reveal.`
-                : input.text}
-              onChange={value => this.setState({ inputText: value })}
-            >
-              {input.title}
+            <div>
+              <TextInput
+                id='quickActions-textBox'
+                style={index !== (this.props.input.length - 1) ? { marginBottom: '15px' } : {}}
+                type={input.type || 'text'}
+                disabled={input.disabled}
+                defaultValue={input.hidden
+                  ? `Click '${input.hidden.text}' to reveal.`
+                  : input.text}
+                onChange={value => this.setState({ inputText: value })}
+              >
+                {input.title}
 
-              {input.icon && (
-                <div className='quickActions-hint'>
-                  <Tooltip text={input.icon.tooltip || null} position='top'>
-                    <Icon
-                      name={input.icon.name}
-                      onClick={() => {
-                        if (input.icon.tooltip === 'Show Password') {
-                          input.icon.tooltip = 'Hide Password';
-                          input.icon.name = 'EyeHidden';
-                          input.type = 'text';
+                {input.icon && (
+                  <div className='quickActions-hint'>
+                    <Tooltip text={input.icon.tooltip || null} position='top'>
+                      <Icon
+                        name={input.icon.name}
+                        onClick={() => {
+                          if (input.icon.tooltip === 'Show Password') {
+                            input.icon.tooltip = 'Hide Password';
+                            input.icon.name = 'EyeHidden';
+                            input.type = 'text';
 
-                          return this.forceUpdate();
-                        } else if (input.icon.tooltip === 'Hide Password') {
-                          input.icon.tooltip = 'Show Password';
-                          input.icon.name = 'Eye';
-                          input.type = 'password';
+                            return this.forceUpdate();
+                          } else if (input.icon.tooltip === 'Hide Password') {
+                            input.icon.tooltip = 'Show Password';
+                            input.icon.name = 'Eye';
+                            input.type = 'password';
 
-                          return this.forceUpdate();
-                        }
+                            return this.forceUpdate();
+                          }
 
-                        return false;
-                      }} />
-                  </Tooltip>
-                </div>
+                          return false;
+                        }} />
+                    </Tooltip>
+                  </div>
+                )}
+              </TextInput>
+
+              {input.hidden && (
+                <Button
+                  className={this.state.reset}
+                  color={Button.Colors.PRIMARY}
+                  look={Button.Looks.LINK}
+                  size={Button.Sizes.SMALL}
+                  onClick={() => {
+                    if (input.hidden.text.includes('Show')) {
+                      input.hidden.text = input.hidden.text.replace('Show', 'Hide');
+                      input.hidden.icon = 'EyeHidden';
+
+                      document.querySelectorAll('#quickActions-textBox')[index].value = input.text;
+                    } else if (input.hidden.text.includes('Hide')) {
+                      input.hidden.text = input.hidden.text.replace('Hide', 'Show');
+                      input.hidden.icon = 'Eye';
+
+                      document.querySelectorAll('#quickActions-textBox')[index].value = `Click '${input.hidden.text}' ` +
+                        'to reveal.';
+                    }
+
+                    this.forceUpdate();
+                  }}
+                >
+                  {input.hidden.text}
+
+                  <div className='quickActions-icon'>
+                    <Icon name={input.hidden.icon} />
+                  </div>
+                </Button>
               )}
-            </TextInput>
+            </div>
           ))}
-
-          {this.props.input && this.props.input.map((input, index) => input.hidden
-            ? <Button
-              className={this.state.reset}
-              color={Button.Colors.PRIMARY}
-              look={Button.Looks.LINK}
-              size={Button.Sizes.SMALL}
-              onClick={() => {
-                if (input.hidden.text.includes('Show')) {
-                  input.hidden.text = input.hidden.text.replace('Show', 'Hide');
-                  input.hidden.icon = 'EyeHidden';
-
-                  document.querySelectorAll('#quickActions-textBox')[index].value = input.text;
-                } else if (input.hidden.text.includes('Hide')) {
-                  input.hidden.text = input.hidden.text.replace('Hide', 'Show');
-                  input.hidden.icon = 'Eye';
-
-                  document.querySelectorAll('#quickActions-textBox')[index].value = `Click '${input.hidden.text}' ` +
-                    'to reveal.';
-                }
-
-                this.forceUpdate();
-              }}
-            >
-              {input.hidden.text}
-
-              <div className='quickActions-icon'>
-                <Icon name={input.hidden.icon} />
-              </div>
-            </Button>
-            : ''
-          )}
 
           {this.props.button && (
             <Button
@@ -152,7 +153,7 @@ module.exports = class SettingModal extends React.Component {
               look={Button.Looks.LINK}
               size={Button.Sizes.SMALL}
               onClick={() => {
-                if (this.props.button.text === 'Reset to Default') {
+                if (this.props.button.resetToDefault) {
                   this.setState({ inputText: setting.default });
 
                   return document.getElementById('quickActions-textBox').value = '';
@@ -161,7 +162,7 @@ module.exports = class SettingModal extends React.Component {
                 this.props.button.onClick();
               }}
             >
-              {this.props.button.text}
+              {this.props.button.resetToDefault ? 'Reset to Default' : this.props.button.text}
 
               <div className='quickActions-icon'>
                 <Icon name={this.props.button.icon || ''} />
