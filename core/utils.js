@@ -201,8 +201,11 @@ module.exports = (plugin = null) => ({
   },
 
   async checkForUpdates () {
+    const lastCommitHash = await get('https://api.github.com/repos/GriefMoDz/quickActions/commits/master')
+      .then(res => res.body.sha);
+
     const hostUrl = 'https://rawcdn.githack.com';
-    const manifestUrl = `${hostUrl}/GriefMoDz/quickActions/e8e0e441ae05f131447b8fdea93eb6175138f5ed/manifest.json`;
+    const manifestUrl = `${hostUrl}/GriefMoDz/quickActions/${lastCommitHash}/manifest.json`;
 
     const { version: latestVersion } = await get(manifestUrl)
       .then(res => res.body);
