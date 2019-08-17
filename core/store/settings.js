@@ -3,12 +3,11 @@ const { forceUpdateElement, waitFor } = require('powercord/util');
 const { close: closeModal } = require('powercord/modal');
 const { actions: { updateSetting } } = powercord.api.settings;
 
-const utils = require('../utils');
 const GenericModal = require('../components/Modal');
 
 const { ImageMenuItem, SubMenuItem, ToggleMenuItem } = require('../components/ContextMenu');
 
-module.exports = () => [
+module.exports = (plugin) => [
   {
     advancedTitle: {
       id: 'advanced-title-bar',
@@ -27,7 +26,7 @@ module.exports = () => [
             updateSetting(id, key, parseInt(value));
             forceUpdateElement(titleBar);
 
-            utils.forceUpdate();
+            plugin.utils.forceUpdate();
           },
           hide: () => !powercord.pluginManager.isEnabled('pc-titleBarGames') ||
             process.platform !== 'win32'
@@ -65,7 +64,7 @@ module.exports = () => [
 
             powercord.pluginManager.get(id).reload();
 
-            utils.forceUpdate();
+            plugin.utils.forceUpdate();
           }
         },
         brightness: {
@@ -78,7 +77,7 @@ module.exports = () => [
 
             powercord.pluginManager.get(id).reload();
 
-            utils.forceUpdate();
+            plugin.utils.forceUpdate();
           }
         },
         important: {
@@ -218,7 +217,7 @@ module.exports = () => [
           onValueChange: (id, key, value) => {
             updateSetting(id, key, parseInt(value));
 
-            utils.forceUpdate();
+            plugin.utils.forceUpdate();
           }
         },
         BulbColor: {
@@ -242,7 +241,7 @@ module.exports = () => [
           onValueChange: (id, key, value) => {
             updateSetting(id, key, parseInt(value));
 
-            utils.forceUpdate();
+            plugin.utils.forceUpdate();
           }
         }
       }
@@ -262,7 +261,7 @@ module.exports = () => [
                 label: user.nickname || 'Untitled',
                 seperated: true,
                 modal: true,
-                action: () => utils.openModal(React.createElement(GenericModal, {
+                action: () => plugin.utils.openModal(React.createElement(GenericModal, {
                   id: 'quickActions-mu-users',
                   header: `${user.nickname || 'Untitled'}—Mu`,
                   confirmText: 'Done',
@@ -316,7 +315,7 @@ module.exports = () => [
           image: 'fa-user-plus',
           seperate: true,
           modal: true,
-          action: (id, _, setting, name) => utils.openModal(React.createElement(GenericModal, {
+          action: (id, _, setting, name) => plugin.utils.openModal(React.createElement(GenericModal, {
             header: `Add New User—${name}`,
             confirmText: 'Add User',
             cancelText: 'Cancel',
@@ -378,7 +377,7 @@ module.exports = () => [
           type: 'button',
           image: 'fa-folder-open',
           modal: true,
-          action: (_, __, ___, name) => utils.openModal(React.createElement(GenericModal, {
+          action: (_, __, ___, name) => plugin.utils.openModal(React.createElement(GenericModal, {
             header: `Plugin Directory—${name}`,
             confirmText: 'Done',
             input: [
@@ -391,7 +390,7 @@ module.exports = () => [
             button: {
               text: 'Open Plugin Directory',
               icon: 'ExternalLink',
-              onClick: () => utils.openFolder(powercord.pluginManager.pluginDir)
+              onClick: () => plugin.utils.openFolder(powercord.pluginManager.pluginDir)
             },
             onConfirm: () => closeModal()
           }))
@@ -403,7 +402,7 @@ module.exports = () => [
           color: '#7289da',
           seperate: true,
           action: async (id) => {
-            utils.showCategory(id);
+            plugin.utils.showCategory(id);
 
             await waitFor('.plugin-updater-button-container');
 
@@ -546,8 +545,7 @@ module.exports = () => [
           children: (id, key) => {
             const children = [];
             const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
-            const { sortedGuildsStore } = powercord.pluginManager
-              .get('quickActions').state;
+            const { sortedGuildsStore } = plugin.state;
 
             sortedGuildsStore.getSortedGuilds().map(guild => {
               let child;
@@ -560,7 +558,7 @@ module.exports = () => [
                   servers.push(React.createElement(ToggleMenuItem, {
                     label: server.name,
                     active: hiddenGuilds.includes(server.id),
-                    action: () => utils.handleGuildToggle(server.id)
+                    action: () => plugin.utils.handleGuildToggle(server.id)
                   }))
                 );
 
@@ -574,7 +572,7 @@ module.exports = () => [
                 child = React.createElement(ToggleMenuItem, {
                   label: guilds[0].name,
                   active: hiddenGuilds.includes(guilds[0].id),
-                  action: () => utils.handleGuildToggle(guilds[0].id),
+                  action: () => plugin.utils.handleGuildToggle(guilds[0].id),
                   seperated: children.length > 0 && children[children.length - 1].type.name === 'NewSubMenuItem'
                     ? true
                     : ''
@@ -607,7 +605,7 @@ module.exports = () => [
               name: 'Enabled',
               default: false,
               action: (state, _, key, setting) => state
-                ? utils.showPassphraseModal({ key,
+                ? plugin.utils.showPassphraseModal({ key,
                   setting,
                   cancel: true })
                 : null
@@ -620,7 +618,7 @@ module.exports = () => [
               modal: true,
               disabled: (id) => !powercord.api.settings.store.getSetting(id,
                 'settingsSync', false),
-              action: (_, key, setting) => utils.showPassphraseModal({ key,
+              action: (_, key, setting) => plugin.utils.showPassphraseModal({ key,
                 setting })
             }
           },
@@ -676,7 +674,7 @@ module.exports = () => [
           dangerous: true,
           seperate: true,
           modal: true,
-          action: (_, key) => utils.openModal(React.createElement(GenericModal, {
+          action: (_, key) => plugin.utils.openModal(React.createElement(GenericModal, {
             red: true,
             header: 'Clear cache',
             confirmText: 'Clear Cache',
@@ -756,7 +754,7 @@ module.exports = () => [
 
                   setting.image = 'fa-sync';
 
-                  utils.forceUpdate();
+                  plugin.utils.forceUpdate();
                 });
               },
               disabled: (id) => powercord.pluginManager.get(id).checking || !powercord.api.settings

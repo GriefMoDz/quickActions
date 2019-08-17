@@ -1,7 +1,7 @@
 const { React } = require('powercord/webpack');
 const { Tooltip } = require('powercord/components');
 
-const utils = require('../../utils');
+const utils = require('../../utils')();
 
 module.exports = class ImageMenuItem extends React.Component {
   handleClick () {

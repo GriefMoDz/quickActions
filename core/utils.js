@@ -5,14 +5,14 @@ const { get } = require('powercord/http');
 const { exec, spawn } = require('child_process');
 const { actions: { updateSetting } } = powercord.api.settings;
 
-module.exports = {
+module.exports = (plugin = null) => ({
   getPlugins () {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
     const hiddenPlugins = powercord.settings.get('hiddenPlugins', []);
     const plugins = [ ...powercord.pluginManager.plugins.keys() ]
-      .filter(pluginId => !powercord.pluginManager.get('quickActions').settings.get('showHiddenPlugins', false)
-        ? pluginId !== 'quickActions' && !hiddenPlugins.includes(pluginId)
-        : pluginId !== 'quickActions')
+      .filter(pluginId => !plugin.settings.get('showHiddenPlugins', false)
+        ? pluginId !== plugin.pluginID && !hiddenPlugins.includes(pluginId)
+        : pluginId !== plugin.pluginID)
       .sort((a, b) => {
         const filter = a < b
           ? -1
@@ -208,7 +208,7 @@ module.exports = {
       .then(res => res.body);
 
     const announcements = powercord.pluginManager.get('pc-announcements');
-    if (this.manifest.version < latestVersion && announcements) {
+    if (plugin.manifest.version < latestVersion && announcements) {
       const currentUser = (await getModule([ 'getCurrentUser' ])).getCurrentUser();
 
       announcements.sendNotice({
@@ -224,10 +224,10 @@ module.exports = {
             const { pluginDir } = powercord.pluginManager;
             const { join } = require('path');
 
-            if (require('fs').promises.stat(join(pluginDir, `${this.pluginID}/.git`))) {
+            if (require('fs').promises.stat(join(pluginDir, `${plugin.pluginID}/.git`))) {
               await require('util').promisify(exec)(
-                'git pull --ff-only --verbose', { cwd: join(pluginDir, this.pluginID) }
-              ).catch(err => this.error(err)).then(async res => {
+                'git pull --ff-only --verbose', { cwd: join(pluginDir, plugin.pluginID) }
+              ).catch(err => plugin.error(err)).then(async res => {
                 if (res.stdout.includes('\nFast-forward\n')) {
                   announcements.sendNotice({
                     id: 'quickActions-successful-update',
@@ -236,7 +236,7 @@ module.exports = {
                     alwaysDisplay: true
                   });
 
-                  setTimeout(async () => powercord.pluginManager.remount(this.pluginID).then(
+                  setTimeout(async () => powercord.pluginManager.remount(plugin.pluginID).then(
                     () => announcements.closeNotice('quickActions-successful-update')
                   ), 10e3);
                 }
@@ -248,4 +248,4 @@ module.exports = {
       });
     }
   }
-};
+});

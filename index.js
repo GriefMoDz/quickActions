@@ -12,10 +12,10 @@ class QuickActionsR extends Plugin {
 
     this.state = {
       initializedStore: false,
-      settings: require('./core/store/settings')()
+      settings: require('./core/store/settings')(this)
     };
 
-    this.utils = require('./core/utils');
+    this.utils = require('./core/utils')(this);
   }
 
   get settingsStore () {
@@ -46,7 +46,7 @@ class QuickActionsR extends Plugin {
       this.settingsStore.set('plugins', plugin);
     });
 
-    this.utils.checkForUpdates.bind(this)();
+    this.utils.checkForUpdates();
     this.state.initializedStore = true;
   }
 

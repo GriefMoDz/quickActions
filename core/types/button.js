@@ -1,7 +1,7 @@
 const { React } = require('powercord/webpack');
 const { ImageMenuItem } = require('../components/ContextMenu');
 
-const utils = require('../utils');
+const utils = require('../utils')();
 
 module.exports = (id, key, plugin, setting, name) => {
   const mode = powercord.api.settings.store.getSetting(id, key, setting.default);

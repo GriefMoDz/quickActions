@@ -2,7 +2,7 @@ const { React } = require('powercord/webpack');
 const { actions: { toggleSetting } } = powercord.api.settings;
 const { ToggleMenuItem } = require('../components/ContextMenu');
 
-const utils = require('../utils');
+const utils = require('../utils')();
 
 module.exports = (id, key, plugin, setting) => React.createElement(ToggleMenuItem, {
   label: setting.name,
