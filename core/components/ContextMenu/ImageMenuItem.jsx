@@ -16,10 +16,11 @@ module.exports = class ImageMenuItem extends React.Component {
 
   render () {
     const item = (
-      <Tooltip text={this.props.label.length > 21 ? this.props.label : ''} position='right'>
+      <Tooltip text={this.props.label.length >= 21 ? this.props.label : ''} position='right'>
         <div
           className={`quickActions-contextMenu-button item-1Yvehc itemImage-htIz_v
           ${this.props.disabled ? 'disabled' : ''}`}
+          title=''
           onClick={this.handleClick.bind(this)}
         >
           <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>

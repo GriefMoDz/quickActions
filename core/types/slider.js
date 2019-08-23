@@ -3,6 +3,7 @@ const { SliderMenuItem } = require('../components/ContextMenu');
 
 module.exports = (id, key, plugin, setting) => React.createElement(SliderMenuItem, {
   label: setting.name,
+  desc: setting.desc,
   color: typeof setting.color === 'function' ? setting.color.bind(this, id).call() : setting.color,
   disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id).call() : setting.disabled,
   defaultValue: powercord.api.settings.store.getSetting(typeof plugin.id !== 'undefined'

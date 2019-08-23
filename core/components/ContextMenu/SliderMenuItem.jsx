@@ -6,7 +6,7 @@ const Slider = AsyncComponent.from(getModuleByDisplayName('Slider'));
 module.exports = class SliderMenuItem extends React.Component {
   render () {
     const slider = (
-      <div className='item-1Yvehc itemSlider-FZeYw0'>
+      <div title={this.props.desc || ''} className='item-1Yvehc itemSlider-FZeYw0'>
         <div
           className='label-JWQiNe'
           style={this.props.markers ? { marginBottom: '16px' } : null}

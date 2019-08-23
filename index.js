@@ -170,17 +170,13 @@ class QuickActionsR extends Plugin {
 
     const children = [];
 
-    items.push(React.createElement(SubMenuItem, {
-      label: `Installed ${checkForPlugins ? 'Plugins' : 'Themes'}`,
-      invertChildY: true,
-      render: children
-    }));
-
     for (const key in checkForPlugins ? plugins : themes) {
       const id = (checkForPlugins ? plugins : themes)[key];
+      const metadata = (checkForPlugins ? powercord.pluginManager : powercord.styleManager).get(id).manifest;
       const isContentDisabled = (checkForPlugins ? disabledPlugins : disabledThemes).includes(id);
       const child = React.createElement(ToggleMenuItem, {
         label: id,
+        desc: `${metadata.name}${metadata.author !== 'Unknown' ? ` by ${metadata.author} ` : ' '}(v${metadata.version})`,
         active: !isContentDisabled,
         seperated: children.length < 1 ? true : '',
         action: () => checkForPlugins
@@ -190,6 +186,12 @@ class QuickActionsR extends Plugin {
 
       children.push(child);
     }
+
+    items.push(React.createElement(SubMenuItem, {
+      label: `Installed ${checkForPlugins ? 'Plugins' : 'Themes'} (${children.length})`,
+      invertChildY: true,
+      render: children
+    }));
 
     if (checkForPlugins) {
       children.splice(0, 0, React.createElement(ToggleMenuItem, {

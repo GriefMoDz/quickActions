@@ -15,10 +15,12 @@ module.exports = (plugin) => [
       settings: {
         limit: {
           name: 'Limit Title Bar Games',
+          desc: 'Limit the amount of games displayed by "pc-titleBarGames".',
           default: 40,
           type: 'slider',
           minValue: 1,
           maxValue: 40,
+          onValueRender: (value) => parseInt(value),
           onValueChange: async (id, key, value) => {
             const titleBarClasses = (await getModule([ 'titleBar' ]));
             const titleBar = `.${titleBarClasses.titleBar.replace(/ /g, '')}`;
@@ -54,6 +56,8 @@ module.exports = (plugin) => [
         },
         beastiness: {
           name: 'Beastiness',
+          desc: 'Changing this value will change the amount of detail the visualizer\n' +
+            'will pick up on, how often it updates and certain visual effects.',
           default: 1,
           type: 'slider',
           color: (id) => powercord.api.settings.store.getSetting(id, 'color', null),
@@ -82,6 +86,8 @@ module.exports = (plugin) => [
         },
         important: {
           name: 'Override Styling',
+          desc: 'This ensures that Auditory styling and effects take priority\n' +
+            'over themes and other CSS that affect the user container.',
           default: false,
           seperate: true,
           func: {
@@ -107,7 +113,7 @@ module.exports = (plugin) => [
           name: 'Idle Color',
           desc: '(When no audio is playing)',
           type: 'button',
-          image: 'fa-eye-slash',
+          image: 'fa-stop-circle-regular',
           default: '#202225',
           modal: {
             colorPicker: true
@@ -123,11 +129,11 @@ module.exports = (plugin) => [
       unofficial: true,
       settings: {
         'hu-cmd-trbmb': {
-          name: 'Toggle TRBMB command',
+          name: 'Toggle TRBMB Command',
           default: false
         },
         'hu-cmd-id': {
-          name: 'Toggle ID command',
+          name: 'Toggle ID Command',
           default: false
         }
       }
@@ -137,6 +143,7 @@ module.exports = (plugin) => [
       settings: {
         infomodal: {
           name: 'Show Information Modal',
+          desc: 'Toggles the functionality of the information button\nwithin the DM list on favorited friends.',
           default: true,
           func: {
             method: 'reload',
@@ -146,6 +153,7 @@ module.exports = (plugin) => [
         },
         displaystar: {
           name: 'Display Star',
+          desc: 'Display a star next to favorited friends.',
           default: true,
           func: {
             method: 'reload',
@@ -155,6 +163,7 @@ module.exports = (plugin) => [
         },
         statuspopup: {
           name: 'Show Status Notifications',
+          desc: 'Receive notifications in the bottom right-hand corner\nwhenever a favorited friend changes their status.',
           default: true,
           func: {
             method: 'reload',
@@ -169,10 +178,12 @@ module.exports = (plugin) => [
       settings: {
         patchUser: {
           name: 'User Context Menu',
+          desc: 'Removes call, note, activity feed, watch\nstream. Moves invite, add friend, block.',
           default: true
         },
         patchGuild: {
           name: 'Guild Context Menu',
+          desc: 'Removes hide muted channels, privacy\nsettings, change nickname, channel creation.',
           default: true
         }
       }
@@ -182,14 +193,17 @@ module.exports = (plugin) => [
       settings: {
         YeeLight: {
           name: 'YeeLight',
+          desc: 'Use YeeLight lights with Lightify.',
           default: false
         },
         Lifx: {
           name: 'Lifx',
+          desc: 'Use Lifx lights with Lightify.',
           default: false
         },
         AutoOn: {
           name: 'Auto-On',
+          desc: 'Turn on the light if the light is off.',
           default: false
         },
         BulbIP: {
@@ -211,6 +225,7 @@ module.exports = (plugin) => [
         },
         BulbBright: {
           name: 'YeeLight Brightness (%)',
+          desc: 'Set the brightness of the YeeLight light when it\'s pulsed.',
           default: 100,
           type: 'slider',
           seperate: true,
@@ -233,6 +248,7 @@ module.exports = (plugin) => [
         },
         BulbDuration: {
           name: 'Pulse Duration',
+          desc: 'Set the time the light needs to stay the\nmention color for when you are mentioned.',
           default: 250,
           type: 'slider',
           seperate: true,
@@ -252,6 +268,7 @@ module.exports = (plugin) => [
       settings: {
         users: {
           name: 'Users',
+          displayCounter: true,
           children: (id, key) => {
             const children = [];
             const users = powercord.api.settings.store.getSetting(id, key, []);
@@ -349,20 +366,26 @@ module.exports = (plugin) => [
       settings: {
         dualControlEdits: {
           name: 'Dual Control Edits',
+          desc: 'Provides the ability to use the ‘shift’ key and primary button to perform cleared message edits while also being\n' +
+            'able to double-click the primary button to edit messages normally (without the removable of content).',
           default: false
         },
         rightClickEdits: {
           name: 'Swap Primary Button',
+          desc: 'Sets the right mouse button (RMB) as the\nprimary control for performing message edits.',
           default: false
         },
         clearContent: {
           name: 'Clear Content',
+          desc: 'Removes the message content upon editing (not sure why\nyou\'d have this enabled, but it\'s there if you ever need it).',
           default: false,
           disabled: (id) => powercord.api.settings.store.getSetting(id,
             'dualControlEdits', false)
         },
         useShiftKey: {
           name: 'Use Shift Key',
+          desc: 'Makes it so that the ‘shift’ key must be held down before clicking the left or right mouse button to initiate an edit.\n' +
+            '**HEADS UP**: Having this setting disabled will result in double-click edits by default. Don\'t say I didn\'t tell you.',
           default: false,
           disabled: (id) => powercord.api.settings.store.getSetting(id,
             'dualControlEdits', false)
@@ -428,6 +451,7 @@ module.exports = (plugin) => [
         },
         textSettings: {
           name: 'Text Settings',
+          desc: 'Settings for the Discord RPC text.',
           children: {
             lineone: {
               name: 'Line One',
@@ -451,6 +475,7 @@ module.exports = (plugin) => [
         },
         imageSettings: {
           name: 'Image Settings',
+          desc: 'Settings for the Discord RPC images.',
           children: {
             largeimage: {
               name: 'Large Image',
@@ -485,11 +510,13 @@ module.exports = (plugin) => [
         },
         timestamp: {
           name: 'Show Timestamp',
+          desc: 'Timestamp for the Discord RPC.',
           default: false,
           seperate: true
         },
         commandsEnabled: {
           name: 'Use Commands',
+          desc: 'Enable/Disable the commands for controlling the Discord RPC.',
           default: false,
           func: {
             method: 'modifyCommands',
@@ -502,10 +529,12 @@ module.exports = (plugin) => [
       settings: {
         useEmbeds: {
           name: 'Use Embeds',
+          desc: 'Whether Emote Utility should return responses in embeds.',
           default: false
         },
         displayLink: {
           name: 'Display Link',
+          desc: 'Whether the message for the "findemote" command\nshould contain the link to the guild the emote is in.',
           default: true,
           disabled: (id) => powercord.api.settings.store.getSetting(id,
             'useEmbeds', false)
@@ -523,11 +552,13 @@ module.exports = (plugin) => [
         },
         includeIdForSavedEmojis: {
           name: 'Include ID when Saving Emotes',
+          desc: 'Whether saving emotes should contain the ID of the\nemote. This prevents overwriting old saved emotes.',
           default: true,
           seperate: true
         },
         defaultCloneIdUseCurrent: {
           name: 'Use Current Server when Cloning Emotes',
+          desc: 'Whether the default server for cloning emotes\nshould be the server you are currently in.',
           default: false
         },
         defaultCloneId: {
@@ -542,6 +573,7 @@ module.exports = (plugin) => [
         },
         hiddenGuilds: {
           name: 'Hide Emotes',
+          desc: 'Hide emotes from some servers. They won\'t\nshow up in emote picker, except in searches.',
           children: (id, key) => {
             const children = [];
             const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
@@ -563,7 +595,7 @@ module.exports = (plugin) => [
                 );
 
                 child = React.createElement(SubMenuItem, {
-                  label: guild.folderName,
+                  label: `${guild.folderName} (${servers.length})`,
                   invertChildY: true,
                   seperated: true,
                   render: servers
@@ -603,6 +635,7 @@ module.exports = (plugin) => [
           children: {
             settingsSync: {
               name: 'Enabled',
+              desc: 'Sync all of your Powercord settings across devices.',
               default: false,
               action: (state, _, key, setting) => state
                 ? plugin.utils.showPassphraseModal({ key,
@@ -628,6 +661,7 @@ module.exports = (plugin) => [
         },
         advancedSettings: {
           name: 'Advanced Settings',
+          desc: 'Exercise caution changing anything in this category\nif you don\'t know what you\'re doing. **Seriously**.',
           children: {
             backendURL: {
               name: 'Backend URL',
@@ -643,23 +677,36 @@ module.exports = (plugin) => [
             },
             openOverlayDevTools: {
               name: 'Overlay DevTools',
+              desc: 'Should Powercord open overlay devtools when it\ngets injected? (useful for developing themes).',
               default: false,
               seperate: true
             },
             hideToken: {
               name: 'Keep Token Stored',
+              desc: 'Prevents Discord from removing your token from\nlocalStorage, reducing the number of unwanted logouts.',
               default: true
             },
             transparentWindow: {
               name: 'Transparent Window',
+              desc: 'Makes any windows opened by Discord transparent, useful for themeing.\n' +
+                '**WARNING**: This will break **window snapping** on Windows. **Hardware\nacceleration** must be turned **off** on Linux. ' +
+                'You may encounter issues and have\nblack background in some cases, like when the window is cut off at the top or the bottom\n' +
+                'due to monitor resolution or when devtools are open and docked. **Requires a restart**.',
               default: false
             },
             experimentalWebPlatform: {
               name: 'Experimental Web Platform',
+              desc: 'Enables Chromium\'s experimental Web Platform features that are in development,\n' +
+                'such as CSS `backdrop-filter`. Since features are in development you may\n' +
+                'encounter issues and APIs may change at any time. **Requires a restart**.',
               default: false
             },
             experiments: {
               name: 'Discord Experiments',
+              desc: '**WARNING**: Enabling this gives you access to features that can be **detected by Discord** \n' +
+                'and may result in an **account termination**. Powercord is **not responsible** for what you\n' +
+                'do with this feature. Leave it disabled if you are unsure. The Powercord Team will not provide\n' +
+                'support regarding any experiment.',
               default: false,
               updateHeight: true
             }
@@ -690,6 +737,7 @@ module.exports = (plugin) => [
       settings: {
         send: {
           name: 'Send Hastebin Link',
+          desc: 'Whether the Hastebin link is sent in chat by default or not.',
           default: false
         },
         domain: {
@@ -711,10 +759,14 @@ module.exports = (plugin) => [
       settings: {
         showControls: {
           name: 'Show Advanced Controls',
+          desc: 'Adds shuffle, repeat and other controls to the Spotify modal. Increases the\n' +
+            'height if enabled, if not these controls are available in the context menu.',
           default: true
         },
         noAutoPause: {
           name: 'No Auto-Pause',
+          desc: 'Prevents Discord from automatically pausing Spotify\n' +
+            'playback if you\'re sending voice for more than 30 seconds.',
           default: true,
           func: {
             method: '_patchAutoPause',
@@ -724,6 +776,8 @@ module.exports = (plugin) => [
         },
         showContextIcons: {
           name: 'Show Context Menu Icons',
+          desc: 'Adds icons next to first glace buttons and replaces hints found under the\n' +
+            '\'Devices\' sub-menu with corresponding icons based on the device(s) in-use.',
           default: true
         }
       }
@@ -735,6 +789,7 @@ module.exports = (plugin) => [
           children: {
             checkForUpdates: {
               name: 'Receive Updates',
+              desc: 'Whether Powercord should check for updates.',
               default: true
             },
             checking: {
@@ -859,22 +914,27 @@ module.exports = (plugin) => [
       settings: {
         account: {
           name: 'Account',
+          desc: 'Should your username in account box be colored.',
           default: true
         },
         voice: {
           name: 'Voice Users',
+          desc: 'Should usernames in voice channels be colored.',
           default: true
         },
         mentions: {
           name: 'Mentions',
+          desc: 'Should mentions in chat be colored.',
           default: true
         },
         typing: {
           name: 'Typing Indicator',
+          desc: 'Should typing indicator be colored.',
           default: true
         },
         members: {
           name: 'Members List',
+          desc: 'Should role names in member list be colored.',
           default: true
         }
       }

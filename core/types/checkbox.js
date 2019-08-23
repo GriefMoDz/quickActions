@@ -6,6 +6,7 @@ const utils = require('../utils')();
 
 module.exports = (id, key, plugin, setting) => React.createElement(ToggleMenuItem, {
   label: setting.name,
+  desc: setting.desc,
   disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id).call() : setting.disabled,
   active: powercord.api.settings.store.getSetting((plugin.id ? { id } = plugin.id : id), key, setting.default),
   seperated: setting.seperate,

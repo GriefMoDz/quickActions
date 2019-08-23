@@ -4,7 +4,10 @@ const { SubMenuItem } = require('../components/ContextMenu');
 module.exports = (id, key, plugin, setting, name) => {
   const children = [];
   const submenu = React.createElement(SubMenuItem, {
-    label: setting.name,
+    label: setting.children && setting.displayCounter
+      ? `${setting.name} (${powercord.api.settings.store.getSetting(plugin.id ? { id } = plugin.id : id, key, []).length})`
+      : setting.name,
+    desc: setting.desc,
     invertChildY: true,
     seperated: setting.seperate,
     render: typeof setting.children === 'function'

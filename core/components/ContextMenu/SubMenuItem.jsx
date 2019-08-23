@@ -5,8 +5,12 @@ const SubMenuItem = AsyncComponent.from(getModuleByDisplayName('FluxContainer(Su
 
 module.exports = class NewSubMenuItem extends React.Component {
   render () {
-    const itemSubMenu = React.createElement(SubMenuItem,
-      Object.assign({}, this.props, null));
+    const itemSubMenu = React.createElement('div', {
+      className: 'quickActions-contextMenu-submenu',
+      title: this.props.desc || ''
+    }, React.createElement(SubMenuItem,
+      Object.assign({}, this.props, null))
+    );
 
     if (this.props.seperated) {
       return (
