@@ -58,7 +58,7 @@ class QuickActionsR extends Plugin {
       const items = [];
 
       powercord.api.settings.tabs.forEach(item => {
-        items.push(item.section === 'pc-pluginManager'
+       items.push(item.section === 'pc-pluginManager'
           ? this.buildContentMenu(true)
           : this.buildSettingMenu(item.label, item.section));
       });
@@ -174,15 +174,68 @@ class QuickActionsR extends Plugin {
       const id = (checkForPlugins ? plugins : themes)[key];
       const metadata = (checkForPlugins ? powercord.pluginManager : powercord.styleManager).get(id).manifest;
       const isContentDisabled = (checkForPlugins ? disabledPlugins : disabledThemes).includes(id);
-      const child = React.createElement(ToggleMenuItem, {
+      const props = {
         label: id,
         desc: `${metadata.name}${metadata.author !== 'Unknown' ? ` by ${metadata.author} ` : ' '}(v${metadata.version})`,
-        active: !isContentDisabled,
-        seperated: children.length < 1 ? true : '',
-        action: () => checkForPlugins
-          ? (this.utils.togglePlugin(id), this.utils.forceUpdate())
-          : this.utils.toggleTheme(id)
-      });
+        seperated: children.length < 1 ? true : ''
+      };
+
+      let child;
+
+      if (checkForPlugins) {
+        const hiddenPlugins = powercord.api.settings.store.getSetting('pc-general', 'hiddenPlugins', []);
+
+        child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
+          ...props,
+          invertChildY: true,
+          render: [ React.createElement(ToggleMenuItem, {
+            label: 'Hidden',
+            active: hiddenPlugins.includes(id),
+            action: (state) => {
+              if (state) {
+                hiddenPlugins.push(id);
+              } else {
+                hiddenPlugins.splice(hiddenPlugins.indexOf(id), 1);
+              }
+
+              powercord.api.settings.actions.updateSetting('pc-general', 'hiddenPlugins', hiddenPlugins);
+
+              this.utils.forceUpdate();
+            }
+          }), React.createElement(ToggleMenuItem, {
+            label: 'Enabled',
+            active: !isContentDisabled,
+            action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
+          }), React.createElement(ImageMenuItem, {
+            label: 'Reload Plugin',
+            image: 'fa-sync',
+            styles: { color: '#43b581' },
+            seperated: true,
+            action: async () => {
+              await powercord.pluginManager.remount(id);
+
+              if (!powercord.pluginManager.isEnabled(id)) {
+                powercord.pluginManager.unload(id);
+              }
+
+              this.utils.forceUpdate();
+            }
+          }), !(/^pc-[a-zA-Z0-9]+$/).test(id)
+            ? React.createElement(ImageMenuItem, {
+              label: 'Uninstall Plugin',
+              image: 'fa-trash-alt',
+              danger: true,
+              action: () => this.utils.showUninstallModal(id, metadata)
+            })
+            : null ]
+        });
+      } else {
+        child = React.createElement(ToggleMenuItem, {
+          ...props,
+          active: !isContentDisabled,
+          action: () => this.utils.toggleTheme(id)
+        });
+      }
 
       children.push(child);
     }

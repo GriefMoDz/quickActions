@@ -41,6 +41,33 @@ module.exports = (plugin = null) => ({
       themes };
   },
 
+  async uninstallPlugin (pluginId) {
+    const { existsSync, promises: { lstat, readdir, rmdir, unlink } } = require('fs');
+    const { pluginManager } = powercord;
+
+    const rmdirRf = async (path) => {
+      if (existsSync(path)) {
+        const files = await readdir(path);
+
+        await Promise.all(files.map(async (file) => {
+          const currentPath = `${path}/${file}`;
+          const stat = await lstat(currentPath);
+
+          if (stat.isDirectory()) {
+            await rmdirRf(currentPath);
+          } else {
+            await unlink(currentPath);
+          }
+        }));
+
+        await rmdir(path);
+      }
+    };
+
+    await pluginManager.unmount(pluginId);
+    await rmdirRf(require('path').resolve(pluginManager.pluginDir, pluginId));
+  },
+
   togglePlugin (pluginId) {
     return !powercord.pluginManager.isEnabled(pluginId)
       ? powercord.pluginManager.enable(pluginId)
@@ -136,6 +163,19 @@ module.exports = (plugin = null) => ({
         }
       }
     }
+  },
+
+  showUninstallModal (pluginId, metadata) {
+    const GenericModal = require('./components/Modal');
+    this.openModal(React.createElement(GenericModal, {
+      red: true,
+      header: `Uninstall '${metadata.name}'`,
+      confirmText: 'Uninstall Plugin',
+      cancelText: 'Cancel',
+      desc: `Are you sure you want to uninstall <b>${metadata.name}</b> (${pluginId})?`,
+      onConfirm: () => ((this.uninstallPlugin(pluginId), closeModal())),
+      onCancel: () => closeModal()
+    }));
   },
 
   showSettingModal (opts) {

@@ -44,6 +44,8 @@ module.exports = class Modal extends React.Component {
         size={Confirm.Sizes[this.props.size ? this.props.size.toUpperCase() : null] || Confirm.Sizes.SMALL}
       >
         <div class='quickActions-modal-inner'>
+          {this.props.desc && (this.getModalInnerDesc())}
+
           {this.options && this.options.key === 'clearCache' && (
             <div className='quickActions-modal-inner-desc'>
               Are you sure you want to clear cache?
@@ -172,5 +174,14 @@ module.exports = class Modal extends React.Component {
         </div>
       </Confirm>
     </div>;
+  }
+
+  getModalInnerDesc () {
+    const modalInnerDesc = React.createElement('div', {
+      className: 'quickActions-modal-inner-desc',
+      dangerouslySetInnerHTML: { __html: this.props.desc }
+    });
+
+    return modalInnerDesc;
   }
 };
