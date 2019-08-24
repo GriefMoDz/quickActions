@@ -46,7 +46,10 @@ class QuickActionsR extends Plugin {
       this.settingsStore.set('plugins', plugin);
     });
 
-    this.utils.checkForUpdates();
+    if (this.settings.get('autoupdates', true)) {
+      this.utils.checkForUpdates();
+    }
+
     this.state.initializedStore = true;
   }
 
@@ -58,7 +61,7 @@ class QuickActionsR extends Plugin {
       const items = [];
 
       powercord.api.settings.tabs.forEach(item => {
-       items.push(item.section === 'pc-pluginManager'
+        items.push(item.section === 'pc-pluginManager'
           ? this.buildContentMenu(true)
           : this.buildSettingMenu(item.label, item.section));
       });
@@ -71,6 +74,26 @@ class QuickActionsR extends Plugin {
           items.push(this.buildContentMenu());
         }
       }
+
+      items.push(React.createElement(SubMenuItem, {
+        label: 'Quick Actions',
+        invertChildY: true,
+        render: [ React.createElement(ToggleMenuItem, {
+          label: 'Auto Updates',
+          active: this.settings.get('autoupdates', true),
+          action: (state) => {
+            if (state && powercord.pluginManager.get('pc-announcements')) {
+              const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
+              dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
+
+              powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
+            }
+
+            this.settings.set('autoupdates', state);
+            this.utils.forceUpdate();
+          }
+        }) ]
+      }));
 
       const parent = React.createElement(SubMenuItem, {
         label: 'Powercord',
@@ -211,14 +234,24 @@ class QuickActionsR extends Plugin {
             image: 'fa-sync',
             styles: { color: '#43b581' },
             seperated: true,
-            action: async () => {
-              await powercord.pluginManager.remount(id);
+            action: async (state) => {
+              const { image } = state;
 
-              if (!powercord.pluginManager.isEnabled(id)) {
-                powercord.pluginManager.unload(id);
-              }
+              state.label = 'Reloading...';
+              state.image = 'fa-sync fa-spin';
 
-              this.utils.forceUpdate();
+              setTimeout(async () => {
+                await powercord.pluginManager.remount(id).then(() => {
+                  state.label = 'Plugin Reloaded!';
+                  state.image = image;
+                });
+
+                if (!powercord.pluginManager.isEnabled(id)) {
+                  powercord.pluginManager.unload(id);
+                }
+
+                this.utils.forceUpdate();
+              }, 3e3);
             }
           }), !(/^pc-[a-zA-Z0-9]+$/).test(id)
             ? React.createElement(ImageMenuItem, {

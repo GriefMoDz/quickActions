@@ -18,6 +18,7 @@ module.exports = (id, key, plugin, setting, name) => {
       : setting.new ? setting.new.hint : setting.hint,
     image: setting.image,
     styles: { color: setting.modal ? '#43b581' : setting.color },
+    static: typeof setting.new !== 'undefined',
     action: setting.modal && !setting.action
       ? () => utils.showSettingModal({ id,
         key,

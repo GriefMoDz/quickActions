@@ -241,6 +241,11 @@ module.exports = (plugin = null) => ({
   },
 
   async checkForUpdates () {
+    const announcements = powercord.pluginManager.get('pc-announcements');
+    if (announcements.settings.get('dismissed', []).includes('quickActions-pending-update')) {
+      return plugin.settings.set('autoupdates', false);
+    }
+
     const lastCommitHash = await get('https://api.github.com/repos/GriefMoDz/quickActions/commits/master')
       .then(res => res.body.sha);
 
@@ -250,7 +255,6 @@ module.exports = (plugin = null) => ({
     const { version: latestVersion } = await get(manifestUrl)
       .then(res => res.body);
 
-    const announcements = powercord.pluginManager.get('pc-announcements');
     if (plugin.manifest.version < latestVersion && announcements) {
       const currentUser = (await getModule([ 'getCurrentUser' ])).getCurrentUser();
 
@@ -287,7 +291,7 @@ module.exports = (plugin = null) => ({
             }
           }
         },
-        alwaysDisplay: true
+        alwaysDisplay: plugin.settings.get('autoupdates') ? true : ''
       });
     }
   }

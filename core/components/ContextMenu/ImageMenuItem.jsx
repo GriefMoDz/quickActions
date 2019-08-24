@@ -4,11 +4,21 @@ const { Tooltip } = require('powercord/components');
 const utils = require('../../utils')();
 
 module.exports = class ImageMenuItem extends React.Component {
+  constructor (props) {
+    super(props);
+
+    this.state = {
+      label: props.label,
+      image: props.image,
+      hint: props.hint
+    };
+  }
+
   handleClick () {
     this.props.disabled = !this.props.disabled;
 
     if (this.props.disabled) {
-      this.props.action(this.props.disabled);
+      this.props.action(this.state, this.props.disabled);
     }
 
     utils.forceUpdate();
@@ -16,7 +26,7 @@ module.exports = class ImageMenuItem extends React.Component {
 
   render () {
     const item = (
-      <Tooltip text={this.props.label.length >= 21 ? this.props.label : ''} position='right'>
+      <Tooltip text={this.state.label.length >= 21 ? this.state.label : ''} position='right'>
         <div
           className={`quickActions-contextMenu-button item-1Yvehc itemImage-htIz_v
           ${this.props.disabled ? 'disabled' : ''}`}
@@ -24,12 +34,12 @@ module.exports = class ImageMenuItem extends React.Component {
           onClick={this.handleClick.bind(this)}
         >
           <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
-            {this.props.label}
+            {this.props.static ? this.props.label : this.state.label}
           </span>
 
           {this.props.image
             ? this.getItemImage()
-            : <div className='hint-22uc-R'>{this.props.hint}</div>}
+            : <div className='hint-22uc-R'>{this.props.static ? this.props.hint : this.state.hint}</div>}
         </div>
       </Tooltip>
     );
@@ -47,16 +57,16 @@ module.exports = class ImageMenuItem extends React.Component {
 
   getItemImage () {
     return (
-      this.props.image.startsWith('fa-')
+      this.state.image.startsWith('fa-')
         ? <div
-          className={`${this.props.image.endsWith('-regular')
+          className={`${this.state.image.endsWith('-regular')
             ? 'far'
-            : this.props.image.endsWith('-brand')
+            : this.state.image.endsWith('-brand')
               ? 'fab'
               : 'fas'}
-            ${this.props.image.replace(/-regular|-brand/gi, '')} fa-fw`} />
+            ${this.state.image.replace(/-regular|-brand/gi, '')} fa-fw`} />
         : <img alt='' className={this.props.className || ''}
-          src={this.props.image} />
+          src={this.state.image} />
     );
   }
 };

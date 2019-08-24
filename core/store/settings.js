@@ -798,16 +798,15 @@ module.exports = (plugin) => [
               image: 'fa-sync',
               color: '#7289da',
               seperate: true,
-              action: async (id, _, setting) => {
-                setting.new = {};
-                setting.new.name = 'Checking...';
+              action: async (id, _, __, ___, state) => {
+                const { label, image } = state;
 
-                setting.image = 'fa-sync fa-spin';
+                state.label = 'Checking...';
+                state.image = 'fa-sync fa-spin';
 
                 powercord.pluginManager.get(id).checkForUpdate().then(() => {
-                  delete setting.new;
-
-                  setting.image = 'fa-sync';
+                  state.label = label;
+                  state.image = image;
 
                   plugin.utils.forceUpdate();
                 });
@@ -967,7 +966,7 @@ module.exports = (plugin) => [
           seperate: true,
           modal: {
             slider: {
-          markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
+              markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
               onMarkerRender: (value) => value < 60 ? `${value}min` : `${value / 60}hr`
             }
           },
