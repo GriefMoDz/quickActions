@@ -828,6 +828,32 @@ module.exports = (plugin) => [
         }
       }
     },
+    [plugin.pluginID]: {
+      hide: () => plugin.pluginID !== 'quickActions',
+      settings: {
+        autoupdates: {
+          name: 'Auto Updates',
+          default: true,
+          action: (state) => {
+            const announcements = powercord.pluginManager.get('pc-announcements');
+            if (announcements) {
+              if (state) {
+                const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
+                dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
+
+                powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
+              } else {
+                announcements.closeNotice('quickActions-pending-update');
+              }
+            }
+          }
+        },
+        showDescriptions: {
+          name: 'Show Descriptions',
+          default: true
+        }
+      }
+    },
     quote: {
       unofficial: true,
       settings: {

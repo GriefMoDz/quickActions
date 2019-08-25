@@ -59,41 +59,26 @@ class QuickActionsR extends Plugin {
     const SettingsContextMenu = (await getModuleByDisplayName('UserSettingsCogContextMenu'));
     inject('quickActions-SettingsContextMenu', SettingsContextMenu.prototype, 'render', (_, res) => {
       const items = [];
+      const hiddenPlugins = powercord.api.settings.store.getSetting('pc-general', 'hiddenPlugins', []);
 
       powercord.api.settings.tabs.forEach(item => {
-        items.push(item.section === 'pc-pluginManager'
-          ? this.buildContentMenu(true)
-          : this.buildSettingMenu(item.label, item.section));
+        if (!hiddenPlugins.includes(item.section)) {
+          items.push(item.section === 'pc-pluginManager'
+            ? this.buildContentMenu(true)
+            : this.buildSettingMenu(item.label, item.section));
+        }
       });
 
-      if (powercord.pluginManager.isEnabled('pc-styleManager')) {
+      if (powercord.pluginManager.isEnabled('pc-styleManager') && !hiddenPlugins.includes('pc-styleManager')) {
         const pluginsMenu = items.find(item => item.props.label === 'Plugins');
         if (pluginsMenu) {
           items.splice(items.indexOf(pluginsMenu) + 1, 0, this.buildContentMenu());
         } else {
-          items.push(this.buildContentMenu());
+          items.splice(1, 0, this.buildContentMenu());
         }
       }
 
-      items.push(React.createElement(SubMenuItem, {
-        label: 'Quick Actions',
-        invertChildY: true,
-        render: [ React.createElement(ToggleMenuItem, {
-          label: 'Auto Updates',
-          active: this.settings.get('autoupdates', true),
-          action: (state) => {
-            if (state && powercord.pluginManager.get('pc-announcements')) {
-              const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
-              dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
-
-              powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
-            }
-
-            this.settings.set('autoupdates', state);
-            this.utils.forceUpdate();
-          }
-        }) ]
-      }));
+      items.push(this.buildSettingMenu('⭐ Quick Actions', this.pluginID));
 
       const parent = React.createElement(SubMenuItem, {
         label: 'Powercord',
@@ -119,8 +104,6 @@ class QuickActionsR extends Plugin {
   }
 
   buildSettingMenu (name, id) {
-    const { SubMenuItem } = this.state;
-
     const items = [];
     const plugin = this.settingsStore.get('plugins')[id];
     if (plugin) {
@@ -129,19 +112,19 @@ class QuickActionsR extends Plugin {
         if (setting) {
           let item;
 
+          if (typeof setting.hide === 'function'
+            ? setting.hide.bind(this, (plugin.id ? { id } = plugin.id : id)).call()
+            : setting.hide
+          ) {
+            continue;
+          }
+
           switch (setting.type) {
             case 'button':
               item = require('./core/types/button').bind(this, id, key, plugin, setting, name)();
 
               break;
             case 'submenu':
-              if (typeof setting.hide === 'function'
-                ? setting.hide.bind(this, (plugin.id ? { id } = plugin.id : id)).call()
-                : setting.hide
-              ) {
-                continue;
-              }
-
               item = require('./core/types/submenu').bind(this, id, key, plugin, setting, name)();
 
               break;
@@ -160,13 +143,18 @@ class QuickActionsR extends Plugin {
       }
     }
 
+    if (typeof plugin.hide === 'function' ? plugin.hide.call() : plugin.hide) {
+      return null;
+    }
+
     const props = {
       label: name,
-      action: () => this.utils.showCategory(id)
+      seperated: id === this.pluginID ? true : '',
+      action: () => id !== this.pluginID ? this.utils.showCategory(id) : null
     };
 
     if (items.length > 0) {
-      return React.createElement(SubMenuItem, {
+      return React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
         ...props,
         invertChildY: true,
         render: items
@@ -207,25 +195,28 @@ class QuickActionsR extends Plugin {
 
       if (checkForPlugins) {
         const hiddenPlugins = powercord.api.settings.store.getSetting('pc-general', 'hiddenPlugins', []);
+        const enforcedPlugins = [ 'pc-settings', 'pc-pluginManager', 'pc-updater' ];
 
         child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
           ...props,
           invertChildY: true,
-          render: [ React.createElement(ToggleMenuItem, {
-            label: 'Hidden',
-            active: hiddenPlugins.includes(id),
-            action: (state) => {
-              if (state) {
-                hiddenPlugins.push(id);
-              } else {
-                hiddenPlugins.splice(hiddenPlugins.indexOf(id), 1);
+          render: [ !enforcedPlugins.includes(id)
+            ? React.createElement(ToggleMenuItem, {
+              label: 'Hidden',
+              active: hiddenPlugins.includes(id),
+              action: (state) => {
+                if (state) {
+                  hiddenPlugins.push(id);
+                } else {
+                  hiddenPlugins.splice(hiddenPlugins.indexOf(id), 1);
+                }
+
+                powercord.api.settings.actions.updateSetting('pc-general', 'hiddenPlugins', hiddenPlugins);
+
+                this.utils.forceUpdate();
               }
-
-              powercord.api.settings.actions.updateSetting('pc-general', 'hiddenPlugins', hiddenPlugins);
-
-              this.utils.forceUpdate();
-            }
-          }), React.createElement(ToggleMenuItem, {
+            })
+            : null, React.createElement(ToggleMenuItem, {
             label: 'Enabled',
             active: !isContentDisabled,
             action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
@@ -277,6 +268,14 @@ class QuickActionsR extends Plugin {
       label: `Installed ${checkForPlugins ? 'Plugins' : 'Themes'} (${children.length})`,
       invertChildY: true,
       render: children
+    }), React.createElement(ImageMenuItem, {
+      label: `Open ${checkForPlugins ? 'Plugins' : 'Themes'} Folder`,
+      image: 'fa-folder-open',
+      styles: { color: '#7289da' },
+      seperated: true,
+      action: () => this.utils.openFolder(`${checkForPlugins
+        ? powercord.pluginManager.pluginDir
+        : powercord.styleManager.themesDir}`)
     }));
 
     if (checkForPlugins) {
@@ -286,16 +285,6 @@ class QuickActionsR extends Plugin {
         action: (state) => ((this.settings.set('showHiddenPlugins', state), this.utils.forceUpdate()))
       }));
     }
-
-    items.push(React.createElement(ImageMenuItem, {
-      label: `Open ${checkForPlugins ? 'Plugins' : 'Themes'} Folder`,
-      image: 'fa-folder-open',
-      styles: { color: '#7289da' },
-      seperated: true,
-      action: () => this.utils.openFolder(`${checkForPlugins
-        ? powercord.pluginManager.pluginDir
-        : powercord.styleManager.themesDir}`)
-    }));
 
     return submenu;
   }
