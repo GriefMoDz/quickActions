@@ -22,6 +22,7 @@ module.exports = (plugin = null) => ({
       });
 
     return { disabledPlugins,
+      hiddenPlugins,
       plugins };
   },
 
@@ -190,7 +191,7 @@ module.exports = (plugin = null) => ({
           }
         }
       },
-      utils: this,
+      plugin,
       options: opts
     }));
   },
@@ -264,29 +265,38 @@ module.exports = (plugin = null) => ({
         message: `G'day, ${currentUser.username}! We've noticed that you're running an older instance of "Quick Actions". ` +
           'You should consider updating to the latest build so that you don\'t miss out on any important updates or newly added features! 😊',
         button: {
-          text: 'Update Now!',
+          text: 'Update Now',
           onClick: async () => {
             announcements.closeNotice('quickActions-pending-update');
 
             const { pluginDir } = powercord.pluginManager;
             const { join } = require('path');
 
-            if (require('fs').promises.stat(join(pluginDir, `${plugin.pluginID}/.git`))) {
-              await require('util').promisify(exec)(
-                'git pull --ff-only --verbose', { cwd: join(pluginDir, plugin.pluginID) }
-              ).catch(err => plugin.error(err)).then(async res => {
-                if (res.stdout.includes('\nFast-forward\n')) {
-                  announcements.sendNotice({
-                    id: 'quickActions-successful-update',
-                    type: announcements.Notice.TYPES.GREEN,
-                    message: `Quick Actions was successfully updated to the latest build (v${latestVersion}) - remounting plug-in! Sit tight...`,
-                    alwaysDisplay: true
-                  });
+            try {
+              if (require('fs').promises.stat(join(pluginDir, `${plugin.pluginID}/.git`))) {
+                await require('util').promisify(exec)(
+                  'git pull --ff-only --verbose', { cwd: join(pluginDir, plugin.pluginID) }
+                ).catch(err => plugin.error(err)).then(async res => {
+                  if (res.stdout.includes('\nFast-forward\n')) {
+                    announcements.sendNotice({
+                      id: 'quickActions-successful-update',
+                      type: announcements.Notice.TYPES.GREEN,
+                      message: `Quick Actions was successfully updated to the latest build (v${latestVersion}) - remounting plug-in! Sit tight...`,
+                      alwaysDisplay: true
+                    });
 
-                  setTimeout(async () => powercord.pluginManager.remount(plugin.pluginID).then(
-                    () => announcements.closeNotice('quickActions-successful-update')
-                  ), 10e3);
-                }
+                    setTimeout(async () => powercord.pluginManager.remount(plugin.pluginID).then(
+                      () => announcements.closeNotice('quickActions-successful-update')
+                    ), 10e3);
+                  }
+                });
+              }
+            } catch (_) {
+              announcements.sendNotice({
+                id: 'quickActions-failed-update',
+                type: announcements.Notice.TYPES.RED,
+                message: 'Oops! It seems you\'ve downloaded "Quick Actions" from GitHub. You should instead clone the repo to open yourself up to auto-updates.',
+                alwaysDisplay: true
               });
             }
           }

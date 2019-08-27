@@ -1,18 +1,18 @@
 const { React } = require('powercord/webpack');
 const { SubMenuItem } = require('../components/ContextMenu');
 
-module.exports = (id, key, plugin, setting, name) => {
+module.exports = (id, key, plugin, setting, name, main) => {
+  id = plugin.id ? { id } = plugin.id : id;
+
   const children = [];
   const submenu = React.createElement(SubMenuItem, {
     label: setting.children && setting.displayCounter
-      ? `${setting.name} (${powercord.api.settings.store.getSetting(plugin.id ? { id } = plugin.id : id, key, []).length})`
+      ? `${setting.name} (${powercord.api.settings.store.getSetting(id, key, []).length})`
       : setting.name,
-    desc: !powercord.api.settings.store.getSetting('quickActions', 'showDescriptions', true) ? '' : setting.desc,
+    desc: !main.settings.get('showDescriptions', true) ? '' : setting.desc,
     invertChildY: true,
     seperated: setting.seperate,
-    render: typeof setting.children === 'function'
-      ? setting.children.bind(this, (plugin.id ? { id } = plugin.id : id), key)
-      : children,
+    render: typeof setting.children === 'function' ? setting.children.bind(this, id, key) : children,
     action: typeof setting.action === 'function' ? setting.action.bind(this, id, key) : null
   });
 
@@ -22,19 +22,19 @@ module.exports = (id, key, plugin, setting, name) => {
 
     switch (setting.type) {
       case 'button':
-        child = require('./button')(id, childKey, plugin, setting, name);
+        child = require('./button').bind(this, id, childKey, plugin, setting, name)(main);
 
         break;
       case 'submenu':
-        child = require('./submenu')(id, childKey, plugin, setting, name);
+        child = require('./submenu').bind(this, id, childKey, plugin, setting, name)(main);
 
         break;
       case 'slider':
-        child = require('./slider')(id, childKey, plugin, setting);
+        child = require('./slider').bind(this, id, childKey, plugin, setting)(main);
 
         break;
       default:
-        child = require('./checkbox')(id, childKey, plugin, setting);
+        child = require('./checkbox').bind(this, id, childKey, plugin, setting)(main);
 
         break;
     }

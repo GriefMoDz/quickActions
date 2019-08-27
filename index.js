@@ -3,7 +3,6 @@
 const { Plugin } = require('powercord/entities');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
-
 const { ImageMenuItem, MenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
 
 class QuickActionsR extends Plugin {
@@ -16,6 +15,7 @@ class QuickActionsR extends Plugin {
     };
 
     this.utils = require('./core/utils')(this);
+    this.state.hiddenPlugins = this.utils.getPlugins().hiddenPlugins;
   }
 
   get settingsStore () {
@@ -42,8 +42,12 @@ class QuickActionsR extends Plugin {
   }
 
   initializeStore () {
-    this.state.settings.forEach(plugin => {
-      this.settingsStore.set('plugins', plugin);
+    this.state.settings.forEach(plugins => {
+      this.settingsStore.set('plugins', plugins);
+    });
+
+    Object.keys(this.store.get('plugins')).forEach(id => {
+      this.store.get('plugins')[id].official = (/^pc-[a-zA-Z0-9]+$/).test(id);
     });
 
     if (this.settings.get('autoupdates', true)) {
@@ -54,19 +58,16 @@ class QuickActionsR extends Plugin {
   }
 
   async patchSettingsContextMenu () {
-    const { SubMenuItem } = this.state;
+    const { SubMenuItem, hiddenPlugins } = this.state;
 
     const SettingsContextMenu = (await getModuleByDisplayName('UserSettingsCogContextMenu'));
     inject('quickActions-SettingsContextMenu', SettingsContextMenu.prototype, 'render', (_, res) => {
       const items = [];
-      const hiddenPlugins = powercord.api.settings.store.getSetting('pc-general', 'hiddenPlugins', []);
 
       powercord.api.settings.tabs.forEach(item => {
-        if (!hiddenPlugins.includes(item.section)) {
-          items.push(item.section === 'pc-pluginManager'
-            ? this.buildContentMenu(true)
-            : this.buildSettingMenu(item.label, item.section));
-        }
+        items.push(item.section === 'pc-pluginManager'
+          ? this.buildContentMenu(true)
+          : this.buildSettingMenu(item.label, item.section));
       });
 
       if (powercord.pluginManager.isEnabled('pc-styleManager') && !hiddenPlugins.includes('pc-styleManager')) {
@@ -104,16 +105,25 @@ class QuickActionsR extends Plugin {
   }
 
   buildSettingMenu (name, id) {
+    const { hiddenPlugins } = this.state;
+
     const items = [];
     const plugin = this.settingsStore.get('plugins')[id];
     if (plugin) {
+      if (hiddenPlugins.includes(plugin.id ? { id } = plugin.id : id) || typeof plugin.hide === 'function'
+        ? plugin.hide.call()
+        : plugin.hide
+      ) {
+        return null;
+      }
+
       for (const key in plugin.settings) {
         const setting = plugin.settings[key];
         if (setting) {
           let item;
 
           if (typeof setting.hide === 'function'
-            ? setting.hide.bind(this, (plugin.id ? { id } = plugin.id : id)).call()
+            ? setting.hide.bind(this, id).call()
             : setting.hide
           ) {
             continue;
@@ -121,19 +131,19 @@ class QuickActionsR extends Plugin {
 
           switch (setting.type) {
             case 'button':
-              item = require('./core/types/button').bind(this, id, key, plugin, setting, name)();
+              item = require('./core/types/button').bind(this, id, key, plugin, setting, name)(this);
 
               break;
             case 'submenu':
-              item = require('./core/types/submenu').bind(this, id, key, plugin, setting, name)();
+              item = require('./core/types/submenu').bind(this, id, key, plugin, setting, name)(this);
 
               break;
             case 'slider':
-              item = require('./core/types/slider').bind(this, id, key, plugin, setting)();
+              item = require('./core/types/slider').bind(this, id, key, plugin, setting)(this);
 
               break;
             default:
-              item = require('./core/types/checkbox').bind(this, id, key, plugin, setting)();
+              item = require('./core/types/checkbox').bind(this, id, key, plugin, setting)(this);
           }
 
           Object.keys(item.props).forEach(key => !item.props[key] ? delete item.props[key] : '');
@@ -141,10 +151,6 @@ class QuickActionsR extends Plugin {
           items.push(item);
         }
       }
-    }
-
-    if (typeof plugin.hide === 'function' ? plugin.hide.call() : plugin.hide) {
-      return null;
     }
 
     const props = {
@@ -167,7 +173,7 @@ class QuickActionsR extends Plugin {
   }
 
   buildContentMenu (checkForPlugins) {
-    const { SubMenuItem } = this.state;
+    const { SubMenuItem, hiddenPlugins } = this.state;
     const { plugins, disabledPlugins } = this.utils.getPlugins();
     const { themes, disabledThemes } = this.utils.getThemes();
 
@@ -194,7 +200,6 @@ class QuickActionsR extends Plugin {
       let child;
 
       if (checkForPlugins) {
-        const hiddenPlugins = powercord.api.settings.store.getSetting('pc-general', 'hiddenPlugins', []);
         const enforcedPlugins = [ 'pc-settings', 'pc-pluginManager', 'pc-updater' ];
 
         child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
@@ -287,10 +292,6 @@ class QuickActionsR extends Plugin {
     }
 
     return submenu;
-  }
-
-  getGuilds () {
-    return this.state.sortedGuildsStore.getFlattenedGuilds();
   }
 }
 

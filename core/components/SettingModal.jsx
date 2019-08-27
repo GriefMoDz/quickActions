@@ -14,7 +14,7 @@ module.exports = class SettingModal extends React.Component {
   constructor (props) {
     super(props);
 
-    this.utils = this.props.utils;
+    this.plugin = this.props.plugin;
     this.options = this.props.options;
     this.state = {
       inputText: powercord.api.settings.store
@@ -90,7 +90,7 @@ module.exports = class SettingModal extends React.Component {
                 onChange={(item) => {
                   textArea.focus();
 
-                  this.utils.insertAtCaret(textArea, item.value);
+                  this.plugin.utils.insertAtCaret(textArea, item.value);
                   this.setState({ inputText: textArea.value });
                 }}
               />
@@ -142,7 +142,7 @@ module.exports = class SettingModal extends React.Component {
                 )}
               </FormTitle>
               <ColorPicker
-                colors={this.utils.getDefaultColors() || setting.colors}
+                colors={this.plugin.utils.getDefaultColors() || setting.colors}
                 defaultColor={parseInt(setting.default.replace('#', ''), 16) || 0}
                 onChange={(value) => this.setState({ color: value,
                   inputText: `#${value !== 0 ? parseInt(String(value)).toString(16) : '000000'}` })}
@@ -242,7 +242,7 @@ module.exports = class SettingModal extends React.Component {
   getGuilds () {
     const guilds = [];
 
-    powercord.pluginManager.get('quickActions').getGuilds().map(g => {
+    this.plugin.state.sortedGuildsStore.getFlattenedGuilds().map(g => {
       const guild = {
         label: `${g.id} (${g.name})`,
         value: g.id
