@@ -110,10 +110,16 @@ class QuickActionsR extends Plugin {
     const items = [];
     const plugin = this.settingsStore.get('plugins')[id];
     if (plugin) {
-      if (hiddenPlugins.includes(plugin.id ? { id } = plugin.id : id) || typeof plugin.hide === 'function'
-        ? plugin.hide.call()
-        : plugin.hide
-      ) {
+      id = plugin.id ? plugin.id : id;
+
+      if (hiddenPlugins.includes(id)) {
+        return null;
+      } else if (typeof plugin.hide === 'function') {
+        const hidePlugin = plugin.hide();
+        if (hidePlugin) {
+          return null;
+        }
+      } else if (plugin.hide) {
         return null;
       }
 
@@ -122,16 +128,18 @@ class QuickActionsR extends Plugin {
         if (setting) {
           let item;
 
-          if (typeof setting.hide === 'function'
-            ? setting.hide.bind(this, id).call()
-            : setting.hide
-          ) {
+          if (typeof setting.hide === 'function') {
+            const hideSetting = setting.hide.bind(this, id)();
+            if (hideSetting) {
+              continue;
+            }
+          } else if (setting.hide) {
             continue;
           }
 
           switch (setting.type) {
             case 'button':
-              item = require('./core/types/button').bind(this, id, key, plugin, setting, name)(this);
+              item = require('./core/types/button').bind(this, id, key, setting, name)(this);
 
               break;
             case 'submenu':
@@ -139,11 +147,11 @@ class QuickActionsR extends Plugin {
 
               break;
             case 'slider':
-              item = require('./core/types/slider').bind(this, id, key, plugin, setting)(this);
+              item = require('./core/types/slider').bind(this, id, key, setting)(this);
 
               break;
             default:
-              item = require('./core/types/checkbox').bind(this, id, key, plugin, setting)(this);
+              item = require('./core/types/checkbox').bind(this, id, key, setting)(this);
           }
 
           Object.keys(item.props).forEach(key => !item.props[key] ? delete item.props[key] : '');
@@ -173,8 +181,8 @@ class QuickActionsR extends Plugin {
   }
 
   buildContentMenu (checkForPlugins) {
-    const { SubMenuItem, hiddenPlugins } = this.state;
-    const { plugins, disabledPlugins } = this.utils.getPlugins();
+    const { SubMenuItem } = this.state;
+    const { plugins, hiddenPlugins, disabledPlugins } = this.utils.getPlugins();
     const { themes, disabledThemes } = this.utils.getThemes();
 
     const items = [];

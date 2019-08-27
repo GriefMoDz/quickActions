@@ -37,7 +37,7 @@ module.exports = class SettingModal extends React.Component {
     if (!setting.default) {
       setting.default = '';
     } else if (typeof setting.placeholder === 'function') {
-      setting.placeholder = setting.placeholder.bind(this, id).call();
+      setting.placeholder = setting.placeholder.bind(this, id)();
     }
 
     const textArea = document.getElementById('quickActions-textArea');

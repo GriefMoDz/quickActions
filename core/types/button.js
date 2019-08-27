@@ -1,16 +1,14 @@
 const { React } = require('powercord/webpack');
 const { ImageMenuItem } = require('../components/ContextMenu');
 
-module.exports = (id, key, plugin, setting, name, main) => {
-  id = plugin.id ? { id } = plugin.id : id;
-
+module.exports = (id, key, setting, name, main) => {
   const mode = powercord.api.settings.store.getSetting(id, key, setting.default);
 
   return React.createElement(ImageMenuItem, {
     label: setting.newValue
       ? `Switch to ${mode !== setting.default ? setting.new.name : setting.name}`
       : setting.new ? setting.new.name : setting.name,
-    disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id).call() : setting.disabled,
+    disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id)() : setting.disabled,
     danger: setting.dangerous,
     seperated: setting.seperate,
     hint: setting.newValue
