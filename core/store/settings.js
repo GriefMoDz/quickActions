@@ -856,6 +856,10 @@ module.exports = (plugin) => [ {
           showHiddenPlugins: {
             name: 'Show Hidden Plugins',
             default: false
+          },
+          showExplorePlugins: {
+            name: 'Show Explore Plugins',
+            default: true
           }
         },
         type: 'submenu',

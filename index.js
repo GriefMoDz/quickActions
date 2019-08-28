@@ -114,6 +114,7 @@ class QuickActionsR extends Plugin {
   buildSettingMenu (name, id) {
     const { hiddenPlugins } = this.state;
 
+    const id_ = id;
     const items = [];
     const plugin = this.settingsStore.get('plugins')[id];
     if (plugin) {
@@ -172,7 +173,7 @@ class QuickActionsR extends Plugin {
     const props = {
       label: name,
       seperated: id === this.pluginID,
-      action: () => id !== this.pluginID ? this.utils.showCategory(id) : null
+      action: () => id !== this.pluginID ? this.utils.showCategory(id_) : null
     };
 
     if (items.length > 0) {
@@ -211,7 +212,7 @@ class QuickActionsR extends Plugin {
       const props = {
         label: id,
         desc: `${metadata.name}${metadata.author !== 'Unknown' ? ` by ${metadata.author} ` : ' '}(v${metadata.version})`,
-        seperated: children.length < 1 ? true : ''
+        seperated: children.length < 1
       };
 
       let child;
@@ -314,27 +315,29 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
-      items.splice(0, 0, React.createElement(SubMenuItem, {
-        label: `Explore Plugins (${communityRepos.length})`,
-        invertChildY: true,
-        render: communityRepos
-          .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
-            label: repo.name,
-            desc: repo.description,
-            render: [ React.createElement(ImageMenuItem, {
-              label: 'Visit Repository',
-              image: 'fa-external-link-alt',
-              styles: { color: '#7289da' },
-              action: () => require('electron').shell.openExternal(repo.svn_url)
-            }), React.createElement(ImageMenuItem, {
-              label: 'Install Plugin',
-              image: 'fa-download',
-              styles: { color: '#43b581' },
-              seperated: true,
-              action: () => this.utils.showPluginModal(repo.name, repo)
-            }) ]
-          }))
-      }));
+      if (this.settings.get('showExplorePlugins', true)) {
+        items.splice(0, 0, React.createElement(SubMenuItem, {
+          label: `Explore Plugins (${communityRepos.length})`,
+          invertChildY: true,
+          render: communityRepos
+            .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
+              label: repo.name,
+              desc: repo.description,
+              render: [ React.createElement(ImageMenuItem, {
+                label: 'Open in GitHub',
+                image: 'fa-github-brand',
+                styles: { color: '#7289da' },
+                action: () => require('electron').shell.openExternal(repo.svn_url)
+              }), React.createElement(ImageMenuItem, {
+                label: 'Install Plugin',
+                image: 'fa-download',
+                styles: { color: '#43b581' },
+                seperated: true,
+                action: () => this.utils.showPluginModal(repo.name, repo)
+              }) ]
+            }))
+        }));
+      }
 
       children.splice(0, 0, React.createElement(ToggleMenuItem, {
         label: 'Show Hidden Plugins',
