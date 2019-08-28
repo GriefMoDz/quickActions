@@ -11,7 +11,8 @@ class QuickActionsR extends Plugin {
 
     this.state = {
       initializedStore: false,
-      settings: require('./core/store/settings')(this)
+      settings: require('./core/store/settings')(this),
+      communityRepos: []
     };
 
     this.utils = require('./core/utils')(this);
@@ -28,6 +29,8 @@ class QuickActionsR extends Plugin {
     if (!this.state.initializedStore) {
       this.initializeStore();
     }
+
+    this.utils.getCommunityRepos();
 
     this.state.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.state.SubMenuItem = (await getModuleByDisplayName('FluxContainer(SubMenuItem)'));
@@ -47,7 +50,10 @@ class QuickActionsR extends Plugin {
     });
 
     Object.keys(this.store.get('plugins')).forEach(id => {
-      this.store.get('plugins')[id].official = (/^pc-[a-zA-Z0-9]+$/).test(id);
+      const plugin = this.store.get('plugins')[id];
+      if (typeof plugin.official === 'undefined') {
+        plugin.official = (/^pc-[a-zA-Z0-9]+$/).test(id);
+      }
     });
 
     if (this.settings.get('autoupdates', true)) {
@@ -70,7 +76,8 @@ class QuickActionsR extends Plugin {
           : this.buildSettingMenu(item.label, item.section));
       });
 
-      if (powercord.pluginManager.isEnabled('pc-styleManager') && !hiddenPlugins.includes('pc-styleManager')) {
+      const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
+      if (powercord.pluginManager.isEnabled('pc-styleManager') && (showHiddenPlugins || !hiddenPlugins.includes('pc-styleManager'))) {
         const pluginsMenu = items.find(item => item.props.label === 'Plugins');
         if (pluginsMenu) {
           items.splice(items.indexOf(pluginsMenu) + 1, 0, this.buildContentMenu());
@@ -112,7 +119,8 @@ class QuickActionsR extends Plugin {
     if (plugin) {
       id = plugin.id ? plugin.id : id;
 
-      if (hiddenPlugins.includes(id)) {
+      const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
+      if (!showHiddenPlugins && hiddenPlugins.includes(id)) {
         return null;
       } else if (typeof plugin.hide === 'function') {
         const hidePlugin = plugin.hide();
@@ -163,7 +171,7 @@ class QuickActionsR extends Plugin {
 
     const props = {
       label: name,
-      seperated: id === this.pluginID ? true : '',
+      seperated: id === this.pluginID,
       action: () => id !== this.pluginID ? this.utils.showCategory(id) : null
     };
 
@@ -181,7 +189,7 @@ class QuickActionsR extends Plugin {
   }
 
   buildContentMenu (checkForPlugins) {
-    const { SubMenuItem } = this.state;
+    const { SubMenuItem, communityRepos } = this.state;
     const { plugins, hiddenPlugins, disabledPlugins } = this.utils.getPlugins();
     const { themes, disabledThemes } = this.utils.getThemes();
 
@@ -194,9 +202,10 @@ class QuickActionsR extends Plugin {
     });
 
     const children = [];
+    const content = checkForPlugins ? plugins : themes;
 
-    for (const key in checkForPlugins ? plugins : themes) {
-      const id = (checkForPlugins ? plugins : themes)[key];
+    for (const key in content) {
+      const id = content[key];
       const metadata = (checkForPlugins ? powercord.pluginManager : powercord.styleManager).get(id).manifest;
       const isContentDisabled = (checkForPlugins ? disabledPlugins : disabledThemes).includes(id);
       const props = {
@@ -214,7 +223,7 @@ class QuickActionsR extends Plugin {
           ...props,
           invertChildY: true,
           render: [ !enforcedPlugins.includes(id)
-            ? React.createElement(ToggleMenuItem, {
+            ? [ React.createElement(ToggleMenuItem, {
               label: 'Hidden',
               active: hiddenPlugins.includes(id),
               action: (state) => {
@@ -228,12 +237,12 @@ class QuickActionsR extends Plugin {
 
                 this.utils.forceUpdate();
               }
-            })
-            : null, React.createElement(ToggleMenuItem, {
+            }), React.createElement(ToggleMenuItem, {
             label: 'Enabled',
             active: !isContentDisabled,
             action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
-          }), React.createElement(ImageMenuItem, {
+            }) ]
+            : null, React.createElement(ImageMenuItem, {
             label: 'Reload Plugin',
             image: 'fa-sync',
             styles: { color: '#43b581' },
@@ -241,13 +250,26 @@ class QuickActionsR extends Plugin {
             action: async (state) => {
               const { image } = state;
 
-              state.label = 'Reloading...';
+              const loading = setInterval(() => {
+                if (state.label.length > 11) {
+                  state.label = 'Reloading';
+                } else {
+                  state.label += '.';
+                }
+
+                this.utils.forceUpdate();
+              }, 250);
+
+              state.disabled = true;
               state.image = 'fa-sync fa-spin';
 
               setTimeout(async () => {
+                clearInterval(loading);
+
                 await powercord.pluginManager.remount(id).then(() => {
                   state.label = 'Plugin Reloaded!';
                   state.image = image;
+                  state.disabled = false;
                 });
 
                 if (!powercord.pluginManager.isEnabled(id)) {
@@ -262,7 +284,7 @@ class QuickActionsR extends Plugin {
               label: 'Uninstall Plugin',
               image: 'fa-trash-alt',
               danger: true,
-              action: () => this.utils.showUninstallModal(id, metadata)
+              action: () => this.utils.showPluginModal(id, metadata, true)
             })
             : null ]
         });
@@ -292,6 +314,28 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
+      items.splice(0, 0, React.createElement(SubMenuItem, {
+        label: `Explore Plugins (${communityRepos.length})`,
+        invertChildY: true,
+        render: communityRepos
+          .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
+            label: repo.name,
+            desc: repo.description,
+            render: [ React.createElement(ImageMenuItem, {
+              label: 'Visit Repository',
+              image: 'fa-external-link-alt',
+              styles: { color: '#7289da' },
+              action: () => require('electron').shell.openExternal(repo.svn_url)
+            }), React.createElement(ImageMenuItem, {
+              label: 'Install Plugin',
+              image: 'fa-download',
+              styles: { color: '#43b581' },
+              seperated: true,
+              action: () => this.utils.showPluginModal(repo.name, repo)
+            }) ]
+          }))
+      }));
+
       children.splice(0, 0, React.createElement(ToggleMenuItem, {
         label: 'Show Hidden Plugins',
         active: this.settings.get('showHiddenPlugins', false),

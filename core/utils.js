@@ -26,6 +26,17 @@ module.exports = (plugin = null) => ({
       plugins };
   },
 
+  async getCommunityRepos () {
+    if (plugin.state.communityRepos.length === 0) {
+      const communityRepos = await get('https://api.github.com/users/powercord-community/repos').then(res =>
+        res.body);
+
+      plugin.state.communityRepos = await communityRepos.filter(repo =>
+        repo.name !== 'guidelines' && !powercord.pluginManager.plugins.has(repo.name)
+      );
+    }
+  },
+
   getThemes () {
     const disabledThemes = powercord.settings.get('disabledThemes', []);
     const themes = [ ...powercord.styleManager.themes.keys() ]
@@ -67,6 +78,13 @@ module.exports = (plugin = null) => ({
 
     await pluginManager.unmount(pluginId);
     await rmdirRf(require('path').resolve(pluginManager.pluginDir, pluginId));
+  },
+
+  async installPlugin (pluginId, cloneUrl) {
+    const { pluginManager } = powercord;
+
+    await require('util').promisify(exec)(`git clone ${cloneUrl}`, { cwd: pluginManager.pluginDir })
+      .then(() => pluginManager.mount(pluginId));
   },
 
   togglePlugin (pluginId) {
@@ -166,15 +184,15 @@ module.exports = (plugin = null) => ({
     }
   },
 
-  showUninstallModal (pluginId, metadata) {
+  showPluginModal (pluginId, metadata, uninstall) {
     const GenericModal = require('./components/Modal');
     this.openModal(React.createElement(GenericModal, {
-      red: true,
-      header: `Uninstall '${metadata.name}'`,
-      confirmText: 'Uninstall Plugin',
+      red: uninstall,
+      header: `${uninstall ? 'Uninstall' : 'Install'} '${metadata.name}'`,
+      confirmText: `${uninstall ? 'Uninstall' : 'Install'} Plugin`,
       cancelText: 'Cancel',
-      desc: `Are you sure you want to uninstall <b>${metadata.name}</b> (${pluginId})?`,
-      onConfirm: () => ((this.uninstallPlugin(pluginId), closeModal())),
+      desc: `Are you sure you want to ${uninstall ? 'uninstall' : 'install'} <b>${metadata.name}</b> (${pluginId})?`,
+      onConfirm: () => ((uninstall ? this.uninstallPlugin(pluginId) : this.installPlugin(pluginId, metadata.clone_url), closeModal())),
       onCancel: () => closeModal()
     }));
   },

@@ -27,8 +27,7 @@ module.exports = (plugin) => [ {
 
           plugin.utils.forceUpdate();
         },
-        hide: () => !powercord.pluginManager.isEnabled('pc-titleBarGames') ||
-          process.platform !== 'win32'
+        hide: () => !powercord.pluginManager.isEnabled('pc-titleBarGames') || process.platform !== 'win32'
       }
     }
   },
@@ -429,6 +428,7 @@ module.exports = (plugin) => [ {
     }
   },
   'pc-discordrpc': {
+    official: false,
     settings: {
       clientid: {
         name: 'Client ID',
@@ -594,8 +594,6 @@ module.exports = (plugin) => [ {
                 active: hiddenGuilds.includes(guilds[0].id),
                 action: () => plugin.utils.handleGuildToggle(guilds[0].id),
                 seperated: children.length > 0 && children[children.length - 1].type.name === 'NewSubMenuItem'
-                  ? true
-                  : ''
               });
             }
 
@@ -789,12 +787,24 @@ module.exports = (plugin) => [ {
             action: async (id, _, __, ___, state) => {
               const { label, image } = state;
 
-              state.label = 'Checking...';
+              const loading = setInterval(() => {
+                if (state.label.length > 10) {
+                  state.label = 'Checking';
+                } else {
+                  state.label += '.';
+                }
+
+                plugin.utils.forceUpdate();
+              }, 250);
+
               state.image = 'fa-sync fa-spin';
 
               powercord.pluginManager.get(id).checkForUpdate().then(() => {
+                clearInterval(loading);
+
                 state.label = label;
                 state.image = image;
+                state.disabled = false;
 
                 plugin.utils.forceUpdate();
               });
@@ -836,9 +846,20 @@ module.exports = (plugin) => [ {
         },
         hide: () => !require('fs').existsSync(require('path').join(powercord.pluginManager.pluginDir, `${plugin.pluginID}/.git`))
       },
-      showDescriptions: {
-        name: 'Show Descriptions',
-        default: true
+      appearance: {
+        name: 'Appearance',
+        children: {
+          showDescriptions: {
+            name: 'Show Descriptions',
+            default: true
+          },
+          showHiddenPlugins: {
+            name: 'Show Hidden Plugins',
+            default: false
+          }
+        },
+        type: 'submenu',
+        seperate: true
       }
     }
   },
