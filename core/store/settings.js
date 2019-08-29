@@ -788,7 +788,7 @@ module.exports = (plugin) => [ {
               const { label, image } = state;
 
               const loading = setInterval(() => {
-                if (state.label.length > 10) {
+                if (state.label.length > 9) {
                   state.label = 'Checking';
                 } else {
                   state.label += '.';
@@ -804,7 +804,6 @@ module.exports = (plugin) => [ {
 
                 state.label = label;
                 state.image = image;
-                state.disabled = false;
 
                 plugin.utils.forceUpdate();
               });
@@ -830,20 +829,58 @@ module.exports = (plugin) => [ {
     settings: {
       autoupdates: {
         name: 'Auto Updates',
-        default: true,
-        action: (state) => {
-          const announcements = powercord.pluginManager.get('pc-announcements');
-          if (announcements) {
-            if (state) {
-              const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
-              dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
+        children: {
+          autoupdates: {
+            name: 'Enabled',
+            default: true,
+            action: (state) => {
+              const announcements = powercord.pluginManager.get('pc-announcements');
+              if (announcements) {
+                if (state) {
+                  const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
+                  dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
 
-              powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
-            } else {
-              announcements.closeNotice('quickActions-pending-update');
+                  powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
+                } else {
+                  announcements.closeNotice('quickActions-pending-update');
+                }
+              }
             }
+          },
+          checkForUpdates: {
+            name: 'Check Now!',
+            type: 'button',
+            image: 'fa-sync',
+            color: '#7289da',
+            seperate: true,
+            action: async (_, __, ___, ____, state) => {
+              const { label, image } = state;
+
+              const loading = setInterval(() => {
+                if (state.label.length > 9) {
+                  state.label = 'Checking';
+                } else {
+                  state.label += '.';
+                }
+
+                plugin.utils.forceUpdate();
+              }, 250);
+
+              state.image = 'fa-sync fa-spin';
+
+              plugin.utils.checkForUpdates().then(() => {
+                clearInterval(loading);
+
+                state.label = label;
+                state.image = image;
+
+                plugin.utils.forceUpdate();
+              });
+            },
+            disabled: () => !plugin.settings.get('autoupdates', true)
           }
         },
+        type: 'submenu',
         hide: () => !require('fs').existsSync(require('path').join(powercord.pluginManager.pluginDir, `${plugin.pluginID}/.git`))
       },
       appearance: {
@@ -862,8 +899,7 @@ module.exports = (plugin) => [ {
             default: true
           }
         },
-        type: 'submenu',
-        seperate: true
+        type: 'submenu'
       }
     }
   },

@@ -12,6 +12,7 @@ class QuickActionsR extends Plugin {
     this.state = {
       initializedStore: false,
       settings: require('./core/store/settings')(this),
+      reloading: [],
       communityRepos: []
     };
 
@@ -112,8 +113,6 @@ class QuickActionsR extends Plugin {
   }
 
   buildSettingMenu (name, id) {
-    const { hiddenPlugins } = this.state;
-
     const id_ = id;
     const items = [];
     const plugin = this.settingsStore.get('plugins')[id];
@@ -121,7 +120,8 @@ class QuickActionsR extends Plugin {
       id = plugin.id ? plugin.id : id;
 
       const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
-      if (!showHiddenPlugins && hiddenPlugins.includes(id)) {
+      const hiddenPlugins = this.state.hiddenPlugins.map(hiddenPlugin => this.utils.normalizeToCleanText(hiddenPlugin));
+      if (!showHiddenPlugins && hiddenPlugins.includes(this.utils.normalizeToCleanText(id))) {
         return null;
       } else if (typeof plugin.hide === 'function') {
         const hidePlugin = plugin.hide();
@@ -239,15 +239,16 @@ class QuickActionsR extends Plugin {
                 this.utils.forceUpdate();
               }
             }), React.createElement(ToggleMenuItem, {
-            label: 'Enabled',
-            active: !isContentDisabled,
-            action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
+              label: 'Enabled',
+              active: !isContentDisabled,
+              action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
             }) ]
             : null, React.createElement(ImageMenuItem, {
             label: 'Reload Plugin',
             image: 'fa-sync',
             styles: { color: '#43b581' },
             seperated: true,
+            disabled: this.state.reloading[id],
             action: async (state) => {
               const { image } = state;
 
@@ -261,16 +262,18 @@ class QuickActionsR extends Plugin {
                 this.utils.forceUpdate();
               }, 250);
 
-              state.disabled = true;
+              this.state.reloading[id] = true;
+
               state.image = 'fa-sync fa-spin';
 
               setTimeout(async () => {
                 clearInterval(loading);
 
                 await powercord.pluginManager.remount(id).then(() => {
+                  delete this.state.reloading[id];
+
                   state.label = 'Plugin Reloaded!';
                   state.image = image;
-                  state.disabled = false;
                 });
 
                 if (!powercord.pluginManager.isEnabled(id)) {
@@ -327,7 +330,7 @@ class QuickActionsR extends Plugin {
                 label: 'Open in GitHub',
                 image: 'fa-github-brand',
                 styles: { color: '#7289da' },
-                action: () => require('electron').shell.openExternal(repo.svn_url)
+                action: () => require('electron').shell.openExternal(repo.html_url)
               }), React.createElement(ImageMenuItem, {
                 label: 'Install Plugin',
                 image: 'fa-download',

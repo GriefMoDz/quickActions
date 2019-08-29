@@ -26,13 +26,21 @@ module.exports = (plugin = null) => ({
       plugins };
   },
 
+  getNormalizedPlugins () {
+    const plugins = [ ...powercord.pluginManager.plugins.keys() ]
+      .map(pluginId => this.normalizeToCleanText(pluginId));
+
+    return plugins;
+  },
+
   async getCommunityRepos () {
     if (plugin.state.communityRepos.length === 0) {
       const communityRepos = await get('https://api.github.com/users/powercord-community/repos').then(res =>
         res.body);
 
       plugin.state.communityRepos = await communityRepos.filter(repo =>
-        repo.name !== 'guidelines' && !powercord.pluginManager.plugins.has(repo.name)
+        !repo.archived && repo.name !== 'guidelines' && !this.getNormalizedPlugins().find(pluginId =>
+          pluginId === this.normalizeToCleanText(repo.name))
       );
     }
   },
@@ -127,6 +135,10 @@ module.exports = (plugin = null) => ({
     };
 
     spawn(cmds[process.platform], [ dir ]);
+  },
+
+  normalizeToCleanText (str) {
+    return str.toLowerCase().replace(/pc|powercord|-|_|/g, '');
   },
 
   insertAtCaret (elem, text) {

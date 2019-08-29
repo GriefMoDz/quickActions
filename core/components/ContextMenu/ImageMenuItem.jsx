@@ -1,8 +1,6 @@
 const { React } = require('powercord/webpack');
 const { Tooltip } = require('powercord/components');
 
-const utils = require('../../utils')();
-
 module.exports = class ImageMenuItem extends React.Component {
   constructor (props) {
     super(props);
@@ -10,19 +8,18 @@ module.exports = class ImageMenuItem extends React.Component {
     this.state = {
       label: props.label,
       image: props.image,
-      hint: props.hint,
-      disabled: props.disabled
+      hint: props.hint
     };
   }
 
   handleClick () {
-    this.state.disabled = !this.state.disabled;
+    this.props.disabled = !this.props.disabled;
 
-    if (this.state.disabled) {
+    if (this.props.disabled) {
       this.props.action(this.state, this.state.disabled);
     }
 
-    utils.forceUpdate();
+    this.forceUpdate();
   }
 
   render () {
@@ -30,7 +27,7 @@ module.exports = class ImageMenuItem extends React.Component {
       <Tooltip text={this.state.label.length >= 21 ? this.state.label : ''} position='right'>
         <div
           className={`quickActions-contextMenu-button item-1Yvehc itemImage-htIz_v
-          ${this.state.disabled ? 'disabled' : ''}`}
+          ${this.props.disabled ? 'disabled' : ''}`}
           title=''
           onClick={this.handleClick.bind(this)}
         >
