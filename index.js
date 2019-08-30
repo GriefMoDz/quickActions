@@ -190,7 +190,7 @@ class QuickActionsR extends Plugin {
   }
 
   buildContentMenu (checkForPlugins) {
-    const { SubMenuItem, communityRepos } = this.state;
+    const { SubMenuItem } = this.state;
     const { plugins, hiddenPlugins, disabledPlugins } = this.utils.getPlugins();
     const { themes, disabledThemes } = this.utils.getThemes();
 
@@ -318,6 +318,9 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
+      const communityRepos = this.state.communityRepos.filter(repo => !this.utils.getNormalizedPlugins()
+        .find(pluginId => pluginId === this.utils.normalizeToCleanText(repo.name)));
+
       if (this.settings.get('showExplorePlugins', true)) {
         items.splice(0, 0, React.createElement(SubMenuItem, {
           label: `Explore Plugins (${communityRepos.length})`,

@@ -5,6 +5,8 @@ const { get } = require('powercord/http');
 const { exec, spawn } = require('child_process');
 const { actions: { updateSetting } } = powercord.api.settings;
 
+const announcements = powercord.pluginManager.get('pc-announcements');
+
 module.exports = (plugin = null) => ({
   getPlugins () {
     const disabledPlugins = powercord.settings.get('disabledPlugins', []);
@@ -38,10 +40,7 @@ module.exports = (plugin = null) => ({
       const communityRepos = await get('https://api.github.com/users/powercord-community/repos').then(res =>
         res.body);
 
-      plugin.state.communityRepos = await communityRepos.filter(repo =>
-        !repo.archived && repo.name !== 'guidelines' && !this.getNormalizedPlugins().find(pluginId =>
-          pluginId === this.normalizeToCleanText(repo.name))
-      );
+      plugin.state.communityRepos = await communityRepos.filter(repo => !repo.archived && repo.name !== 'guidelines');
     }
   },
 
@@ -84,15 +83,53 @@ module.exports = (plugin = null) => ({
       }
     };
 
+    const pluginName = powercord.pluginManager.get(pluginId).manifest.name;
+
     await pluginManager.unmount(pluginId);
     await rmdirRf(require('path').resolve(pluginManager.pluginDir, pluginId));
+
+    if (announcements) {
+      announcements.sendNotice({
+        id: 'quickActions-plugin-uninstalled',
+        type: announcements.Notice.TYPES.ORANGE,
+        message: `Good news! "${pluginName}" was successfully uninstalled; nothing is required from you as we've already gone ahead and unloaded the plug-in.`,
+        alwaysDisplay: true
+      });
+
+      return setTimeout(() => announcements.closeNotice('quickActions-plugin-uninstalled'), 3e4);
+    }
   },
 
   async installPlugin (pluginId, cloneUrl) {
     const { pluginManager } = powercord;
 
     await require('util').promisify(exec)(`git clone ${cloneUrl}`, { cwd: pluginManager.pluginDir })
-      .then(() => pluginManager.mount(pluginId));
+      .then(async () => {
+        pluginManager.mount(pluginId);
+        pluginManager.load(pluginId);
+
+        const plugin = pluginManager.get(pluginId);
+        const pluginSettingsButton = {
+          text: 'Open Plugin Settings',
+          onClick: () => {
+            announcements.closeNotice('quickActions-plugin-installed');
+
+            this.showCategory(plugin.registered.settings[0]);
+          }
+        };
+
+        if (announcements) {
+          announcements.sendNotice({
+            id: 'quickActions-plugin-installed',
+            type: announcements.Notice.TYPES.GREEN,
+            message: `Good news! "${pluginManager.get(pluginId).manifest.name}" was successfully installed; nothing is required from you as we've already gone ahead and loaded the plug-in.`,
+            button: powercord.api.settings.tabs.find(tab => tab.section === plugin.registered.settings[0]) ? pluginSettingsButton : null,
+            alwaysDisplay: true
+          });
+
+          return setTimeout(() => announcements.closeNotice('quickActions-plugin-installed'), 3e4);
+        }
+      });
   },
 
   togglePlugin (pluginId) {
@@ -272,7 +309,6 @@ module.exports = (plugin = null) => ({
   },
 
   async checkForUpdates () {
-    const announcements = powercord.pluginManager.get('pc-announcements');
     if (announcements.settings.get('dismissed', []).includes('quickActions-pending-update')) {
       return plugin.settings.set('autoupdates', false);
     }
