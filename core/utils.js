@@ -314,7 +314,11 @@ module.exports = (plugin = null) => ({
     }
 
     const lastCommitHash = await get('https://api.github.com/repos/GriefMoDz/quickActions/commits/master')
-      .then(res => res.body.sha);
+      .then(res => res.body.sha).catch(() => null);
+
+    if (!lastCommitHash) {
+      return;
+    }
 
     const hostUrl = 'https://rawcdn.githack.com';
     const manifestUrl = `${hostUrl}/GriefMoDz/quickActions/${lastCommitHash}/manifest.json`;

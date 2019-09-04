@@ -10,6 +10,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | ----------------------- | ------------------------ |:-------:|:----------:|:----------------------------------------------------------:|
 | advancedTitleBar        | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar) |
 | Auditory                | auditory                 | v1.0.6  | ⭕         | [[Link]](../../../../powercord-community/auditory)
+| Autoplay GIF Avatars    | autoplayGifAvatars       | v1.0.0  | ⭕         | [[Link]](../../../autoplayGifAvatars)
 | Better Friends          | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
 | Clickable Message Edits | pc-clickableEdits        | v0.2.0  | ✔️         | n/a
 | Context+                | pc-cadence-contextPlus   | v1.1.0  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-contextPlus)
@@ -28,13 +29,33 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Style Manager           | pc-styleManager          | v1.1.1  | ✔️         | n/a
 | Swerve                  | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a
-| Wallpaper Changer       | wallpaper-changer        | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
+| Wallpaper Changer       | wallpaper-changer        | v1.1.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 
 \*Plugin is shipped with Powercord by default (will work straight out of the box once enabled).
 
 ## Usage/Instructions:
 1. Right-click the 'User Settings' button (third icon starting from the left; the little cog symbol) found under the 'User Account Details' container.
 2. Hover your cursor over the "Powercord" sub-menu.
+
+## Installation:
+Thanks to Powercord's state of the art plug-in API, installing Quick Actions is as simple as counting from one to three and takes no more than 4 steps (legend even has it that you can do this in your sleep because of how easy it is!).
+
+To get started, please take the time to read the steps below carefully, making sure that you follow everything exactly as shown on screen for the smoothest possible installation.
+
+If you still happen to not be sure about something and/or just need some further assistance then feel free to add me on Discord @ Harley#1051.
+
+__**Basic Installation**__
+
+  1. Open a command prompt / terminal of your choice (e.g. CMD if you're using Windows, or Terminal if you're using Linux/macOS).
+  2. Using `cd <POWERCORD_INSTALL_DIR>/src/Powercord/plugins`, point the terminal that you just opened to the "plugins" folder of your Powercord installation.
+  3. Copy 'n' paste the following command `git clone https://github.com/GriefMoDz/quickActions` into the same terminal.
+  4. Restart Discord (`Ctrl` + `R`) after the above command has sucessfully executed.
+
+__**Advanced Installation**__
+
+  1. Open your DevTools console (`Ctrl` + `Shift` + `I`).
+  2. Copy 'n' paste the following one-liner `await require('util').promisify(exec)('git clone https://github.com/GriefMoDz/quickActions', { cwd: powercord.pluginManager.pluginDir })` into the input box.
+  3. Restart Discord (`Ctrl` + `R`) or type `powercord.pluginManager.remount('quickActions')` inside the same input box from the previous step to complete the installation phase.
 
 ## Frequently Asked Questions:
 1. __Help, I'm using a supported plugin from the "[Compatibility Table](https://github.com/GriefMoDz/quickActions/#compatibility)" but I seem to be missing some settings. What do I do?__

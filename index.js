@@ -137,15 +137,6 @@ class QuickActionsR extends Plugin {
         if (setting) {
           let item;
 
-          if (typeof setting.hide === 'function') {
-            const hideSetting = setting.hide.bind(this, id)();
-            if (hideSetting) {
-              continue;
-            }
-          } else if (setting.hide) {
-            continue;
-          }
-
           switch (setting.type) {
             case 'button':
               item = require('./core/types/button').bind(this, id, key, setting, name)(this);
@@ -161,6 +152,13 @@ class QuickActionsR extends Plugin {
               break;
             default:
               item = require('./core/types/checkbox').bind(this, id, key, setting)(this);
+          }
+
+          if (typeof setting.hide === 'function'
+            ? setting.hide.bind(this, id)()
+            : setting.hide
+          ) {
+            continue;
           }
 
           Object.keys(item.props).forEach(key => !item.props[key] ? delete item.props[key] : '');
@@ -223,8 +221,7 @@ class QuickActionsR extends Plugin {
         child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
           ...props,
           invertChildY: true,
-          render: [ !enforcedPlugins.includes(id)
-            ? [ React.createElement(ToggleMenuItem, {
+          render: [ React.createElement(ToggleMenuItem, {
               label: 'Hidden',
               active: hiddenPlugins.includes(id),
               action: (state) => {
@@ -238,11 +235,12 @@ class QuickActionsR extends Plugin {
 
                 this.utils.forceUpdate();
               }
-            }), React.createElement(ToggleMenuItem, {
+          }), !enforcedPlugins.includes(id)
+            ? React.createElement(ToggleMenuItem, {
               label: 'Enabled',
               active: !isContentDisabled,
               action: () => ((this.utils.togglePlugin(id), this.utils.forceUpdate()))
-            }) ]
+            })
             : null, React.createElement(ImageMenuItem, {
             label: 'Reload Plugin',
             image: 'fa-sync',
@@ -321,7 +319,7 @@ class QuickActionsR extends Plugin {
       const communityRepos = this.state.communityRepos.filter(repo => !this.utils.getNormalizedPlugins()
         .find(pluginId => pluginId === this.utils.normalizeToCleanText(repo.name)));
 
-      if (this.settings.get('showExplorePlugins', true)) {
+      if (this.settings.get('showExplorePlugins', true) && communityRepos.length > 0) {
         items.splice(0, 0, React.createElement(SubMenuItem, {
           label: `Explore Plugins (${communityRepos.length})`,
           invertChildY: true,

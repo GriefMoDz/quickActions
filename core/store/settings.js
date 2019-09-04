@@ -120,6 +120,40 @@ module.exports = (plugin) => [ {
       }
     }
   },
+  autoplayGifAvatars: {
+    settings: {
+      chat: {
+        name: 'Autoplay Chat',
+        desc: 'Should animated avatars for Nitro users autoplay in the chat area?',
+        default: true,
+        func: {
+          method: 'reload',
+          type: 'pluginManager',
+          arguments: 'chatAvatars'
+        }
+      },
+      memberList: {
+        name: 'Autoplay Member List',
+        desc: 'Should animated avatars for Nitro users autoplay in the member list?',
+        default: true,
+        func: {
+          method: 'reload',
+          type: 'pluginManager',
+          arguments: 'memberListAvatars'
+        }
+      },
+      guildList: {
+        name: 'Autoplay Guild List',
+        desc: 'Should animated guild icons for boosted servers autoplay in the guild list?',
+        default: true,
+        func: {
+          method: 'reload',
+          type: 'pluginManager',
+          arguments: 'guildList'
+        }
+      }
+    }
+  },
   'axelgreavette-helpful-utilites': {
     settings: {
       'hu-cmd-trbmb': {
@@ -784,11 +818,14 @@ module.exports = (plugin) => [ {
             image: 'fa-sync',
             color: '#7289da',
             seperate: true,
-            action: async (id, _, __, ___, state) => {
+            action: async (id, _, __, ___, component) => {
+              const { state } = component;
               const { label, image } = state;
 
+              state.label = 'Checking';
+
               const loading = setInterval(() => {
-                if (state.label.length > 9) {
+                if (state.label.length > 10) {
                   state.label = 'Checking';
                 } else {
                   state.label += '.';
@@ -853,11 +890,14 @@ module.exports = (plugin) => [ {
             image: 'fa-sync',
             color: '#7289da',
             seperate: true,
-            action: async (_, __, ___, ____, state) => {
+            action: async (_, __, ___, ____, component) => {
+              const { state } = component;
               const { label, image } = state;
 
+              state.label = 'Checking';
+
               const loading = setInterval(() => {
-                if (state.label.length > 9) {
+                if (state.label.length > 10) {
                   state.label = 'Checking';
                 } else {
                   state.label += '.';
@@ -1029,12 +1069,80 @@ module.exports = (plugin) => [ {
   },
   'wallpaper-changer': {
     settings: {
+      source: {
+        name: 'Wallhaven',
+        default: 0,
+        type: 'button',
+        hint: 'MAN',
+        color: '#43b581',
+        newValue: 1,
+        new: {
+          name: 'Manual',
+          hint: 'WH'
+        }
+      },
+      wallhaven: {
+        name: 'Wallhaven Settings',
+        children: {
+          'wallhaven-search': {
+            name: 'Search Terms',
+            desc: 'What the plugin will use to find wallpapers.',
+            type: 'button',
+            image: 'fa-search',
+            modal: true
+          },
+          'wallhaven-key': {
+            name: 'API Key',
+            desc: 'An API key is required to get NSFW wallpapers, kinky boi. You can find it in your settings.',
+            type: 'button',
+            image: 'fa-key',
+            seperate: true,
+            modal: true
+          },
+          'wallhaven-c-gen': {
+            name: 'Category: General',
+            desc: 'Includes wallpapers categorized as General.',
+            default: true,
+            seperate: true
+          },
+          'wallhaven-c-weeb': {
+            name: 'Category: Anime',
+            desc: 'Includes wallpapers categorized as Anime.',
+            default: true
+          },
+          'wallhaven-c-ppl': {
+            name: 'Category: People',
+            desc: 'Includes wallpapers categorized as People.',
+            default: true
+          },
+          'wallhaven-p-sfw': {
+            name: 'Purity: SFW',
+            desc: 'Includes wallpapers categorized as Safe for Work.',
+            default: true
+          },
+          'wallhaven-p-uwu': {
+            name: 'Purity: Sketchy',
+            desc: 'Includes wallpapers categorized as Sketchy.',
+            default: false
+          },
+          'wallhaven-p-nsfw': {
+            name: 'Purity: NSFW',
+            desc: 'Includes wallpapers categorized as Not Safe for Work. kinky boy. Requires an API key.',
+            default: false,
+            disabled: (id) => !powercord.api.settings.store.getSetting(id, 'wallhaven-key', '')
+          }
+        },
+        type: 'submenu',
+        seperate: true,
+        hide: (id) => powercord.api.settings.store.getSetting(id, 'source', 0) !== 1
+      },
       interval: {
         name: 'Wallpaper Interval',
         default: 60,
         type: 'button',
         image: 'fa-clock',
         seperate: true,
+        static: true,
         modal: {
           slider: {
             markers: [ 5, 10, 15, 30, 60, 120, 180, 360, 720, 3600 ],
@@ -1048,11 +1156,12 @@ module.exports = (plugin) => [ {
       },
       selector: {
         name: 'Selector',
-        desc: 'CSS selector where the \'background-image\' will be applied',
+        desc: 'CSS selector where the \'background-image\' will be applied.',
         default: 'body',
         type: 'button',
         image: 'fa-mouse-pointer',
         seperate: true,
+        static: true,
         modal: true,
         func: {
           method: 'changeWallpaper',
@@ -1065,6 +1174,7 @@ module.exports = (plugin) => [ {
         type: 'button',
         image: 'fa-redo',
         seperate: true,
+        static: true,
         action: (id) => powercord.pluginManager.get(id).changeWallpaper()
       }
     }

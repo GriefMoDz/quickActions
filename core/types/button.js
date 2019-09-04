@@ -16,7 +16,7 @@ module.exports = (id, key, setting, name, main) => {
       : setting.new ? setting.new.hint : setting.hint,
     image: setting.image,
     styles: { color: setting.modal ? '#43b581' : setting.color },
-    static: typeof setting.new !== 'undefined',
+    static: typeof setting.new !== 'undefined' || setting.static,
     action: setting.modal && !setting.action
       ? () => main.utils.showSettingModal({ id,
         key,
