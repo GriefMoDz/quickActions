@@ -200,6 +200,52 @@ module.exports = (plugin) => [ {
       }
     }
   },
+  bookmoji: {
+    settings: {
+      storedEmojis: {
+        name: 'Bookmarked Emojis',
+        desc: 'Here you can select which emojis you want to appear\nin the \'Bookmarked\' section of the emoji picker.',
+        children: (id, key) => {
+          const children = [];
+
+          plugin.state.sortedGuildsStore.getFlattenedGuilds().map(guild => {
+            let storedEmojis = powercord.api.settings.store.getSetting(id, key, []);
+            const emojis = Object.values(plugin.state.emojiStore.getGuilds()).flatMap(g => g.emojis)
+              .filter(emoji => emoji.guildId === guild.id);
+
+            if (emojis.length) {
+              return children.push(React.createElement(SubMenuItem, {
+                label: guild.name,
+                invertChildY: true,
+                render: emojis.map(emoji =>
+                  React.createElement(ImageMenuItem, {
+                    label: emoji.allNamesString,
+                    image: emoji.url,
+                    styles: { color: storedEmojis.find(storedEmoji => storedEmoji.id === emoji.id) ? '#43b581' : '' },
+                    action: () => {
+                      if (storedEmojis.find(storedEmoji => storedEmoji.id === emoji.id)) {
+                        storedEmojis = storedEmojis.filter(storedEmoji => storedEmoji.id !== emoji.id);
+                      } else {
+                        storedEmojis.push(emoji);
+                      }
+
+                      updateSetting(id, key, storedEmojis);
+
+                      plugin.utils.forceUpdate();
+                    }
+                  }))
+              }));
+            }
+
+            return children;
+          });
+
+          return children;
+        },
+        type: 'submenu'
+      }
+    }
+  },
   'cadence-contextPlus': {
     settings: {
       patchUser: {
@@ -300,7 +346,7 @@ module.exports = (plugin) => [ {
           users.map(user => {
             const child = React.createElement(ImageMenuItem, {
               label: user.nickname || 'Untitled',
-              seperated: true,
+              seperated: users.indexOf(user) !== 0,
               modal: true,
               action: () => plugin.utils.openModal(React.createElement(GenericModal, {
                 id: 'quickActions-mu-users',
@@ -619,7 +665,7 @@ module.exports = (plugin) => [ {
               child = React.createElement(SubMenuItem, {
                 label: `${guild.folderName} (${servers.length})`,
                 invertChildY: true,
-                seperated: true,
+                seperated: children.length > 1,
                 render: servers
               });
             } else {
@@ -819,30 +865,41 @@ module.exports = (plugin) => [ {
             color: '#7289da',
             seperate: true,
             action: async (id, _, __, ___, component) => {
-              const { state } = component;
-              const { label, image } = state;
+              const { state: { props } } = component;
+              const { label, image } = props;
 
-              state.label = 'Checking';
+              props.label = 'Checking';
 
               const loading = setInterval(() => {
-                if (state.label.length > 10) {
-                  state.label = 'Checking';
+                if (props.label.length > 10) {
+                  props.label = 'Checking';
                 } else {
-                  state.label += '.';
+                  props.label += '.';
                 }
 
                 plugin.utils.forceUpdate();
               }, 250);
 
-              state.image = 'fa-sync fa-spin';
+              props.image = 'fa-sync fa-spin';
 
-              powercord.pluginManager.get(id).checkForUpdate().then(() => {
+              powercord.pluginManager.get(id).checkForUpdate().then(async () => {
                 clearInterval(loading);
 
-                state.label = label;
-                state.image = image;
+                if (document.getElementById('powercord-updater')) {
+                  props.label = 'Update Found!';
+                } else {
+                  props.label = 'Already Up-To-Date!';
+                }
+
+                props.image = image;
 
                 plugin.utils.forceUpdate();
+
+                setTimeout(() => {
+                  props.label = label;
+
+                  plugin.utils.forceUpdate();
+                }, 5e3);
               });
             },
             disabled: (id) => powercord.pluginManager.get(id).checking || !powercord.api.settings
@@ -879,7 +936,9 @@ module.exports = (plugin) => [ {
 
                   powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
                 } else {
-                  announcements.closeNotice('quickActions-pending-update');
+                  if (announcements.notices.find(notice => notice.id === 'quickActions-pending-update')) {
+                    announcements.closeNotice('quickActions-pending-update');
+                  }
                 }
               }
             }
@@ -891,28 +950,28 @@ module.exports = (plugin) => [ {
             color: '#7289da',
             seperate: true,
             action: async (_, __, ___, ____, component) => {
-              const { state } = component;
-              const { label, image } = state;
+              const { state: { props } } = component;
+              const { label, image } = props;
 
-              state.label = 'Checking';
+              props.label = 'Checking';
 
               const loading = setInterval(() => {
-                if (state.label.length > 10) {
-                  state.label = 'Checking';
+                if (props.label.length > 10) {
+                  props.label = 'Checking';
                 } else {
-                  state.label += '.';
+                  props.label += '.';
                 }
 
                 plugin.utils.forceUpdate();
               }, 250);
 
-              state.image = 'fa-sync fa-spin';
+              props.image = 'fa-sync fa-spin';
 
               plugin.utils.checkForUpdates().then(() => {
                 clearInterval(loading);
 
-                state.label = label;
-                state.image = image;
+                props.label = label;
+                props.image = image;
 
                 plugin.utils.forceUpdate();
               });

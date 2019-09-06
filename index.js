@@ -33,6 +33,7 @@ class QuickActionsR extends Plugin {
 
     this.utils.getCommunityRepos();
 
+    this.state.emojiStore = (await getModule([ 'getGuildEmoji' ]));
     this.state.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
     this.state.SubMenuItem = (await getModuleByDisplayName('FluxContainer(SubMenuItem)'));
 
@@ -209,8 +210,7 @@ class QuickActionsR extends Plugin {
       const isContentDisabled = (checkForPlugins ? disabledPlugins : disabledThemes).includes(id);
       const props = {
         label: id,
-        desc: `${metadata.name}${metadata.author !== 'Unknown' ? ` by ${metadata.author} ` : ' '}(v${metadata.version})`,
-        seperated: children.length < 1
+        desc: `${metadata.name}${metadata.author !== 'Unknown' ? ` by ${metadata.author} ` : ' '}(v${metadata.version})`
       };
 
       let child;
@@ -221,20 +221,21 @@ class QuickActionsR extends Plugin {
         child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
           ...props,
           invertChildY: true,
+          seperated: children.length < 1,
           render: [ React.createElement(ToggleMenuItem, {
-              label: 'Hidden',
-              active: hiddenPlugins.includes(id),
-              action: (state) => {
-                if (state) {
-                  hiddenPlugins.push(id);
-                } else {
-                  hiddenPlugins.splice(hiddenPlugins.indexOf(id), 1);
-                }
-
-                powercord.api.settings.actions.updateSetting('pc-general', 'hiddenPlugins', hiddenPlugins);
-
-                this.utils.forceUpdate();
+            label: 'Hidden',
+            active: hiddenPlugins.includes(id),
+            action: (state) => {
+              if (state) {
+                hiddenPlugins.push(id);
+              } else {
+                hiddenPlugins.splice(hiddenPlugins.indexOf(id), 1);
               }
+
+              powercord.api.settings.actions.updateSetting('pc-general', 'hiddenPlugins', hiddenPlugins);
+
+              this.utils.forceUpdate();
+            }
           }), !enforcedPlugins.includes(id)
             ? React.createElement(ToggleMenuItem, {
               label: 'Enabled',
@@ -247,14 +248,15 @@ class QuickActionsR extends Plugin {
             styles: { color: '#43b581' },
             seperated: true,
             disabled: this.state.reloading[id],
-            action: async (state) => {
-              const { image } = state;
+            action: async (component) => {
+              const { state: { props } } = component;
+              const { label, image } = props;
 
               const loading = setInterval(() => {
-                if (state.label.length > 11) {
-                  state.label = 'Reloading';
+                if (props.label.length > 11) {
+                  props.label = 'Reloading';
                 } else {
-                  state.label += '.';
+                  props.label += '.';
                 }
 
                 this.utils.forceUpdate();
@@ -262,7 +264,7 @@ class QuickActionsR extends Plugin {
 
               this.state.reloading[id] = true;
 
-              state.image = 'fa-sync fa-spin';
+              props.image = 'fa-sync fa-spin';
 
               setTimeout(async () => {
                 clearInterval(loading);
@@ -270,8 +272,14 @@ class QuickActionsR extends Plugin {
                 await powercord.pluginManager.remount(id).then(() => {
                   delete this.state.reloading[id];
 
-                  state.label = 'Plugin Reloaded!';
-                  state.image = image;
+                  props.label = 'Plugin Reloaded!';
+                  props.image = image;
+
+                  setTimeout(() => {
+                    props.label = label;
+
+                    this.utils.forceUpdate();
+                  }, 5e3);
                 });
 
                 if (!powercord.pluginManager.isEnabled(id)) {

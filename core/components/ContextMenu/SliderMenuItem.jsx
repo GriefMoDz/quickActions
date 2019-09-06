@@ -1,14 +1,29 @@
 const { AsyncComponent } = require('powercord/components');
-const { React, getModuleByDisplayName } = require('powercord/webpack');
+const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 
 const Slider = AsyncComponent.from(getModuleByDisplayName('Slider'));
 
 module.exports = class SliderMenuItem extends React.Component {
+  constructor (props) {
+    super(props);
+
+    this.state = {
+      itemClasses: ''
+    };
+  }
+
+  async componentWillMount () {
+    this.setState({
+      itemClasses: (await getModule([ 'itemToggle', 'checkbox' ]))
+    });
+  }
+
   render () {
+    const { itemClasses } = this.state;
     const slider = (
-      <div title={this.props.desc || ''} className='item-1Yvehc itemSlider-FZeYw0'>
+      <div title={this.props.desc || null} className={`quickActions-contextMenu-slider ${[ itemClasses.item, itemClasses.itemSlider ].join(' ')}`}>
         <div
-          className='label-JWQiNe'
+          className={itemClasses.label}
           style={this.props.markers ? { marginBottom: '16px' } : null}
         >
           {this.props.label}
@@ -17,7 +32,7 @@ module.exports = class SliderMenuItem extends React.Component {
         {this.props.markers && (
           <Slider
             mini={true}
-            className='slider-3BOep7 pc-slider'
+            className={itemClasses.slider}
             fillStyles={this.props.color ? { backgroundColor: this.props.color } : {}}
             equidistant={true}
             stickToMarkers={true}
@@ -28,7 +43,7 @@ module.exports = class SliderMenuItem extends React.Component {
         {!this.props.markers && (
           <Slider
             mini={true}
-            className='slider-3BOep7'
+            className={itemClasses.slider}
             fillStyles={this.props.color ? { backgroundColor: this.props.color } : {}}
             {...this.props}
           />
@@ -38,7 +53,7 @@ module.exports = class SliderMenuItem extends React.Component {
 
     if (this.props.seperated) {
       return (
-        <div className='itemGroup-1tL0uz seperated'>
+        <div className={`${itemClasses.itemGroup} seperated`}>
           {slider}
         </div>
       );

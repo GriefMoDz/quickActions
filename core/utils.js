@@ -215,7 +215,7 @@ module.exports = (plugin = null) => ({
     openModal(() => elem);
   },
 
-  async forceUpdate (updateAll = true, updateHeight) {
+  async forceUpdate (updateAll = false, updateHeight) {
     const contextMenuClasses = (await getModule([ 'itemToggle', 'checkbox' ]));
     const contextMenuQuery = `.${contextMenuClasses.contextMenu.replace(/ /g, '.')}`;
 

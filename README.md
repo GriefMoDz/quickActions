@@ -12,6 +12,7 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Auditory                | auditory                 | v1.0.6  | ⭕         | [[Link]](../../../../powercord-community/auditory)
 | Autoplay GIF Avatars    | autoplayGifAvatars       | v1.0.0  | ⭕         | [[Link]](../../../autoplayGifAvatars)
 | Better Friends          | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
+| Bookmoji                | bookmoji                 | v1.0.2  | ⭕         | [[Link]](../../../../powercord-community/bookmoji)
 | Clickable Message Edits | pc-clickableEdits        | v0.2.0  | ✔️         | n/a
 | Context+                | pc-cadence-contextPlus   | v1.1.0  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-contextPlus)
 | Discord RPC             | discordrpc               | v1.1.0  | ⭕         | [[Link]](../../../../ohlookitsderpy/discordrpc)
