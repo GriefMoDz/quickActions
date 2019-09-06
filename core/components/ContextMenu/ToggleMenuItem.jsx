@@ -35,7 +35,7 @@ module.exports = class NewToggleMenuItem extends React.Component {
       position: 'right'
     }, React.createElement('div', {
       className: 'quickActions-contextMenu-checkbox',
-      title: this.props.desc || null
+      title: this.props.desc || ''
     }, React.createElement(ToggleMenuItem,
       Object.assign({}, this.props, { action: this.handleToggle.bind(this) }))
     ));

@@ -758,14 +758,16 @@ module.exports = (plugin) => [ {
               '**WARNING**: This will break **window snapping** on Windows. **Hardware\nacceleration** must be turned **off** on Linux. ' +
               'You may encounter issues and have\nblack background in some cases, like when the window is cut off at the top or the bottom\n' +
               'due to monitor resolution or when devtools are open and docked. **Requires a restart**.',
-            default: false
+            default: false,
+            action: (state) => state ? require('electron').remote.getCurrentWindow().reload() : null
           },
           experimentalWebPlatform: {
             name: 'Experimental Web Platform',
             desc: 'Enables Chromium\'s experimental Web Platform features that are in development,\n' +
               'such as CSS `backdrop-filter`. Since features are in development you may\n' +
               'encounter issues and APIs may change at any time. **Requires a restart**.',
-            default: false
+            default: false,
+            action: (state) => state ? require('electron').remote.getCurrentWindow().reload() : null
           },
           experiments: {
             name: 'Discord Experiments',
@@ -883,12 +885,16 @@ module.exports = (plugin) => [ {
               props.image = 'fa-sync fa-spin';
 
               powercord.pluginManager.get(id).checkForUpdate().then(async () => {
+                const { playSound } = (await getModule([ 'playSound' ]));
+
                 clearInterval(loading);
 
                 if (document.getElementById('powercord-updater')) {
-                  props.label = 'Update Found!';
+                  props.label = 'Update Available!';
+
+                  playSound('stream_started', 0.25);
                 } else {
-                  props.label = 'Already Up-To-Date!';
+                  props.label = 'Already Up-to-Date!';
                 }
 
                 props.image = image;
@@ -967,13 +973,28 @@ module.exports = (plugin) => [ {
 
               props.image = 'fa-sync fa-spin';
 
-              plugin.utils.checkForUpdates().then(() => {
+              plugin.utils.checkForUpdates().then(async res => {
+                const { playSound } = (await getModule([ 'playSound' ]));
+
                 clearInterval(loading);
 
-                props.label = label;
+                if (res && res.updateAvailable) {
+                  props.label = 'Update Available!';
+
+                  playSound('stream_started', 0.25);
+                } else {
+                  props.label = 'Already Up-to-Date!';
+                }
+
                 props.image = image;
 
                 plugin.utils.forceUpdate();
+
+                setTimeout(() => {
+                  props.label = label;
+
+                  plugin.utils.forceUpdate();
+                }, 5e3);
               });
             },
             disabled: () => !plugin.settings.get('autoupdates', true)
@@ -1229,6 +1250,7 @@ module.exports = (plugin) => [ {
       },
       changeWallpaper: {
         name: 'Change Wallpaper',
+        desc: 'Triggers a wallpaper change. This won\'t affect interval.',
         color: '#7289da',
         type: 'button',
         image: 'fa-redo',

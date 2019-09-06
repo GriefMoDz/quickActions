@@ -3,7 +3,6 @@
   transition: opacity .3s ease;
 
   &.disabled {
-    color: white !important;
     opacity: .3 !important;
     pointer-events: none !important;
   }

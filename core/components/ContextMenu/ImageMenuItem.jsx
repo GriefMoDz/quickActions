@@ -49,7 +49,7 @@ module.exports = class ImageMenuItem extends React.Component {
               itemClasses.itemImage,
               itemClasses.clickable
             ].join(' ')} ${this.props.disabled ? 'disabled' : ''}`}
-          title={null}
+          title={this.props.desc || ''}
           onClick={this.handleClick.bind(this)}
         >
           <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
