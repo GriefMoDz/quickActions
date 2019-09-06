@@ -8,6 +8,7 @@ module.exports = (id, key, setting, name, main) => {
     label: setting.newValue
       ? `Switch to ${mode !== setting.default ? setting.new.name : setting.name}`
       : setting.new ? setting.new.name : setting.name,
+    desc: !main.settings.get('showDescriptions', true) ? '' : setting.desc,
     disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id)() : setting.disabled,
     danger: setting.dangerous,
     seperated: setting.seperate,

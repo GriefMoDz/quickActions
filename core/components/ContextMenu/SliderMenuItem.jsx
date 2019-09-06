@@ -21,7 +21,12 @@ module.exports = class SliderMenuItem extends React.Component {
   render () {
     const { itemClasses } = this.state;
     const slider = (
-      <div title={this.props.desc || null} className={`quickActions-contextMenu-slider ${[ itemClasses.item, itemClasses.itemSlider ].join(' ')}`}>
+      <div title={this.props.desc || ''} className={
+        `quickActions-contextMenu-slider ${[
+          itemClasses.item,
+          itemClasses.itemSlider
+        ].join(' ')}`}
+      >
         <div
           className={itemClasses.label}
           style={this.props.markers ? { marginBottom: '16px' } : null}
