@@ -92,20 +92,11 @@ class QuickActionsR extends Plugin {
 
       const parent = React.createElement(SubMenuItem, {
         label: 'Powercord',
-        invertChildY: true,
         render: items,
         action: () => this.utils.openUserSettings()
       });
 
-      const children = res.props.children.find(child => child);
-      const changelog = children.find(child => child && child.key === 'changelog');
-      if (changelog) {
-        children.splice(children.indexOf(changelog), 0, parent);
-      } else {
-        this.error('Could not find \'Change Log\' category; pushing element to main children instead!');
-
-        res.props.children.push(parent);
-      }
+      res.props.children.splice(0, 0, parent);
 
       return res;
     });
@@ -178,7 +169,6 @@ class QuickActionsR extends Plugin {
     if (items.length > 0) {
       return React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
         ...props,
-        invertChildY: true,
         render: items
       });
     }
@@ -196,7 +186,6 @@ class QuickActionsR extends Plugin {
     const items = [];
     const submenu = React.createElement(SubMenuItem, {
       label: checkForPlugins ? 'Plugins' : 'Themes',
-      invertChildY: true,
       render: items,
       action: () => checkForPlugins ? this.utils.showCategory('pc-pluginManager') : null
     });
@@ -220,7 +209,6 @@ class QuickActionsR extends Plugin {
 
         child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
           ...props,
-          invertChildY: true,
           seperated: children.length < 1,
           render: [ React.createElement(ToggleMenuItem, {
             label: 'Hidden',
@@ -311,7 +299,6 @@ class QuickActionsR extends Plugin {
 
     items.push(React.createElement(SubMenuItem, {
       label: `Installed ${checkForPlugins ? 'Plugins' : 'Themes'} (${children.length})`,
-      invertChildY: true,
       render: children
     }), React.createElement(ImageMenuItem, {
       label: `Open ${checkForPlugins ? 'Plugins' : 'Themes'} Folder`,
@@ -330,7 +317,6 @@ class QuickActionsR extends Plugin {
       if (this.settings.get('showExplorePlugins', true) && communityRepos.length > 0) {
         items.splice(0, 0, React.createElement(SubMenuItem, {
           label: `Explore Plugins (${communityRepos.length})`,
-          invertChildY: true,
           render: communityRepos
             .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
               label: repo.name,

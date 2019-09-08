@@ -216,7 +216,6 @@ module.exports = (plugin) => [ {
             if (emojis.length) {
               return children.push(React.createElement(SubMenuItem, {
                 label: guild.name,
-                invertChildY: true,
                 render: emojis.map(emoji =>
                   React.createElement(ImageMenuItem, {
                     label: emoji.allNamesString,
@@ -664,7 +663,6 @@ module.exports = (plugin) => [ {
 
               child = React.createElement(SubMenuItem, {
                 label: `${guild.folderName} (${servers.length})`,
-                invertChildY: true,
                 seperated: children.length > 1,
                 render: servers
               });

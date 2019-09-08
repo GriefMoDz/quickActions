@@ -8,7 +8,6 @@ module.exports = (id, key, plugin, setting, name, main) => {
       ? `${setting.name} (${powercord.api.settings.store.getSetting(id, key, []).length})`
       : setting.name,
     desc: !main.settings.get('showDescriptions', true) ? '' : setting.desc,
-    invertChildY: true,
     seperated: setting.seperate,
     render: typeof setting.children === 'function' ? setting.children.bind(this, id, key) : children,
     action: typeof setting.action === 'function' ? setting.action.bind(this, id, key) : null
