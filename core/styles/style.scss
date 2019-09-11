@@ -1,6 +1,7 @@
 
 .quickActions-contextMenu-button {
   transition: opacity .3s ease;
+  max-width: 172px;
 
   &.disabled {
     opacity: .3 !important;
@@ -12,10 +13,8 @@
   }
 }
 
-.quickActions-contextMenu-submenu {
-  div[class*='itemSubMenu-'] {
-    white-space: initial;
-  }
+.quickActions-contextMenu-checkbox-fw {
+  max-width: 172px;
 }
 
 .quickActions-icon {

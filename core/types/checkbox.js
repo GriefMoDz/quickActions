@@ -7,6 +7,7 @@ module.exports = (id, key, setting, main) => React.createElement(ToggleMenuItem,
   desc: !main.settings.get('showDescriptions', true) ? '' : setting.desc,
   disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id)() : setting.disabled,
   active: powercord.api.settings.store.getSetting(id, key, setting.default),
+  className: 'quickActions-contextMenu-checkbox-fw',
   seperated: setting.seperate,
   action: (state) => {
     toggleSetting(id, key);

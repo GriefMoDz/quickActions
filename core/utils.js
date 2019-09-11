@@ -47,7 +47,8 @@ module.exports = (plugin = null) => ({
   getThemes () {
     const disabledThemes = powercord.settings.get('disabledThemes', []);
     const themes = [ ...powercord.styleManager.themes.keys() ]
-      .filter(themeId => themeId !== 'powercord-core' && !powercord.pluginManager.plugins.has(themeId))
+      .filter(themeId => themeId !== 'powercord-core' && !powercord.pluginManager.plugins.has(themeId) &&
+        !themeId.startsWith('discord-tweaks'))
       .sort((a, b) => {
         const filter = a < b
           ? -1

@@ -259,6 +259,151 @@ module.exports = (plugin) => [ {
       }
     }
   },
+  'discord-tweaks': {
+    settings: {
+      hideHelpButton: {
+        name: 'Hide Help Button',
+        desc: 'When toggled, the help button in the top right corner will not be shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'hide-help-button',
+          type: 'pluginManager'
+        }
+      },
+      linedCategories: {
+        name: 'Lined Categories',
+        desc: 'When toggled, categories will be centered and have lines next to them.\n' +
+          '**NOTE**: This will most definitely break if you use a custom theme.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'lined-categories',
+          type: 'pluginManager'
+        }
+      },
+      darkEmojiPicker: {
+        name: 'Dark Emoji Picker',
+        desc: 'When toggled, the emoji picker will be dark themed.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'dark-emoji-picker',
+          type: 'pluginManager'
+        }
+      },
+      hideBlockedUserMessages: {
+        name: 'Hide Blocked User Messages',
+        desc: 'When toggled, messages from blocked users will not be shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'hide-blocked-user-messages',
+          type: 'pluginManager'
+        }
+      },
+      rainbowMentions: {
+        name: 'Rainbow Mentions',
+        desc: 'When toggled, mentions have a rainbow gradient in the background.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'rainbow-mentions',
+          type: 'pluginManager'
+        }
+      },
+      alwaysShowMessageTimestamps: {
+        name: 'Always Show Message Timestamps',
+        desc: 'When toggled, message timestamps are always shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'always-show-message-timestamps',
+          type: 'pluginManager'
+        }
+      },
+      hideLibraryButton: {
+        name: 'Hide Library Button',
+        desc: 'When toggled, the library button under the home tab will not be shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'hide-library-button',
+          type: 'pluginManager'
+        }
+      },
+      scrollableUserPanels: {
+        name: 'Scrollable User Panels',
+        desc: 'When toggled, user panels are scrollable.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'scrollable-user-panels',
+          type: 'pluginManager'
+        }
+      },
+      scrollableCodeBlocks: {
+        name: 'Scrollable Code Blocks',
+        desc: 'When toggled, code blocks are scrollable.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'scrollable-code-blocks',
+          type: 'pluginManager'
+        }
+      },
+      hideBoostIconUnlessHovering: {
+        name: 'Hide Nitro Boost Icon Unless Hovering',
+        desc: 'When toggled, the Nitro boost will not be\nshown unless you hover over the guild name.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'hide-boost-icon-unless-hovering',
+          type: 'pluginManager'
+        }
+      },
+      showFullRoleNames: {
+        name: 'Show Full Role Names',
+        desc: 'When toggled, role names in the\nuser list on the right are fully shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'show-full-role-names',
+          type: 'pluginManager'
+        }
+      },
+      moreObviousGuildSpeaker: {
+        name: 'More Obvious Guild Speaker',
+        desc: 'When toggled, the guild speaker icon is a little better to see.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'more-obvious-guild-speaker',
+          type: 'pluginManager'
+        }
+      },
+      rearrangedSearchbar: {
+        name: 'Rearranged Searchbar',
+        desc: 'When toggled, the searchbar is rearranged to the\nfar right and hides the other button during search.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'rearranged-searchbar',
+          type: 'pluginManager'
+        }
+      },
+      largerProfileAvatars: {
+        name: 'Larger Profile Avatars',
+        desc: 'When toggled, user avatars in the\nuser popouts become a little bit bigger.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'larger-profile-avatars',
+          type: 'pluginManager'
+        }
+      }
+    }
+  },
   lightify: {
     settings: {
       YeeLight: {
