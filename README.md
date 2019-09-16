@@ -23,13 +23,14 @@ Quick Actions supports a vast selection of settings utilized by the following pl
 | Lightify                | lightify                 | v0.0.1  | ⭕         | [[Link]](../../../../GeoffreyWesthoff/lightify)
 | Mu                      | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
 | Plugin Manager          | pc-pluginManager         | v0.1.1  | ✔️         | n/a
-| Plugin Updater          | pc-cadence-pluginUpdater | v1.0.4  | ⭕         | [[Link]](../../../../cloudrac3r/pc-cadence-pluginUpdater)
+| Plugin Updater          | powercord-plugin-updater | v1.0.7  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-plugin-updater)
 | Quote                   | quote                    | v1.4.2  | ⭕         | [[Link]](../../../../NurMarvin/quote)
 | Role Color Everywhere   | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API            | pc-general               | v1.0.0  | ✔️         | n/a
 | Spotify Modal           | pc-spotify               | v1.1.0  | ✔️         | n/a
 | Style Manager           | pc-styleManager          | v1.1.1  | ✔️         | n/a
 | Swerve                  | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
+| Translate               | pc-translate             | v1.0.0  | ✔️         | n/a
 | Updater                 | pc-updater               | v1.0.0  | ✔️         | n/a
 | Wallpaper Changer       | wallpaper-changer        | v1.1.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 

@@ -606,51 +606,6 @@ module.exports = (plugin) => [ {
       }
     }
   },
-  'pc-cadence-pluginUpdater': {
-    settings: {
-      pluginDirectory: {
-        name: 'Plugin Directory',
-        type: 'button',
-        image: 'fa-folder-open',
-        modal: true,
-        action: (_, __, ___, name) => plugin.utils.openModal(React.createElement(GenericModal, {
-          header: `Plugin Directory—${name}`,
-          confirmText: 'Done',
-          input: [
-            {
-              title: 'Current Working Directory (cwd)',
-              text: powercord.pluginManager.pluginDir,
-              disabled: true
-            }
-          ],
-          button: {
-            text: 'Open Plugin Directory',
-            icon: 'ExternalLink',
-            onClick: () => plugin.utils.openFolder(powercord.pluginManager.pluginDir)
-          },
-          onConfirm: () => closeModal()
-        }))
-      },
-      updatePlugins: {
-        name: 'Update Plugins',
-        type: 'button',
-        image: 'fa-cogs',
-        color: '#7289da',
-        seperate: true,
-        action: async (id) => {
-          plugin.utils.showCategory(id);
-
-          await waitFor('.plugin-updater-button-container');
-
-          const updateBtnContainer = document
-            .getElementsByClassName('plugin-updater-button-container')[0];
-          const updateBtn = updateBtnContainer.children[0];
-
-          updateBtn.click();
-        }
-      }
-    }
-  },
   'pc-discordrpc': {
     official: false,
     settings: {
@@ -993,6 +948,65 @@ module.exports = (plugin) => [ {
       }
     }
   },
+  'pc-translate': {
+    settings: {
+      sortByUsage: {
+        name: 'Prioritize Languages by Usage',
+        desc: 'Move most frequently used languages to the top of the\n' +
+          'list and leave the rest that remain in alphabetical order.',
+        default: false
+      },
+      hiddenLanguages: {
+        name: 'Hidden Languages',
+        desc: 'Here you can decide which of the languages are\n' +
+          'to be hidden from the "Translate" sub-menu.',
+        children: (id, key) => {
+          const children = [];
+          const translate = require('google-translate-api');
+          const hiddenLanguages = powercord.api.settings.store.getSetting(id, key, []);
+          const languages = powercord.pluginManager.get(id).state.languages.filter(lang => lang !== 'auto');
+
+          languages.map(lang =>
+            children.push(React.createElement(ToggleMenuItem, {
+              label: translate.languages[lang],
+              active: hiddenLanguages.includes(lang),
+              seperated: children.length < 1,
+              action: () => updateSetting(id, key, !hiddenLanguages.includes(lang)
+                ? [ ...hiddenLanguages, lang ]
+                : hiddenLanguages.filter(hiddenLang => hiddenLang !== lang))
+            }))
+          );
+
+          children.splice(0, 0, React.createElement(ImageMenuItem, {
+            label: `${hiddenLanguages.length >= languages.length ? 'Show' : 'Hide'} All Languages`,
+            image: `fa-${hiddenLanguages.length >= languages.length ? 'eye' : 'eye-slash'}`,
+            styles: { color: '#7289da' },
+            action: (component) => {
+              const { state: { props } } = component;
+
+              if (hiddenLanguages.length >= languages.length) {
+                updateSetting(id, key, []);
+
+                props.label = 'Hide All Languages';
+                props.image = 'fa-eye-slash';
+              } else {
+                updateSetting(id, key, languages);
+
+                props.label = 'Show All Languages';
+                props.image = 'fa-eye';
+              }
+
+              return plugin.utils.forceUpdate();
+            }
+          }));
+
+          return children;
+        },
+        type: 'submenu',
+        seperate: true
+      }
+    }
+  },
   'pc-updater': {
     settings: {
       checkForUpdates: {
@@ -1065,6 +1079,51 @@ module.exports = (plugin) => [ {
         image: 'fa-clock',
         seperate: true,
         modal: true
+      }
+    }
+  },
+  'powercord-plugin-updater': {
+    settings: {
+      pluginDirectory: {
+        name: 'Plugin Directory',
+        type: 'button',
+        image: 'fa-folder-open',
+        modal: true,
+        action: (_, __, ___, name) => plugin.utils.openModal(React.createElement(GenericModal, {
+          header: `Plugin Directory—${name}`,
+          confirmText: 'Done',
+          input: [
+            {
+              title: 'Current Working Directory (cwd)',
+              text: powercord.pluginManager.pluginDir,
+              disabled: true
+            }
+          ],
+          button: {
+            text: 'Open Plugin Directory',
+            icon: 'ExternalLink',
+            onClick: () => plugin.utils.openFolder(powercord.pluginManager.pluginDir)
+          },
+          onConfirm: () => closeModal()
+        }))
+      },
+      updatePlugins: {
+        name: 'Update Plugins',
+        type: 'button',
+        image: 'fa-cogs',
+        color: '#7289da',
+        seperate: true,
+        action: async (id) => {
+          plugin.utils.showCategory(id);
+
+          await waitFor('.plugin-updater-button-container');
+
+          const updateBtnContainer = document
+            .getElementsByClassName('plugin-updater-button-container')[0];
+          const updateBtn = updateBtnContainer.children[0];
+
+          updateBtn.click();
+        }
       }
     }
   },

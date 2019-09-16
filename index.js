@@ -111,11 +111,7 @@ class QuickActionsR extends Plugin {
     if (plugin) {
       id = plugin.id ? plugin.id : id;
 
-      const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
-      const hiddenPlugins = this.state.hiddenPlugins.map(hiddenPlugin => this.utils.normalizeToCleanText(hiddenPlugin));
-      if (!showHiddenPlugins && hiddenPlugins.includes(this.utils.normalizeToCleanText(id))) {
-        return null;
-      } else if (typeof plugin.hide === 'function') {
+      if (typeof plugin.hide === 'function') {
         const hidePlugin = plugin.hide();
         if (hidePlugin) {
           return null;
@@ -158,6 +154,12 @@ class QuickActionsR extends Plugin {
           items.push(item);
         }
       }
+    }
+
+    const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
+    const hiddenPlugins = this.state.hiddenPlugins.map(hiddenPlugin => this.utils.normalizeToCleanText(hiddenPlugin));
+    if (!showHiddenPlugins && hiddenPlugins.includes(this.utils.normalizeToCleanText(id))) {
+      return null;
     }
 
     const props = {
