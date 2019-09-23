@@ -3,7 +3,7 @@
 const { Plugin } = require('powercord/entities');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 const { inject, uninject } = require('powercord/injector');
-const { ImageMenuItem, MenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
+const { ItemGroup, ImageMenuItem, MenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
 
 class QuickActionsR extends Plugin {
   constructor (props) {
@@ -96,7 +96,8 @@ class QuickActionsR extends Plugin {
         action: () => this.utils.openUserSettings()
       });
 
-      res.props.children.splice(0, 0, parent);
+      res.props.className += ' quickActions-contextMenu';
+      res.props.children.splice(0, 0, React.createElement(ItemGroup, { children: [ parent ] }));
 
       return res;
     });

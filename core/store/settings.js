@@ -401,7 +401,17 @@ module.exports = (plugin) => [ {
           arguments: 'larger-profile-avatars',
           type: 'pluginManager'
         }
+      },
+      hideGiftButton: {
+        name: 'Hide Gift Button',
+        desc: 'When toggled, the gift button in the\ntext field next to GIF will not be shown.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'hide-gift-button',
+          type: 'pluginManager'
       }
+    }
     }
   },
   lightify: {
@@ -763,7 +773,7 @@ module.exports = (plugin) => [ {
 
               child = React.createElement(SubMenuItem, {
                 label: `${guild.folderName} (${servers.length})`,
-                seperated: children.length > 1,
+                seperated: children.length > 0 && children[children.length - 1].type.name === 'NewToggleMenuItem',
                 render: servers
               });
             } else {
@@ -1041,7 +1051,7 @@ module.exports = (plugin) => [ {
 
               props.image = 'fa-sync fa-spin';
 
-              powercord.pluginManager.get(id).checkForUpdate().then(async () => {
+              powercord.pluginManager.get(id).checkForUpdate(null, true).then(async () => {
                 const { playSound } = (await getModule([ 'playSound' ]));
 
                 clearInterval(loading);
@@ -1065,8 +1075,7 @@ module.exports = (plugin) => [ {
                 }, 5e3);
               });
             },
-            disabled: (id) => powercord.pluginManager.get(id).checking || !powercord.api.settings
-              .store.getSetting(id, 'checkForUpdates', true)
+            disabled: (id) => powercord.pluginManager.get(id).checking
           }
         },
         type: 'submenu'
@@ -1142,7 +1151,7 @@ module.exports = (plugin) => [ {
                   const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
                   dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
 
-                  powercord.api.settings.actions.updateSetting('pc-announcements', 'dismissed', dismissedNotices);
+                  updateSetting('pc-announcements', 'dismissed', dismissedNotices);
                 } else {
                   if (announcements.notices.find(notice => notice.id === 'quickActions-pending-update')) {
                     announcements.closeNotice('quickActions-pending-update');
@@ -1198,8 +1207,7 @@ module.exports = (plugin) => [ {
                   plugin.utils.forceUpdate();
                 }, 5e3);
               });
-            },
-            disabled: () => !plugin.settings.get('autoupdates', true)
+          }
           }
         },
         type: 'submenu',

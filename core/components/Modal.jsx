@@ -1,5 +1,6 @@
+const { shell: { openExternal } } = require('electron');
 const { React, getModule } = require('powercord/webpack');
-const { Tooltip, Button, Icon } = require('powercord/components');
+const { Tooltip, Button, Icon, Icons } = require('powercord/components');
 const { Confirm } = require('powercord/components/modal');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
@@ -24,6 +25,7 @@ module.exports = class Modal extends React.Component {
 
   render () {
     const { inputText } = this.state;
+    const { pluginInfo } = this.props;
 
     if (this.options && this.options.setting) {
       ({ setting } = this.options);
@@ -33,7 +35,7 @@ module.exports = class Modal extends React.Component {
       }
     }
 
-    return <div id={`${this.props.id || ''}`} class='quickActions-modal'>
+    return <div id={`${this.props.id || ''}`} className='quickActions-modal'>
       <Confirm
         red={this.props.red || false}
         header={this.props.header || null}
@@ -43,13 +45,65 @@ module.exports = class Modal extends React.Component {
         onCancel={() => typeof this.props.onCancel !== 'undefined' ? this.props.onCancel() : closeModal()}
         size={Confirm.Sizes[this.props.size ? this.props.size.toUpperCase() : null] || Confirm.Sizes.SMALL}
       >
-        <div class='quickActions-modal-inner'>
+        <div className='quickActions-modal-inner'>
           {this.props.desc && (this.getModalInnerDesc())}
+
+          {pluginInfo && (
+            <div className='quickActions-modal-pluginInfo'>
+              <div className='quickActions-modal-pluginInfo-header'>
+                <h5>{pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
+                  text.charAt(0).toUpperCase() + text.substr(1).toLowerCase())}</h5>
+              </div>
+              <div className='quickActions-modal-pluginInfo-container'>
+                <div className='author'>
+                  <Tooltip text='Author(s)' position='top'>
+                    <Icons.Author/>
+                  </Tooltip>
+                  <span>{pluginInfo.author ||
+                    pluginInfo.description.split('Developer: @')[1] || '<Unknown>'}</span>
+                </div>
+                <div className='version'>
+                  <Tooltip text='Version' position='top'>
+                    <Icons.Version/>
+                  </Tooltip>
+                  <span>{pluginInfo.version ? `v${pluginInfo.version}` : 'n/a'}</span>
+                </div>
+                <div className='license'>
+                  <Tooltip text='License' position='top'>
+                    <Icons.License/>
+                  </Tooltip>
+                  <span>{typeof pluginInfo.license === 'object'
+                    ? pluginInfo.license.spdx_id
+                    : pluginInfo.license}</span>
+                </div>
+                <div className='description'>
+                  <Tooltip text='Description' position='top'>
+                    <Icons.Description/>
+                  </Tooltip>
+                  <span>{pluginInfo.description.includes('Developer: @')
+                    ? pluginInfo.description.substring(0, pluginInfo.description.indexOf('Developer: @'))
+                    : pluginInfo.description}</span>
+                </div>
+              </div>
+              {pluginInfo.html_url && (
+                <div className='quickActions-modal-pluginInfo-footer'>
+                  <Button
+                    onClick={() => openExternal(pluginInfo.html_url)}
+                    look={Button.Looks.LINK}
+                    size={Button.Sizes.SMALL}
+                    color={Button.Colors.TRANSPARENT}
+                  >
+                    Repository
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {this.options && this.options.key === 'clearCache' && (
             <div className='quickActions-modal-inner-desc'>
               Are you sure you want to clear cache?
-              <div class='quickActions-modal-inner-spacer' />
+              <div className='quickActions-modal-inner-spacer' />
               Proceeding will remove <b>everything</b> stored in your Discord's cache folder resulting in slower performance, as all
 
               <Tooltip text='(i.e. images, videos and avatars)' position='top'>
@@ -64,11 +118,11 @@ module.exports = class Modal extends React.Component {
             <div id='update-passphrase' className='quickActions-modal-inner-desc'>
               This passphrase will be used to encrypt your data before sending it to Powercord's servers. It's recommended to
               use it, but you can just leave this empty and your data will be sent unencrypted.
-              <div class='quickActions-modal-inner-spacer' />
+              <div className='quickActions-modal-inner-spacer' />
               If you're already using sync on other machines, put the same passphrase you used.
               <b>Using another passphrase will overwrite old data, so be careful</b>.
-              <div class='quickActions-modal-inner-spacer' />
-              <div class='quickActions-modal-inner-desc-hint'>
+              <div className='quickActions-modal-inner-spacer' />
+              <div className='quickActions-modal-inner-desc-hint'>
                 <b>Protip</b>: You can click the "eye" symbol below to show/hide your passphrase.
               </div>
             </div>

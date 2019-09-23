@@ -1,7 +1,7 @@
-module.exports = {
-  ImageMenuItem: require('./ImageMenuItem'),
-  MenuItem: require('./MenuItem'),
-  SliderMenuItem: require('./SliderMenuItem'),
-  SubMenuItem: require('./SubMenuItem'),
-  ToggleMenuItem: require('./ToggleMenuItem')
-};
+require('fs')
+  .readdirSync(__dirname)
+  .filter(file => file !== 'index.js')
+  .forEach(filename => {
+    const moduleName = filename.split('.')[0];
+    exports[moduleName] = require(`${__dirname}/${filename}`);
+  });

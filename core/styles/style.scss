@@ -1,4 +1,14 @@
 
+.theme-light .quickActions-modal-inner .quickActions-modal-pluginInfo {
+  background-color: rgba(185, 187, 190, .3);
+  border: 1px #dcddde solid;
+}
+
+.quickActions-contextMenu > .quickActions-contextMenu-itemGroup {
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
 .quickActions-contextMenu-button {
   transition: opacity .3s ease;
   max-width: 172px;
@@ -15,6 +25,10 @@
 
 .quickActions-contextMenu-checkbox-fw {
   max-width: 172px;
+}
+
+.quickActions-contextMenu-slider {
+  padding-top: 10px;
 }
 
 .quickActions-icon {
@@ -52,12 +66,12 @@
 .quickActions-modal {
   &#emojiUtility-defaultCloneId > form {
     height: 220px;
-    transition: height 0.15s ease-in-out 0s;
+    transition: height .15s ease-in-out 0s;
   }
 
   &#quote-format > form {
     height: 303.7px;
-    transition: height 0.15s ease-in-out 0s;
+    transition: height .15s ease-in-out 0s;
   }
 
   #quickActions-selectBox div[class*='-indicatorContainer'] > svg {
@@ -92,7 +106,8 @@
   }
 
   &-inner {
-    color: #c7c9cc;
+    color: var(--text-normal);
+    line-height: 20px;
 
     [class*='divider-'] {
       display: none;
@@ -100,6 +115,48 @@
   
     [class*='marginBottom20-'] {
       margin-bottom: 0;
+    }
+
+    .quickActions-modal-pluginInfo {
+      background-color: rgba(32, 34, 37, .6);
+      border: 1px #202225 solid;
+      border-radius: 3px;
+      margin-top: 20px;
+      padding: 20px;
+
+      &-header {
+        margin-bottom: 10px;
+      }
+
+      &-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        > div {
+          display: flex;
+          width: 31%;
+          margin: 10px 3px;
+          align-items: center;
+          flex: 1 1 auto;
+
+          > div {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+
+            + span {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      &-footer {
+        border-top: 1px rgba(114, 118, 125, .3) solid;
+        padding-top: 8px;
+        margin-top: 4px;
+      }
     }
 
     &-desc[id='update-passphrase'] {

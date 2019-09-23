@@ -40,7 +40,7 @@ module.exports = class ImageMenuItem extends React.Component {
       }
     }
 
-    const item = (
+    const itemImage = (
       <Tooltip text={this.props.label.length >= 21 ? this.props.label : ''} position='right'>
         <div
           className={
@@ -66,12 +66,12 @@ module.exports = class ImageMenuItem extends React.Component {
     if (this.props.seperated) {
       return (
         <div className={`${itemClasses.itemGroup} seperated`}>
-          {item}
+          {itemImage}
         </div>
       );
     }
 
-    return item;
+    return itemImage;
   }
 
   getItemImage () {

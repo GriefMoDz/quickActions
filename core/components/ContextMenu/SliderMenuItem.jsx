@@ -1,5 +1,6 @@
 const { AsyncComponent } = require('powercord/components');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
+const { ItemGroup } = require('./index.js');
 
 const Slider = AsyncComponent.from(getModuleByDisplayName('Slider'));
 
@@ -20,12 +21,9 @@ module.exports = class SliderMenuItem extends React.Component {
 
   render () {
     const { itemClasses } = this.state;
-    const slider = (
+    const itemSlider = (
       <div title={this.props.desc || ''} className={
-        `quickActions-contextMenu-slider ${[
-          itemClasses.item,
-          itemClasses.itemSlider
-        ].join(' ')}`}
+        `quickActions-contextMenu-slider${this.props.markers ? 'WithMarkers' : ''} ${itemClasses.itemSlider}`}
       >
         <div
           className={itemClasses.label}
@@ -57,13 +55,11 @@ module.exports = class SliderMenuItem extends React.Component {
     );
 
     if (this.props.seperated) {
-      return (
-        <div className={`${itemClasses.itemGroup} seperated`}>
-          {slider}
-        </div>
-      );
+      return React.createElement(ItemGroup, {
+        children: [ itemSlider ]
+      });
     }
 
-    return slider;
+    return itemSlider;
   }
 };

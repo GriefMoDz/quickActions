@@ -1,23 +1,10 @@
 const { AsyncComponent, Tooltip } = require('powercord/components');
-const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
+const { React, getModuleByDisplayName } = require('powercord/webpack');
+const { ItemGroup } = require('./index.js');
 
 const ToggleMenuItem = AsyncComponent.from(getModuleByDisplayName('ToggleMenuItem'));
 
 module.exports = class NewToggleMenuItem extends React.Component {
-  constructor (props) {
-    super(props);
-
-    this.state = {
-      itemClasses: ''
-    };
-  }
-
-  async componentWillMount () {
-    this.setState({
-      itemClasses: (await getModule([ 'itemToggle', 'checkbox' ]))
-    });
-  }
-
   handleToggle () {
     this.props.active = !this.props.active;
 
@@ -29,7 +16,6 @@ module.exports = class NewToggleMenuItem extends React.Component {
   }
 
   render () {
-    const { itemClasses } = this.state;
     const itemToggle = React.createElement(Tooltip, {
       text: this.props.label.length >= 20 ? this.props.label : '',
       position: 'right'
@@ -41,11 +27,9 @@ module.exports = class NewToggleMenuItem extends React.Component {
     ));
 
     if (this.props.seperated) {
-      return (
-        <div className={`${itemClasses.itemGroup} seperated`}>
-          {itemToggle}
-        </div>
-      );
+      return React.createElement(ItemGroup, {
+        children: [ itemToggle ]
+      });
     }
 
     return itemToggle;

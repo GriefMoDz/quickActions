@@ -42,7 +42,7 @@ module.exports = class SettingModal extends React.Component {
 
     const textArea = document.getElementById('quickActions-textArea');
 
-    return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} class='quickActions-modal'>
+    return <div id={id ? `${id.replace('pc-', '')}-${key}` : ''} className='quickActions-modal'>
       <Confirm
         red={false}
         header={`Plugin Settings${`—${name}` || null}`}
@@ -53,7 +53,7 @@ module.exports = class SettingModal extends React.Component {
         size={Confirm.Sizes[setting.modal.size ? setting.modal.size.toUpperCase() : null] ||
           Confirm.Sizes.SMALL}
       >
-        <div class='quickActions-settingModal'>
+        <div className='quickActions-settingModal'>
           {key === 'defaultCloneId' &&
             <div>
               <FormTitle>{setting.name}</FormTitle>
