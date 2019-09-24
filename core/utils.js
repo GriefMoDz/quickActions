@@ -242,7 +242,9 @@ module.exports = (plugin = null) => ({
       confirmText: `${uninstall ? 'Uninstall' : 'Install'} Plugin`,
       cancelText: 'Cancel',
       desc: `Are you sure you want to ${uninstall ? 'uninstall' : 'install'} this plug-in?`,
-      onConfirm: () => ((uninstall ? this.uninstallPlugin(pluginId) : this.installPlugin(pluginId, metadata.clone_url), closeModal())),
+      onConfirm: () => ((uninstall
+        ? this.uninstallPlugin(pluginId)
+        : this.installPlugin(pluginId, metadata.clone_url || `${metadata.html_url}.git`), closeModal())),
       onCancel: () => closeModal(),
       pluginInfo: metadata
     }));

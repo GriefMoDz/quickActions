@@ -314,8 +314,24 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
+      const plugins = require('./core/store/plugins.js');
+      const communityPlugins = Object.keys(plugins).map(pluginId => {
+        plugins[pluginId].key = pluginId;
+
+        return plugins[pluginId];
+      });
+
+      this.state.communityRepos = Array.from(new Set(this.state.communityRepos.concat(communityPlugins)));
+
       const communityRepos = this.state.communityRepos.filter(repo => !this.utils.getNormalizedPlugins()
-        .find(pluginId => pluginId === this.utils.normalizeToCleanText(repo.name)));
+        .find(pluginId => pluginId === this.utils.normalizeToCleanText(repo.git_url ? repo.name : repo.key)))
+        .sort((a, b) => {
+          const filter = a.name < b.name
+            ? -1
+            : 1 || 0;
+
+          return filter;
+        });
 
       if (this.settings.get('showExplorePlugins', true) && communityRepos.length > 0) {
         items.splice(0, 0, React.createElement(SubMenuItem, {
@@ -323,10 +339,12 @@ class QuickActionsR extends Plugin {
           render: communityRepos
             .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
               label: repo.name,
-              desc: repo.description,
+              desc: repo.description.includes('Developer: @')
+                ? repo.description.substring(0, repo.description.indexOf('Developer: @'))
+                : repo.description,
               render: [ React.createElement(ImageMenuItem, {
-                label: 'Open in GitHub',
-                image: 'fa-github-brand',
+                label: `Open in ${repo.html_url.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
+                image: `fa-${repo.html_url.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
                 styles: { color: '#7289da' },
                 action: () => require('electron').shell.openExternal(repo.html_url)
               }), React.createElement(ImageMenuItem, {
@@ -334,7 +352,7 @@ class QuickActionsR extends Plugin {
                 image: 'fa-download',
                 styles: { color: '#43b581' },
                 seperated: true,
-                action: () => this.utils.showPluginModal(repo.name, repo)
+                action: () => this.utils.showPluginModal(repo.git_url ? repo.name : repo.key, repo)
               }) ]
             }))
         }));

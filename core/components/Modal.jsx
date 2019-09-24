@@ -51,8 +51,13 @@ module.exports = class Modal extends React.Component {
           {pluginInfo && (
             <div className='quickActions-modal-pluginInfo'>
               <div className='quickActions-modal-pluginInfo-header'>
-                <h5>{pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
-                  text.charAt(0).toUpperCase() + text.substr(1).toLowerCase())}</h5>
+                <h5>{pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) => {
+                  if (text === 'bd' || text === 'rpc' || text === 'nsfw') {
+                    return text.toUpperCase();
+                  }
+
+                  return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
+                })}</h5>
               </div>
               <div className='quickActions-modal-pluginInfo-container'>
                 <div className='author'>
