@@ -2,6 +2,7 @@
 
 const { Plugin } = require('powercord/entities');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
+const { getOwnerInstance, waitFor } = require('powercord/util');
 const { inject, uninject } = require('powercord/injector');
 const { ItemGroup, ImageMenuItem, MenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
 
@@ -41,7 +42,10 @@ class QuickActionsR extends Plugin {
   }
 
   pluginWillUnload () {
+    uninject('quickActions-SubMenuItem-postRender');
     uninject('quickActions-SettingsContextMenu');
+    uninject('quickActions-SubMenuItem-icon');
+    uninject('quickActions-SubMenuItem-render');
 
     this.utils.forceUpdate(false);
   }
@@ -67,6 +71,12 @@ class QuickActionsR extends Plugin {
 
   async patchSettingsContextMenu () {
     const { SubMenuItem, hiddenPlugins } = this.state;
+
+    inject('quickActions-SubMenuItem-postRender', SubMenuItem.prototype, 'render', (_, res) => {
+      this.patchSubMenuItem(res.type.prototype);
+
+      return res;
+    });
 
     const SettingsContextMenu = (await getModuleByDisplayName('UserSettingsCogContextMenu'));
     inject('quickActions-SettingsContextMenu', SettingsContextMenu.prototype, 'render', (_, res) => {
@@ -103,6 +113,8 @@ class QuickActionsR extends Plugin {
     });
 
     this.utils.forceUpdate();
+
+    getOwnerInstance(await waitFor('.quickActions-contextMenu')).forceUpdate();
   }
 
   buildSettingMenu (name, id) {
@@ -179,6 +191,54 @@ class QuickActionsR extends Plugin {
     return React.createElement(MenuItem, {
       ...props
     });
+  }
+
+  async patchSubMenuItem (component) {
+    const { itemImage, image } = (await getModule([ 'itemToggle', 'checkbox' ]));
+
+    uninject('quickActions-SubMenuItem-icon');
+    inject('quickActions-SubMenuItem-icon', component, 'render', function (_, res) {
+      if (this.props.label === 'Powercord') {
+        res.props.children.splice(1, 0, React.createElement('img', {
+          alt: '',
+          src: 'data:image/png;base64,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',
+          className: `quickActions-contextMenu-icon ${image}`
+        }));
+
+        res.props.className += ` ${itemImage} quickActions-contextMenu-submenu`;
+      }
+
+      return res;
+    });
+
+    this.patchSubMenuItemRender();
+  }
+
+  async patchSubMenuItemRender () {
+    const layer = `.${(await getModule([ 'layerContainer' ])).layer.replace(/ /g, '.')}`;
+    const subMenuQuery = await waitFor('.quickActions-contextMenu-submenu');
+    const instance = getOwnerInstance(subMenuQuery);
+
+    uninject('quickActions-SubMenuItem-render');
+    inject('quickActions-SubMenuItem-render', instance, 'render', (_, res) => {
+      if (document.querySelector(layer)) {
+        const instance = getOwnerInstance(document.querySelector(layer));
+        if (instance.containerInfo.children && instance.containerInfo.children[1]) {
+          const layer = instance.containerInfo.children[1];
+          const subContextMenu = layer.firstChild;
+          const scroller = subContextMenu.firstChild.firstChild;
+
+          if (instance.containerInfo.children[1].innerText.includes('⭐ Quick Actions')) {
+            layer.style.top = `${instance.containerInfo.children[0].getBoundingClientRect().top}px`;
+            scroller.style.maxHeight = '386.5px';
+          }
+        }
+      }
+
+      return res;
+    });
+
+    instance.forceUpdate();
   }
 
   buildContentMenu (checkForPlugins) {

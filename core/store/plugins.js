@@ -95,6 +95,14 @@ module.exports = {
     license: 'AGPL-3.0',
     html_url: 'https://github.com/cloudrac3r/powercord-blurnsfw'
   },
+  'powercord-collapse-folders': {
+    name: 'collapse-server-folders',
+    version: '1.0.0',
+    description: 'Press Ctrl-Alt-A to collapse or expand all server folders.',
+    author: 'Cadence#3263',
+    license: 'MIT',
+    html_url: 'https://github.com/cloudrac3r/powercord-collapse-folders'
+  },
   'powercord-doubleClickVoice': {
     name: 'double-click-voice',
     version: '1.0.1',
