@@ -19,6 +19,9 @@
   }
 
   > span {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
     transition: color .1s ease-in-out;
   }
 }

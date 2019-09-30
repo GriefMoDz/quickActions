@@ -35,12 +35,30 @@ module.exports = (plugin = null) => ({
     return plugins;
   },
 
+  async getUnofficialPlugins () {
+    if (plugin.state.unofficialPlugins.length === 0) {
+      const plugins = await get('https://api.griefmodz.xyz/plugins').then(res =>
+        res.body);
+
+      plugin.state.unofficialPlugins = await plugins;
+    }
+  },
+
   async getCommunityRepos () {
     if (plugin.state.communityRepos.length === 0) {
       const communityRepos = await get('https://api.github.com/users/powercord-community/repos').then(res =>
         res.body);
 
-      plugin.state.communityRepos = await communityRepos.filter(repo => !repo.archived && repo.name !== 'guidelines');
+      plugin.state.communityRepos = await communityRepos
+        .filter(repo => !repo.archived && repo.name !== 'guidelines')
+        .map(repo => ({
+          id: repo.name,
+          name: repo.name,
+          description: repo.description.substring(0, repo.description.indexOf('Developer: @')),
+          author: repo.description.split('Developer: @')[1] || '<Unknown>',
+          license: repo.license ? repo.license.spdx_id : 'UNLICENCED',
+          repo: repo.html_url
+        }));
     }
   },
 
@@ -176,7 +194,7 @@ module.exports = (plugin = null) => ({
   },
 
   normalizeToCleanText (str) {
-    return str.toLowerCase().replace(/pc|powercord|-|_|/g, '');
+    return str.toLowerCase().replace(/pc-|powercord-|-|_|/g, '');
   },
 
   insertAtCaret (elem, text) {
@@ -244,7 +262,7 @@ module.exports = (plugin = null) => ({
       desc: `Are you sure you want to ${uninstall ? 'uninstall' : 'install'} this plug-in?`,
       onConfirm: () => ((uninstall
         ? this.uninstallPlugin(pluginId)
-        : this.installPlugin(pluginId, metadata.clone_url || `${metadata.html_url}.git`), closeModal())),
+        : this.installPlugin(pluginId, `${metadata.repo}.git`), closeModal())),
       onCancel: () => closeModal(),
       pluginInfo: metadata
     }));
@@ -315,15 +333,8 @@ module.exports = (plugin = null) => ({
       return plugin.settings.set('autoupdates', false);
     }
 
-    const lastCommitHash = await get('https://api.github.com/repos/GriefMoDz/quickActions/commits/master')
-      .then(res => res.body.sha).catch(() => null);
-
-    if (!lastCommitHash) {
-      return;
-    }
-
-    const hostUrl = 'https://rawcdn.githack.com';
-    const manifestUrl = `${hostUrl}/GriefMoDz/quickActions/${lastCommitHash}/manifest.json`;
+    const hostUrl = 'https://api.griefmodz.xyz';
+    const manifestUrl = `${hostUrl}/github/GriefMoDz/quickActions/master/manifest.json`;
 
     const { version: latestVersion } = await get(manifestUrl)
       .then(res => res.body);

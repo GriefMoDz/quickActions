@@ -51,21 +51,17 @@ module.exports = class Modal extends React.Component {
           {pluginInfo && (
             <div className='quickActions-modal-pluginInfo'>
               <div className='quickActions-modal-pluginInfo-header'>
-                <h5>{pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) => {
-                  if (text === 'bd' || text === 'rpc' || text === 'nsfw') {
-                    return text.toUpperCase();
-                  }
-
-                  return text.charAt(0).toUpperCase() + text.substr(1).toLowerCase();
-                })}</h5>
+                <h5>{!pluginInfo._id
+                  ? pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
+                    text.charAt(0).toUpperCase() + text.substr(1).toLowerCase())
+                  : pluginInfo.name}</h5>
               </div>
               <div className='quickActions-modal-pluginInfo-container'>
                 <div className='author'>
                   <Tooltip text='Author(s)' position='top'>
                     <Icons.Author/>
                   </Tooltip>
-                  <span>{pluginInfo.author ||
-                    pluginInfo.description.split('Developer: @')[1] || '<Unknown>'}</span>
+                  <span>{pluginInfo.author}</span>
                 </div>
                 <div className='version'>
                   <Tooltip text='Version' position='top'>
@@ -77,23 +73,19 @@ module.exports = class Modal extends React.Component {
                   <Tooltip text='License' position='top'>
                     <Icons.License/>
                   </Tooltip>
-                  <span>{typeof pluginInfo.license === 'object'
-                    ? pluginInfo.license.spdx_id
-                    : pluginInfo.license}</span>
+                  <span>{pluginInfo.license}</span>
                 </div>
                 <div className='description'>
                   <Tooltip text='Description' position='top'>
                     <Icons.Description/>
                   </Tooltip>
-                  <span>{pluginInfo.description.includes('Developer: @')
-                    ? pluginInfo.description.substring(0, pluginInfo.description.indexOf('Developer: @'))
-                    : pluginInfo.description}</span>
+                  <span>{pluginInfo.description}</span>
                 </div>
               </div>
-              {pluginInfo.html_url && (
+              {pluginInfo.repo && (
                 <div className='quickActions-modal-pluginInfo-footer'>
                   <Button
-                    onClick={() => openExternal(pluginInfo.html_url)}
+                    onClick={() => openExternal(pluginInfo.repo)}
                     look={Button.Looks.LINK}
                     size={Button.Sizes.SMALL}
                     color={Button.Colors.TRANSPARENT}

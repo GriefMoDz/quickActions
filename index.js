@@ -14,7 +14,8 @@ class QuickActionsR extends Plugin {
       initializedStore: false,
       settings: require('./core/store/settings')(this),
       reloading: [],
-      communityRepos: []
+      communityRepos: [],
+      unofficialPlugins: []
     };
 
     this.utils = require('./core/utils')(this);
@@ -32,6 +33,7 @@ class QuickActionsR extends Plugin {
       this.initializeStore();
     }
 
+    this.utils.getUnofficialPlugins();
     this.utils.getCommunityRepos();
 
     this.state.emojiStore = (await getModule([ 'getGuildEmoji' ]));
@@ -374,19 +376,17 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
-      const plugins = require('./core/store/plugins.js');
-      const communityPlugins = Object.keys(plugins).map(pluginId => {
-        plugins[pluginId].key = pluginId;
-
-        return plugins[pluginId];
-      });
+      const communityPlugins = this.state.unofficialPlugins;
 
       this.state.communityRepos = Array.from(new Set(this.state.communityRepos.concat(communityPlugins)));
 
-      const communityRepos = this.state.communityRepos.filter(repo => !this.utils.getNormalizedPlugins()
-        .find(pluginId => pluginId === this.utils.normalizeToCleanText(repo.git_url ? repo.name : repo.key)))
+      const communityRepos = this.state.communityRepos.filter(plugin => !this.utils.getNormalizedPlugins()
+        .find(pluginId => pluginId === this.utils.normalizeToCleanText(plugin.id)))
         .sort((a, b) => {
-          const filter = a.name < b.name
+          const aName = a._id ? this.utils.normalizeToCleanText(a.name).replace(/ /g, '-') : a.name;
+          const bName = b._id ? this.utils.normalizeToCleanText(b.name).replace(/ /g, '-') : b.name;
+
+          const filter = aName < bName
             ? -1
             : 1 || 0;
 
@@ -397,22 +397,20 @@ class QuickActionsR extends Plugin {
         items.splice(0, 0, React.createElement(SubMenuItem, {
           label: `Explore Plugins (${communityRepos.length})`,
           render: communityRepos
-            .map(repo => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
-              label: repo.name,
-              desc: repo.description.includes('Developer: @')
-                ? repo.description.substring(0, repo.description.indexOf('Developer: @'))
-                : repo.description,
+            .map(plugin => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
+              label: plugin._id ? this.utils.normalizeToCleanText(plugin.name).replace(/ /g, '-') : plugin.name,
+              desc: plugin.description,
               render: [ React.createElement(ImageMenuItem, {
-                label: `Open in ${repo.html_url.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
-                image: `fa-${repo.html_url.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
+                label: `Open in ${plugin.repo.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
+                image: `fa-${plugin.repo.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
                 styles: { color: '#7289da' },
-                action: () => require('electron').shell.openExternal(repo.html_url)
+                action: () => require('electron').shell.openExternal(plugin.repo)
               }), React.createElement(ImageMenuItem, {
                 label: 'Install Plugin',
                 image: 'fa-download',
                 styles: { color: '#43b581' },
                 seperated: true,
-                action: () => this.utils.showPluginModal(repo.git_url ? repo.name : repo.key, repo)
+                action: () => this.utils.showPluginModal(plugin.id, plugin)
               }) ]
             }))
         }));

@@ -10,7 +10,7 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | -------------------------- | ------------------------ |:-------:|:----------:|:----------------------------------------------------------:|
 | advancedTitleBar**         | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar)
 | ~~Alias**~~                | ~~alias~~                | ~~v1.0.3~~  | ~~⭕~~        | ~~[[Link]](../../../../powercord-community/alias)~~
-| Auditory                   | auditory                 | v1.0.6  | ⭕         | [[Link]](../../../../powercord-community/auditory)
+| Auditory                   | auditory                 | v1.0.7  | ⭕         | [[Link]](../../../../powercord-community/auditory)
 | Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.0  | ⭕         | [[Link]](../../../autoplayGifAvatars)
 | Better Friends**           | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
 | Bookmoji                   | bookmoji                 | v1.0.2  | ⭕         | [[Link]](../../../../powercord-community/bookmoji)
