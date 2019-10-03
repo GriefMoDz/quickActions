@@ -40,25 +40,51 @@ module.exports = (plugin = null) => ({
       const plugins = await get('https://api.griefmodz.xyz/plugins').then(res =>
         res.body);
 
-      plugin.state.unofficialPlugins = await plugins;
+      plugin.state.unofficialPlugins = await plugins.map(plugin => {
+        delete plugin._id;
+
+        return plugin;
+      });
     }
   },
 
   async getCommunityRepos () {
     if (plugin.state.communityRepos.length === 0) {
-      const communityRepos = await get('https://api.github.com/users/powercord-community/repos').then(res =>
+      const communityRepos = await get('https://api.github.com/users/powercord-community/repos')
+        .then(res => res.body);
+
+      plugin.state.communityRepos = await Promise.all(await communityRepos
+        .filter(repo => !repo.archived && repo.name !== 'guidelines')
+        .map(async repo => {
+          const manifest = await get(`https://raw.githubusercontent.com/powercord-community/${repo.name}/master/manifest.json`)
+            .then(res => JSON.parse(res.body));
+
+          return ({
+            id: repo.name,
+            name: manifest.name,
+            version: manifest.version,
+            description: repo.description.includes('Developer: @')
+              ? repo.description.substring(0, repo.description.indexOf('Developer: @'))
+              : repo.description,
+            author: repo.description.split('Developer: @')[1] || manifest.author,
+            license: repo.license ? repo.license.spdx_id : 'UNLICENCED',
+            repo: repo.html_url
+          });
+        })
+      );
+    }
+  },
+
+  async getCommunityThemes () {
+    if (plugin.state.communityThemes.length === 0) {
+      const themes = await get('https://api.griefmodz.xyz/themes').then(res =>
         res.body);
 
-      plugin.state.communityRepos = await communityRepos
-        .filter(repo => !repo.archived && repo.name !== 'guidelines')
-        .map(repo => ({
-          id: repo.name,
-          name: repo.name,
-          description: repo.description.substring(0, repo.description.indexOf('Developer: @')),
-          author: repo.description.split('Developer: @')[1] || '<Unknown>',
-          license: repo.license ? repo.license.spdx_id : 'UNLICENCED',
-          repo: repo.html_url
-        }));
+      plugin.state.communityThemes = await themes.map(theme => {
+        delete theme._id;
+
+        return theme;
+      });
     }
   },
 
@@ -79,9 +105,12 @@ module.exports = (plugin = null) => ({
       themes };
   },
 
-  async uninstallPlugin (pluginId) {
+  async uninstallContent (contentType, contentId) {
     const { existsSync, promises: { lstat, readdir, rmdir, unlink } } = require('fs');
-    const { pluginManager } = powercord;
+    const { pluginManager, styleManager } = powercord;
+
+    const contentManager = contentType === 'theme' ? styleManager : pluginManager;
+    contentManager.contentDir = contentType === 'theme' ? contentManager.themesDir : contentManager.pluginDir;
 
     const rmdirRf = async (path) => {
       if (existsSync(path)) {
@@ -102,51 +131,65 @@ module.exports = (plugin = null) => ({
       }
     };
 
-    const pluginName = powercord.pluginManager.get(pluginId).manifest.name;
+    const contentName = contentManager.get(contentId).manifest.name;
 
-    await pluginManager.unmount(pluginId);
-    await rmdirRf(require('path').resolve(pluginManager.pluginDir, pluginId));
+    await contentManager.unmount(contentId);
+    await rmdirRf(require('path').resolve(contentManager.contentDir, contentId));
 
     if (announcements) {
       announcements.sendNotice({
-        id: 'quickActions-plugin-uninstalled',
+        id: 'quickActions-content-uninstalled',
         type: announcements.Notice.TYPES.ORANGE,
-        message: `Good news! "${pluginName}" was successfully uninstalled; nothing is required from you as we've already gone ahead and unloaded the plug-in.`,
+        message: `Good news! "${contentName}" was successfully uninstalled; nothing is required from you as we've already gone ahead and unloaded the ${contentType}.`,
         alwaysDisplay: true
       });
 
-      return setTimeout(() => announcements.closeNotice('quickActions-plugin-uninstalled'), 3e4);
+      return setTimeout(() => announcements.closeNotice('quickActions-content-uninstalled'), 3e4);
     }
   },
 
-  async installPlugin (pluginId, cloneUrl) {
-    const { pluginManager } = powercord;
+  async installContent (contentType, contentId, cloneUrl) {
+    const { pluginManager, styleManager } = powercord;
+    const contentManager = contentType === 'theme' ? styleManager : pluginManager;
+    contentManager.contentDir = contentType === 'theme' ? contentManager.themesDir : contentManager.pluginDir;
 
-    await require('util').promisify(exec)(`git clone ${cloneUrl}`, { cwd: pluginManager.pluginDir })
+    announcements.sendNotice({
+      id: 'quickActions-content-installing',
+      type: announcements.Notice.TYPES.BLURPLE,
+      message: `As requested "${contentId}" is installing in the background; we'll let you know once it's done.`,
+      alwaysDisplay: true
+    });
+
+    await require('util').promisify(exec)(`git clone ${cloneUrl}`, { cwd: contentManager.contentDir })
       .then(async () => {
-        pluginManager.mount(pluginId);
-        pluginManager.load(pluginId);
+        if (contentType === 'theme') {
+          await contentManager.loadThemes();
+        } else {
+          contentManager.mount(contentId);
+          contentManager.load(contentId);
+        }
 
-        const plugin = pluginManager.get(pluginId);
+        const content = contentManager.get(contentId.toLowerCase());
         const pluginSettingsButton = {
           text: 'Open Plugin Settings',
           onClick: () => {
-            announcements.closeNotice('quickActions-plugin-installed');
+            announcements.closeNotice('quickActions-content-installed');
 
-            this.showCategory(plugin.registered.settings[0]);
+            this.showCategory(content.registered.settings[0]);
           }
         };
 
         if (announcements) {
+          announcements.closeNotice('quickActions-content-installing');
           announcements.sendNotice({
-            id: 'quickActions-plugin-installed',
+            id: 'quickActions-content-installed',
             type: announcements.Notice.TYPES.GREEN,
-            message: `Good news! "${pluginManager.get(pluginId).manifest.name}" was successfully installed; nothing is required from you as we've already gone ahead and loaded the plug-in.`,
-            button: powercord.api.settings.tabs.find(tab => tab.section === plugin.registered.settings[0]) ? pluginSettingsButton : null,
+            message: `Good news! "${content.manifest.name}" was successfully installed; nothing is required from you as we've already gone ahead and loaded the ${contentType}.`,
+            button: content.registered && powercord.api.settings.tabs.find(tab => tab.section === content.registered.settings[0]) ? pluginSettingsButton : null,
             alwaysDisplay: true
           });
 
-          return setTimeout(() => announcements.closeNotice('quickActions-plugin-installed'), 3e4);
+          return setTimeout(() => announcements.closeNotice('quickActions-content-installed'), 3e4);
         }
       });
   },
@@ -252,19 +295,20 @@ module.exports = (plugin = null) => ({
     }
   },
 
-  showPluginModal (pluginId, metadata, uninstall) {
+  showContentModal (contentId, metadata, uninstall) {
     const GenericModal = require('./components/Modal');
     this.openModal(React.createElement(GenericModal, {
       red: uninstall,
       header: `${uninstall ? 'Uninstall' : 'Install'} '${metadata.name}'`,
-      confirmText: `${uninstall ? 'Uninstall' : 'Install'} Plugin`,
+      confirmText: `${uninstall ? 'Uninstall' : 'Install'} ${metadata.theme ? 'Theme' : 'Plugin'}`,
       cancelText: 'Cancel',
-      desc: `Are you sure you want to ${uninstall ? 'uninstall' : 'install'} this plug-in?`,
+      desc: `Are you sure you want to ${uninstall ? 'uninstall' : 'install'} this ${metadata.theme ? 'theme' : 'plug-in'}?`,
       onConfirm: () => ((uninstall
-        ? this.uninstallPlugin(pluginId)
-        : this.installPlugin(pluginId, `${metadata.repo}.git`), closeModal())),
+        ? this.uninstallContent(metadata.theme ? 'theme' : 'plugin', contentId)
+        : this.installContent(metadata.theme ? 'theme' : 'plugin', contentId, `${metadata.repo}.git`),
+      closeModal())),
       onCancel: () => closeModal(),
-      pluginInfo: metadata
+      contentInfo: metadata
     }));
   },
 

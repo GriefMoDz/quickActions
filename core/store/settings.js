@@ -1227,6 +1227,10 @@ module.exports = (plugin) => [ {
           showExplorePlugins: {
             name: 'Show Explore Plugins',
             default: true
+          },
+          showExploreThemes: {
+            name: 'Show Explore Themes',
+            default: true
           }
         },
         type: 'submenu'

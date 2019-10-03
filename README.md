@@ -49,6 +49,7 @@ Aside from just offering shortcuts ranging from a list of other plug-ins, Quick 
 - Show Descriptions: toggles the notes that are usually displayed when hovering over buttons, checkboxes and sub-menus.
 - Show Hidden Plugins: toggles the visibility of plug-ins hidden from the ‘Powercord’ and ‘Installed Plugins’ sub-menu.
 - Show Explore Plugins: toggles the ‘Explore Plugins’ tab found under the ‘Installed Plugins’ sub-menu.
+- Show Explore Themes: toggles the ‘Explore Themes’ tab found under the ‘Installed Themes’ sub-menu.
 
 ## Installation:
 Thanks to Powercord’s state of the art plug-in API, installing Quick Actions is as simple as counting from one to three and takes no more than 4 steps (legend even has it that you can do this in your sleep because of how easy it is!).

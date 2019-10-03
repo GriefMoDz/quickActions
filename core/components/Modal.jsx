@@ -25,7 +25,7 @@ module.exports = class Modal extends React.Component {
 
   render () {
     const { inputText } = this.state;
-    const { pluginInfo } = this.props;
+    const { contentInfo } = this.props;
 
     if (this.options && this.options.setting) {
       ({ setting } = this.options);
@@ -48,44 +48,44 @@ module.exports = class Modal extends React.Component {
         <div className='quickActions-modal-inner'>
           {this.props.desc && (this.getModalInnerDesc())}
 
-          {pluginInfo && (
-            <div className='quickActions-modal-pluginInfo'>
-              <div className='quickActions-modal-pluginInfo-header'>
-                <h5>{!pluginInfo._id
-                  ? pluginInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
+          {contentInfo && (
+            <div className='quickActions-modal-contentInfo'>
+              <div className='quickActions-modal-contentInfo-header'>
+                <h5>{!contentInfo._id
+                  ? contentInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
                     text.charAt(0).toUpperCase() + text.substr(1).toLowerCase())
-                  : pluginInfo.name}</h5>
+                  : contentInfo.name}</h5>
               </div>
-              <div className='quickActions-modal-pluginInfo-container'>
+              <div className='quickActions-modal-contentInfo-container'>
                 <div className='author'>
                   <Tooltip text='Author(s)' position='top'>
                     <Icons.Author/>
                   </Tooltip>
-                  <span>{pluginInfo.author}</span>
+                  <span>{contentInfo.author}</span>
                 </div>
                 <div className='version'>
                   <Tooltip text='Version' position='top'>
                     <Icons.Version/>
                   </Tooltip>
-                  <span>{pluginInfo.version ? `v${pluginInfo.version}` : 'n/a'}</span>
+                  <span>{contentInfo.version ? `v${contentInfo.version}` : 'n/a'}</span>
                 </div>
                 <div className='license'>
                   <Tooltip text='License' position='top'>
                     <Icons.License/>
                   </Tooltip>
-                  <span>{pluginInfo.license}</span>
+                  <span>{contentInfo.license}</span>
                 </div>
                 <div className='description'>
                   <Tooltip text='Description' position='top'>
                     <Icons.Description/>
                   </Tooltip>
-                  <span>{pluginInfo.description}</span>
+                  <span>{contentInfo.description}</span>
                 </div>
               </div>
-              {pluginInfo.repo && (
-                <div className='quickActions-modal-pluginInfo-footer'>
+              {contentInfo.repo && (
+                <div className='quickActions-modal-contentInfo-footer'>
                   <Button
-                    onClick={() => openExternal(pluginInfo.repo)}
+                    onClick={() => openExternal(contentInfo.repo)}
                     look={Button.Looks.LINK}
                     size={Button.Sizes.SMALL}
                     color={Button.Colors.TRANSPARENT}

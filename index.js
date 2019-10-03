@@ -4,7 +4,7 @@ const { Plugin } = require('powercord/entities');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 const { getOwnerInstance, waitFor } = require('powercord/util');
 const { inject, uninject } = require('powercord/injector');
-const { ItemGroup, ImageMenuItem, MenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
+const { ItemGroup, ImageMenuItem, MenuItem, SubMenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
 
 class QuickActionsR extends Plugin {
   constructor (props) {
@@ -14,8 +14,10 @@ class QuickActionsR extends Plugin {
       initializedStore: false,
       settings: require('./core/store/settings')(this),
       reloading: [],
-      communityRepos: [],
-      unofficialPlugins: []
+      communityPlugins: [],
+      unofficialPlugins: [],
+      communityThemes: [],
+      communityRepos: []
     };
 
     this.utils = require('./core/utils')(this);
@@ -33,8 +35,9 @@ class QuickActionsR extends Plugin {
       this.initializeStore();
     }
 
-    this.utils.getUnofficialPlugins();
-    this.utils.getCommunityRepos();
+    await this.utils.getUnofficialPlugins();
+    await this.utils.getCommunityThemes();
+    await this.utils.getCommunityRepos();
 
     this.state.emojiStore = (await getModule([ 'getGuildEmoji' ]));
     this.state.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
@@ -102,7 +105,7 @@ class QuickActionsR extends Plugin {
 
       items.push(this.buildSettingMenu('⭐ Quick Actions', this.pluginID));
 
-      const parent = React.createElement(SubMenuItem, {
+      const parent = React.createElement(this.state.SubMenuItem, {
         label: 'Powercord',
         render: items,
         action: () => this.utils.openUserSettings()
@@ -244,7 +247,6 @@ class QuickActionsR extends Plugin {
   }
 
   buildContentMenu (checkForPlugins) {
-    const { SubMenuItem } = this.state;
     const { plugins, hiddenPlugins, disabledPlugins } = this.utils.getPlugins();
     const { themes, disabledThemes } = this.utils.getThemes();
 
@@ -272,7 +274,7 @@ class QuickActionsR extends Plugin {
       if (checkForPlugins) {
         const enforcedPlugins = [ 'pc-settings', 'pc-pluginManager', 'pc-updater' ];
 
-        child = React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
+        child = React.createElement(SubMenuItem, {
           ...props,
           seperated: children.length < 1,
           render: [ React.createElement(ToggleMenuItem, {
@@ -347,15 +349,24 @@ class QuickActionsR extends Plugin {
               label: 'Uninstall Plugin',
               image: 'fa-trash-alt',
               danger: true,
-              action: () => this.utils.showPluginModal(id, metadata, true)
+              action: () => this.utils.showContentModal(id, metadata, true)
             })
             : null ]
         });
       } else {
-        child = React.createElement(ToggleMenuItem, {
+        child = React.createElement(SubMenuItem, {
           ...props,
+          render: [ React.createElement(ToggleMenuItem, {
+            label: 'Enabled',
           active: !isContentDisabled,
           action: () => this.utils.toggleTheme(id)
+          }), React.createElement(ImageMenuItem, {
+            label: 'Uninstall Theme',
+            image: 'fa-trash-alt',
+            danger: true,
+            seperated: true,
+            action: () => this.utils.showContentModal(id, metadata, true)
+          }) ]
         });
       }
 
@@ -376,15 +387,12 @@ class QuickActionsR extends Plugin {
     }));
 
     if (checkForPlugins) {
-      const communityPlugins = this.state.unofficialPlugins;
-
-      this.state.communityRepos = Array.from(new Set(this.state.communityRepos.concat(communityPlugins)));
-
-      const communityRepos = this.state.communityRepos.filter(plugin => !this.utils.getNormalizedPlugins()
+      const communityPlugins = Array.from(new Set(this.state.communityRepos.concat(this.state.unofficialPlugins)));
+      this.state.communityPlugins = communityPlugins.filter(plugin => !this.utils.getNormalizedPlugins()
         .find(pluginId => pluginId === this.utils.normalizeToCleanText(plugin.id)))
         .sort((a, b) => {
-          const aName = a._id ? this.utils.normalizeToCleanText(a.name).replace(/ /g, '-') : a.name;
-          const bName = b._id ? this.utils.normalizeToCleanText(b.name).replace(/ /g, '-') : b.name;
+          const aName = (a.name).toLowerCase().replace(/ /g, '-');
+          const bName = (b.name).toLowerCase().replace(/ /g, '-');
 
           const filter = aName < bName
             ? -1
@@ -393,35 +401,48 @@ class QuickActionsR extends Plugin {
           return filter;
         });
 
-      if (this.settings.get('showExplorePlugins', true) && communityRepos.length > 0) {
-        items.splice(0, 0, React.createElement(SubMenuItem, {
-          label: `Explore Plugins (${communityRepos.length})`,
-          render: communityRepos
-            .map(plugin => React.createElement(require('./core/components/ContextMenu/SubMenuItem'), {
-              label: plugin._id ? this.utils.normalizeToCleanText(plugin.name).replace(/ /g, '-') : plugin.name,
-              desc: plugin.description,
-              render: [ React.createElement(ImageMenuItem, {
-                label: `Open in ${plugin.repo.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
-                image: `fa-${plugin.repo.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
-                styles: { color: '#7289da' },
-                action: () => require('electron').shell.openExternal(plugin.repo)
-              }), React.createElement(ImageMenuItem, {
-                label: 'Install Plugin',
-                image: 'fa-download',
-                styles: { color: '#43b581' },
-                seperated: true,
-                action: () => this.utils.showPluginModal(plugin.id, plugin)
-              }) ]
-            }))
-        }));
-      }
-
       children.splice(0, 0, React.createElement(ToggleMenuItem, {
         label: 'Show Hidden Plugins',
         active: this.settings.get('showHiddenPlugins', false),
         action: (state) => ((this.settings.set('showHiddenPlugins', state), this.utils.forceUpdate()))
       }));
     }
+
+    const { communityPlugins } = this.state;
+    const communityThemes = this.state.communityThemes.filter(theme => !powercord.styleManager.themes.has((theme.id).toLowerCase()))
+        .sort((a, b) => {
+          const aName = (a.name).toLowerCase().replace(/ /g, '-');
+          const bName = (b.name).toLowerCase().replace(/ /g, '-');
+
+          const filter = aName < bName
+            ? -1
+            : 1 || 0;
+
+          return filter;
+        });
+
+    if (this.settings.get(`showExplore${checkForPlugins ? 'Plugins' : 'Themes'}`, true)) {
+        items.splice(0, 0, React.createElement(SubMenuItem, {
+        label: `Explore ${checkForPlugins ? `Plugins (${communityPlugins.length})` : `Themes (${communityThemes.length})`}`,
+        render: (checkForPlugins ? communityPlugins : communityThemes)
+          .map(content => React.createElement(SubMenuItem, {
+            label: content.name.toLowerCase().replace(/ /g, '-'),
+            desc: content.description,
+              render: [ React.createElement(ImageMenuItem, {
+              label: `Open in ${content.repo.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
+              image: `fa-${content.repo.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
+                styles: { color: '#7289da' },
+              action: () => require('electron').shell.openExternal(content.repo)
+              }), React.createElement(ImageMenuItem, {
+              label: `Install ${checkForPlugins ? 'Plugin' : 'Theme'}`,
+                image: 'fa-download',
+                styles: { color: '#43b581' },
+                seperated: true,
+              action: () => this.utils.showContentModal(content.id, content)
+              }) ]
+            }))
+        }));
+      }
 
     return submenu;
   }
