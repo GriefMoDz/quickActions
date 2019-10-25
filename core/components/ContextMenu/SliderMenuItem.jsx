@@ -9,24 +9,24 @@ module.exports = class SliderMenuItem extends React.Component {
     super(props);
 
     this.state = {
-      itemClasses: ''
+      classes: ''
     };
   }
 
   async componentWillMount () {
     this.setState({
-      itemClasses: (await getModule([ 'itemToggle', 'checkbox' ]))
+      classes: (await getModule([ 'itemToggle', 'checkbox' ]))
     });
   }
 
   render () {
-    const { itemClasses } = this.state;
+    const { classes } = this.state;
     const itemSlider = (
       <div title={this.props.desc || ''} className={
-        `quickActions-contextMenu-slider${this.props.markers ? 'WithMarkers' : ''} ${itemClasses.itemSlider}`}
+        `quickActions-contextMenu-slider${this.props.markers ? 'WithMarkers' : ''} ${classes.itemSlider}`}
       >
         <div
-          className={itemClasses.label}
+          className={classes.label}
           style={this.props.markers ? { marginBottom: '16px' } : null}
         >
           {this.props.label}
@@ -35,7 +35,7 @@ module.exports = class SliderMenuItem extends React.Component {
         {this.props.markers && (
           <Slider
             mini={true}
-            className={itemClasses.slider}
+            className={classes.slider}
             fillStyles={this.props.color ? { backgroundColor: this.props.color } : {}}
             equidistant={true}
             stickToMarkers={true}
@@ -46,7 +46,7 @@ module.exports = class SliderMenuItem extends React.Component {
         {!this.props.markers && (
           <Slider
             mini={true}
-            className={itemClasses.slider}
+            className={classes.slider}
             fillStyles={this.props.color ? { backgroundColor: this.props.color } : {}}
             {...this.props}
           />

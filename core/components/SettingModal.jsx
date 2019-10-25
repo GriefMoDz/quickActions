@@ -14,8 +14,8 @@ module.exports = class SettingModal extends React.Component {
   constructor (props) {
     super(props);
 
-    this.plugin = this.props.plugin;
-    this.options = this.props.options;
+    this.plugin = props.main;
+    this.options = props.options;
     this.state = {
       inputText: powercord.api.settings.store
         .getSetting(this.options.id, this.options.key, this.options.setting.default),
@@ -26,6 +26,7 @@ module.exports = class SettingModal extends React.Component {
   async componentDidMount () {
     this.setState({
       reset: (await getModule([ 'card', 'reset' ])).reset,
+      primary: (await getModule([ 'primary' ])).primary,
       getGuild: (await getModule([ 'getGuild' ])).getGuild
     });
   }
@@ -116,7 +117,7 @@ module.exports = class SettingModal extends React.Component {
 
               <Button
                 className={this.state.reset}
-                color={Button.Colors.PRIMARY}
+                color={this.state.primary}
                 look={Button.Looks.LINK}
                 size={Button.Sizes.SMALL}
                 onClick={() => {
@@ -135,7 +136,7 @@ module.exports = class SettingModal extends React.Component {
               <FormTitle>{setting.name}
                 {setting.desc && (
                   <div className='quickActions-hint'>
-                    <Tooltip text={setting.desc} position='top'>
+                    <Tooltip text={setting.desc} position='top' hideOnClick={false}>
                       <Icon name='Info' />
                     </Tooltip>
                   </div>
@@ -211,7 +212,7 @@ module.exports = class SettingModal extends React.Component {
 
                 {setting.desc && (
                   <div className='quickActions-hint'>
-                    <Tooltip text={setting.desc} position='top'>
+                    <Tooltip text={setting.desc} position='top' hideOnClick={false}>
                       <Icon name='Info' />
                     </Tooltip>
                   </div>
@@ -220,9 +221,8 @@ module.exports = class SettingModal extends React.Component {
 
               <Button
                 className={this.state.reset}
-                color={Button.Colors.PRIMARY}
+                color={this.state.primary}
                 look={Button.Looks.LINK}
-                size={Button.Sizes.SMALL}
                 onClick={() => {
                   this.setState({ inputText: setting.default,
                     valid: true });
@@ -242,7 +242,7 @@ module.exports = class SettingModal extends React.Component {
   getGuilds () {
     const guilds = [];
 
-    this.plugin.state.sortedGuildsStore.getFlattenedGuilds().map(g => {
+    this.plugin.stores.sortedGuildsStore.getFlattenedGuilds().map(g => {
       const guild = {
         label: `${g.id} (${g.name})`,
         value: g.id

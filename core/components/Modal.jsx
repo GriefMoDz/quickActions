@@ -19,7 +19,8 @@ module.exports = class Modal extends React.Component {
 
   async componentDidMount () {
     this.setState({
-      reset: (await getModule([ 'card', 'reset' ])).reset
+      reset: (await getModule([ 'card', 'reset' ])).reset,
+      primary: (await getModule([ 'primary' ])).primary
     });
   }
 
@@ -51,32 +52,29 @@ module.exports = class Modal extends React.Component {
           {contentInfo && (
             <div className='quickActions-modal-contentInfo'>
               <div className='quickActions-modal-contentInfo-header'>
-                <h5>{!contentInfo._id
-                  ? contentInfo.name.replace(/-/g, ' ').replace(/\w\S*/g, (text) =>
-                    text.charAt(0).toUpperCase() + text.substr(1).toLowerCase())
-                  : contentInfo.name}</h5>
+                <h5>{contentInfo.name}</h5>
               </div>
               <div className='quickActions-modal-contentInfo-container'>
                 <div className='author'>
-                  <Tooltip text='Author(s)' position='top'>
+                  <Tooltip text='Author(s)' position='top' hideOnClick={false}>
                     <Icons.Author/>
                   </Tooltip>
                   <span>{contentInfo.author}</span>
                 </div>
                 <div className='version'>
-                  <Tooltip text='Version' position='top'>
+                  <Tooltip text='Version' position='top' hideOnClick={false}>
                     <Icons.Version/>
                   </Tooltip>
                   <span>{contentInfo.version ? `v${contentInfo.version}` : 'n/a'}</span>
                 </div>
                 <div className='license'>
-                  <Tooltip text='License' position='top'>
+                  <Tooltip text='License' position='top' hideOnClick={false}>
                     <Icons.License/>
                   </Tooltip>
                   <span>{contentInfo.license}</span>
                 </div>
                 <div className='description'>
-                  <Tooltip text='Description' position='top'>
+                  <Tooltip text='Description' position='top' hideOnClick={false}>
                     <Icons.Description/>
                   </Tooltip>
                   <span>{contentInfo.description}</span>
@@ -101,9 +99,9 @@ module.exports = class Modal extends React.Component {
             <div className='quickActions-modal-inner-desc'>
               Are you sure you want to clear cache?
               <div className='quickActions-modal-inner-spacer' />
-              Proceeding will remove <b>everything</b> stored in your Discord's cache folder resulting in slower performance, as all
+              Proceeding will remove <b>everything</b> stored in your Discord's cache folder resulting in temporary performance loss, as all
 
-              <Tooltip text='(i.e. images, videos and avatars)' position='top'>
+              <Tooltip text='(i.e. images, videos and avatars)' position='top' hideOnClick={false}>
                 <span> “resources” </span>
               </Tooltip>
 
@@ -141,7 +139,7 @@ module.exports = class Modal extends React.Component {
 
                 {input.icon && (
                   <div className='quickActions-hint'>
-                    <Tooltip text={input.icon.tooltip || null} position='top'>
+                    <Tooltip text={input.icon.tooltip || null} position='top' hideOnClick={false}>
                       <Icon
                         name={input.icon.name}
                         onClick={() => {
@@ -169,7 +167,7 @@ module.exports = class Modal extends React.Component {
               {input.hidden && (
                 <Button
                   className={this.state.reset}
-                  color={Button.Colors.PRIMARY}
+                  color={this.state.primary}
                   look={Button.Looks.LINK}
                   size={Button.Sizes.SMALL}
                   onClick={() => {
@@ -202,7 +200,7 @@ module.exports = class Modal extends React.Component {
           {this.props.button && (
             <Button
               className={this.state.reset}
-              color={Button.Colors.PRIMARY}
+              color={this.state.primary}
               look={Button.Looks.LINK}
               size={Button.Sizes.SMALL}
               onClick={() => {

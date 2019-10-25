@@ -6,6 +6,7 @@ module.exports = (id, key, setting, main) => React.createElement(ToggleMenuItem,
   label: setting.name,
   desc: !main.settings.get('showDescriptions', true) ? '' : setting.desc,
   disabled: typeof setting.disabled === 'function' ? setting.disabled.bind(this, id)() : setting.disabled,
+  danger: setting.dangerous,
   active: powercord.api.settings.store.getSetting(id, key, setting.default),
   className: 'quickActions-contextMenu-checkbox-fw',
   seperated: setting.seperate,
@@ -24,6 +25,6 @@ module.exports = (id, key, setting, main) => React.createElement(ToggleMenuItem,
       }
     }
 
-    main.utils.forceUpdate(false, setting.updateHeight || '');
+    main.utils.forceUpdate();
   }
 });

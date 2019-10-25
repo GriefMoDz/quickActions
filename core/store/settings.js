@@ -93,7 +93,7 @@ module.exports = (plugin) => [ {
       color: {
         name: 'Visualizer Color',
         type: 'button',
-        image: 'fa-eye',
+        icon: 'eye-duotone',
         seperate: true,
         default: '#7289da',
         modal: {
@@ -108,7 +108,7 @@ module.exports = (plugin) => [ {
         name: 'Idle Color',
         desc: '(When no audio is playing)',
         type: 'button',
-        image: 'fa-stop-circle-regular',
+        icon: 'stop-circle-duotone',
         default: '#202225',
         modal: {
           colorPicker: true
@@ -208,9 +208,9 @@ module.exports = (plugin) => [ {
         children: (id, key) => {
           const children = [];
 
-          plugin.state.sortedGuildsStore.getFlattenedGuilds().map(guild => {
+          plugin.stores.sortedGuildsStore.getFlattenedGuilds().map(guild => {
             let storedEmojis = powercord.api.settings.store.getSetting(id, key, []);
-            const emojis = Object.values(plugin.state.emojiStore.getGuilds()).flatMap(g => g.emojis)
+            const emojis = Object.values(plugin.stores.emojiStore.getGuilds()).flatMap(g => g.emojis)
               .filter(emoji => emoji.guildId === guild.id);
 
             if (emojis.length) {
@@ -410,8 +410,19 @@ module.exports = (plugin) => [ {
           method: 'toggleTweak',
           arguments: 'hide-gift-button',
           type: 'pluginManager'
+        }
+      },
+      compactExtraButtons: {
+        name: 'Compact Extra Buttons',
+        desc: 'When toggled, message buttons that are added by other plugins like\n' +
+          'Star, Quick React or Quote will be shown in a compact list when hovered.',
+        default: false,
+        func: {
+          method: 'toggleTweak',
+          arguments: 'compact-extra-buttons',
+          type: 'pluginManager'
+        }
       }
-    }
     }
   },
   lightify: {
@@ -435,7 +446,7 @@ module.exports = (plugin) => [ {
         name: 'YeeLight Device IP',
         desc: 'Set the IP address of the YeeLight light you want to use!',
         type: 'button',
-        image: 'fa-globe',
+        icon: 'globe-duotone',
         default: '192.168.0.100',
         seperate: true,
         modal: true
@@ -444,7 +455,7 @@ module.exports = (plugin) => [ {
         name: 'Lifx Device Name',
         desc: 'Enter the device name of the Lifx lamp you want to pulse!',
         type: 'button',
-        image: 'fa-font',
+        icon: 'id-badge-duotone',
         default: 'MyCeilingLight',
         modal: true
       },
@@ -464,7 +475,7 @@ module.exports = (plugin) => [ {
         name: 'Lamp Color',
         desc: 'Set the color you want the light to flash when you get mentioned. For example, #00ff00 would make it green.',
         type: 'button',
-        image: 'fa-palette',
+        icon: 'palette-duotone',
         default: '#7289da',
         seperate: true,
         modal: {
@@ -553,7 +564,7 @@ module.exports = (plugin) => [ {
       addUser: {
         name: 'Add New User',
         type: 'button',
-        image: 'fa-user-plus',
+        icon: 'user-plus-duotone',
         seperate: true,
         modal: true,
         action: (id, _, setting, name) => plugin.utils.openModal(React.createElement(GenericModal, {
@@ -623,7 +634,7 @@ module.exports = (plugin) => [ {
         name: 'Client ID',
         desc: 'ID used to start the Discord RPC.',
         type: 'button',
-        image: 'fa-id-card',
+        icon: 'id-card-duotone',
         required: true,
         modal: true
       },
@@ -635,7 +646,7 @@ module.exports = (plugin) => [ {
             name: 'Line One',
             desc: 'First line of the Discord RPC.',
             type: 'button',
-            image: 'fa-pencil-alt',
+            icon: 'edit-duotone',
             default: 'Hello!',
             required: true,
             modal: true
@@ -644,7 +655,7 @@ module.exports = (plugin) => [ {
             name: 'Line Two',
             desc: 'Second line of the Discord RPC.',
             type: 'button',
-            image: 'fa-pencil-alt',
+            icon: 'edit-duotone',
             modal: true
           }
         },
@@ -655,32 +666,32 @@ module.exports = (plugin) => [ {
         name: 'Image Settings',
         desc: 'Settings for the Discord RPC images.',
         children: {
-          largeimage: {
+          largeicon: {
             name: 'Large Image',
             desc: 'Large image shown on the Discord RPC.',
             type: 'button',
-            image: 'fa-file-image',
+            icon: 'image-polaroid-duotone',
             modal: true
           },
           largeimagetext: {
             name: 'Large Image Text',
             desc: 'Text shown when hovering over the large image.',
             type: 'button',
-            image: 'fa-pencil-alt',
+            icon: 'edit-duotone',
             modal: true
           },
-          smallimage: {
+          smallicon: {
             name: 'Small Image',
             desc: 'Small image shown on the Discord RPC.',
             type: 'button',
-            image: 'fa-file-image',
+            icon: 'image-duotone',
             modal: true
           },
           smallimagetext: {
             name: 'Small Image Text',
             desc: 'Text shown when hovering over the small image.',
             type: 'button',
-            image: 'fa-pencil-alt',
+            icon: 'edit-duotone',
             modal: true
           }
         },
@@ -721,7 +732,7 @@ module.exports = (plugin) => [ {
         name: 'Save Directory',
         desc: 'The directory emotes will be saved to.',
         type: 'button',
-        image: 'fa-save',
+        icon: 'save-duotone',
         seperate: true,
         modal: {
           realtime: true,
@@ -743,7 +754,7 @@ module.exports = (plugin) => [ {
         name: 'Default Server ID when Cloning Emotes',
         desc: 'The default server ID which will be used to save cloned emotes.',
         type: 'button',
-        image: 'fa-hdd',
+        icon: 'hdd-duotone',
         seperate: true,
         modal: true,
         disabled: (id) => powercord.api.settings.store.getSetting(id,
@@ -756,7 +767,7 @@ module.exports = (plugin) => [ {
           const children = [];
           const hiddenGuilds = powercord.api.settings.store.getSetting(id, key, []);
 
-          plugin.state.sortedGuildsStore.getSortedGuilds().map(guild => {
+          plugin.stores.sortedGuildsStore.getSortedGuilds().map(guild => {
             let child;
             const { guilds } = guild;
 
@@ -801,7 +812,7 @@ module.exports = (plugin) => [ {
         name: 'Command Prefix',
         default: '.',
         type: 'button',
-        image: 'fa-terminal',
+        icon: 'terminal-duotone',
         modal: true
       },
       settingsSync: {
@@ -820,7 +831,7 @@ module.exports = (plugin) => [ {
           passphrase: {
             name: 'Passphrase',
             type: 'button',
-            image: 'fa-key',
+            icon: 'key-duotone',
             seperate: true,
             modal: true,
             disabled: (id) => !powercord.api.settings.store.getSetting(id,
@@ -842,7 +853,7 @@ module.exports = (plugin) => [ {
             desc: 'URL used for Spotify linking, plugin management and other internal functions.',
             default: 'https://powercord.dev',
             type: 'button',
-            image: 'fa-server',
+            icon: 'server-duotone',
             domain: true,
             modal: {
               realtime: true,
@@ -867,7 +878,8 @@ module.exports = (plugin) => [ {
               'You may encounter issues and have\nblack background in some cases, like when the window is cut off at the top or the bottom\n' +
               'due to monitor resolution or when devtools are open and docked. **Requires a restart**.',
             default: false,
-            action: (state) => state ? require('electron').remote.getCurrentWindow().reload() : null
+            dangerous: true,
+            action: (state) => state ? plugin.utils.showRestartModal() : null
           },
           experimentalWebPlatform: {
             name: 'Experimental Web Platform',
@@ -875,7 +887,8 @@ module.exports = (plugin) => [ {
               'such as CSS `backdrop-filter`. Since features are in development you may\n' +
               'encounter issues and APIs may change at any time. **Requires a restart**.',
             default: false,
-            action: (state) => state ? require('electron').remote.getCurrentWindow().reload() : null
+            dangerous: true,
+            action: (state) => state ? plugin.utils.showRestartModal() : null
           },
           experiments: {
             name: 'Discord Experiments',
@@ -884,6 +897,7 @@ module.exports = (plugin) => [ {
               'do with this feature. Leave it disabled if you are unsure. The Powercord Team will not provide\n' +
               'support regarding any experiment.',
             default: false,
+            dangerous: true,
             updateHeight: true
           }
         },
@@ -893,7 +907,7 @@ module.exports = (plugin) => [ {
       clearCache: {
         name: 'Clear Cache',
         type: 'button',
-        image: 'fa-archive',
+        icon: 'archive-duotone',
         dangerous: true,
         seperate: true,
         modal: true,
@@ -921,7 +935,7 @@ module.exports = (plugin) => [ {
         desc: 'The domain used for the Hastebin server.',
         default: 'https://haste.aetheryx.xyz',
         type: 'button',
-        image: 'fa-home',
+        icon: 'home-lg-duotone',
         seperate: true,
         domain: true,
         modal: {
@@ -989,7 +1003,7 @@ module.exports = (plugin) => [ {
 
           children.splice(0, 0, React.createElement(ImageMenuItem, {
             label: `${hiddenLanguages.length >= languages.length ? 'Show' : 'Hide'} All Languages`,
-            image: `fa-${hiddenLanguages.length >= languages.length ? 'eye' : 'eye-slash'}`,
+            icon: `${hiddenLanguages.length >= languages.length ? 'eye-duotone' : 'eye-slash-duotone'}`,
             styles: { color: '#7289da' },
             action: (component) => {
               const { state: { props } } = component;
@@ -998,12 +1012,12 @@ module.exports = (plugin) => [ {
                 updateSetting(id, key, []);
 
                 props.label = 'Hide All Languages';
-                props.image = 'fa-eye-slash';
+                props.icon = 'eye-slash-duotone';
               } else {
                 updateSetting(id, key, languages);
 
                 props.label = 'Show All Languages';
-                props.image = 'fa-eye';
+                props.icon = 'eye-duotone';
               }
 
               return plugin.utils.forceUpdate();
@@ -1030,12 +1044,12 @@ module.exports = (plugin) => [ {
           checking: {
             name: 'Check Now!',
             type: 'button',
-            image: 'fa-sync',
+            icon: 'sync-alt-duotone',
             color: '#7289da',
             seperate: true,
             action: async (id, _, __, ___, component) => {
               const { state: { props } } = component;
-              const { label, image } = props;
+              const { label, icon } = props;
 
               props.label = 'Checking';
 
@@ -1049,9 +1063,9 @@ module.exports = (plugin) => [ {
                 plugin.utils.forceUpdate();
               }, 250);
 
-              props.image = 'fa-sync fa-spin';
+              props.icon = 'sync-alt-duotone fa-spin';
 
-              powercord.pluginManager.get(id).checkForUpdate(null, true).then(async () => {
+              powercord.pluginManager.get(id).checkForUpdateLegacy(null, true).then(async () => {
                 const { playSound } = (await getModule([ 'playSound' ]));
 
                 clearInterval(loading);
@@ -1064,7 +1078,7 @@ module.exports = (plugin) => [ {
                   props.label = 'Already Up-to-Date!';
                 }
 
-                props.image = image;
+                props.icon = icon;
 
                 plugin.utils.forceUpdate();
 
@@ -1085,18 +1099,19 @@ module.exports = (plugin) => [ {
         desc: 'How frequently Powercord checks for updates (in minutes).',
         default: '15',
         type: 'button',
-        image: 'fa-clock',
+        icon: 'alarm-clock-duotone',
         seperate: true,
         modal: true
       }
-    }
+    },
+    hide: true
   },
   'powercord-plugin-updater': {
     settings: {
       pluginDirectory: {
         name: 'Plugin Directory',
         type: 'button',
-        image: 'fa-folder-open',
+        icon: 'folder-tree-duotone',
         modal: true,
         action: (_, __, ___, name) => plugin.utils.openModal(React.createElement(GenericModal, {
           header: `Plugin Directory—${name}`,
@@ -1119,7 +1134,7 @@ module.exports = (plugin) => [ {
       updatePlugins: {
         name: 'Update Plugins',
         type: 'button',
-        image: 'fa-cogs',
+        icon: 'cogs-duotone',
         color: '#7289da',
         seperate: true,
         action: async (id) => {
@@ -1136,83 +1151,58 @@ module.exports = (plugin) => [ {
       }
     }
   },
-  [plugin.pluginID]: {
+  'powercord-quick-react': {
     settings: {
-      autoupdates: {
-        name: 'Auto Updates',
-        children: {
-          autoupdates: {
-            name: 'Enabled',
-            default: true,
-            action: (state) => {
-              const announcements = powercord.pluginManager.get('pc-announcements');
-              if (announcements) {
-                if (state) {
-                  const dismissedNotices = powercord.api.settings.store.getSetting('pc-announcements', 'dismissed', []);
-                  dismissedNotices.splice(dismissedNotices.indexOf('quickActions-pending-update'), 1);
+      emojis: {
+        name: 'Emoji List',
+        displayCounter: true,
+        children: (id, key) => {
+          const children = [];
+          const emojis = powercord.api.settings.store.getSetting(id, key, []);
 
-                  updateSetting('pc-announcements', 'dismissed', dismissedNotices);
-                } else {
-                  if (announcements.notices.find(notice => notice.id === 'quickActions-pending-update')) {
-                    announcements.closeNotice('quickActions-pending-update');
-                  }
-                }
+          if (emojis.length < 1) {
+            children.push(React.createElement(ImageMenuItem, {
+              label: 'No Emojis Found!',
+              image: powercord.pluginManager.get(id).nameToURL('japanese_goblin')
+            }));
+          }
+
+          emojis.map(name => {
+            const child = React.createElement(ImageMenuItem, {
+              label: `:${name}:`,
+              image: powercord.pluginManager.get(id).nameToURL(name),
+              styles: { color: emojis.find(n => n === name) ? '#43b581' : '' },
+              action: () => {
+                powercord.pluginManager.get(id).emojis = emojis.filter(n => n !== name);
+                powercord.pluginManager.get(id).saveSettings();
+                powercord.pluginManager.get(id).forceUpdate();
+
+                plugin.utils.forceUpdate();
               }
-            }
-          },
-          checkForUpdates: {
-            name: 'Check Now!',
-            type: 'button',
-            image: 'fa-sync',
-            color: '#7289da',
-            seperate: true,
-            action: async (_, __, ___, ____, component) => {
-              const { state: { props } } = component;
-              const { label, image } = props;
+            });
 
-              props.label = 'Checking';
+            return children.push(child);
+          });
 
-              const loading = setInterval(() => {
-                if (props.label.length > 10) {
-                  props.label = 'Checking';
-                } else {
-                  props.label += '.';
-                }
-
-                plugin.utils.forceUpdate();
-              }, 250);
-
-              props.image = 'fa-sync fa-spin';
-
-              plugin.utils.checkForUpdates().then(async res => {
-                const { playSound } = (await getModule([ 'playSound' ]));
-
-                clearInterval(loading);
-
-                if (res && res.updateAvailable) {
-                  props.label = 'Update Available!';
-
-                  playSound('stream_started', 0.25);
-                } else {
-                  props.label = 'Already Up-to-Date!';
-                }
-
-                props.image = image;
-
-                plugin.utils.forceUpdate();
-
-                setTimeout(() => {
-                  props.label = label;
-
-                  plugin.utils.forceUpdate();
-                }, 5e3);
-              });
-          }
-          }
+          return children;
         },
-        type: 'submenu',
-        hide: () => !require('fs').existsSync(require('path').join(powercord.pluginManager.pluginDir, `${plugin.pluginID}/.git`))
+        type: 'submenu'
       },
+      addEmoji: {
+        name: 'Add New Emoji',
+        icon: 'smile-plus-duotone',
+        type: 'button',
+        modal: {
+          realtime: true,
+          custom: true
+        },
+        disabled: true,
+        seperate: true
+      }
+    }
+  },
+  [plugin.entityID]: {
+    settings: {
       appearance: {
         name: 'Appearance',
         children: {
@@ -1243,7 +1233,7 @@ module.exports = (plugin) => [ {
         name: 'Quote Message Format',
         default: '[auto]',
         type: 'button',
-        image: 'fa-quote-left',
+        icon: 'quote-left-duotone',
         modal: {
           options: [
             {
@@ -1353,7 +1343,7 @@ module.exports = (plugin) => [ {
         placeholder: (id) => powercord.pluginManager.get(id).defaultWords.join('|'),
         default: [],
         type: 'button',
-        image: 'fa-filter',
+        icon: 'filter-duotone',
         modal: {
           realtime: true,
           custom: true
@@ -1382,14 +1372,14 @@ module.exports = (plugin) => [ {
             name: 'Search Terms',
             desc: 'What the plugin will use to find wallpapers.',
             type: 'button',
-            image: 'fa-search',
+            icon: 'search-duotone',
             modal: true
           },
           'wallhaven-key': {
             name: 'API Key',
             desc: 'An API key is required to get NSFW wallpapers, kinky boi. You can find it in your settings.',
             type: 'button',
-            image: 'fa-key',
+            icon: 'key-duotone',
             seperate: true,
             modal: true
           },
@@ -1434,7 +1424,7 @@ module.exports = (plugin) => [ {
         name: 'Wallpaper Interval',
         default: 60,
         type: 'button',
-        image: 'fa-clock',
+        icon: 'alarm-clock-duotone',
         seperate: true,
         static: true,
         modal: {
@@ -1453,7 +1443,7 @@ module.exports = (plugin) => [ {
         desc: 'CSS selector where the \'background-image\' will be applied.',
         default: 'body',
         type: 'button',
-        image: 'fa-mouse-pointer',
+        icon: 'hand-pointer-duotone',
         seperate: true,
         static: true,
         modal: true,
@@ -1467,7 +1457,7 @@ module.exports = (plugin) => [ {
         desc: 'Triggers a wallpaper change. This won\'t affect interval.',
         color: '#7289da',
         type: 'button',
-        image: 'fa-redo',
+        icon: 'arrow-circle-right-duotone',
         seperate: true,
         static: true,
         action: (id) => powercord.pluginManager.get(id).changeWallpaper()

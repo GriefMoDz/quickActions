@@ -1,18 +1,16 @@
 // loosely based on and inspired by https://github.com/rauenzi/BetterDiscordAddons/blob/master/Plugins/BDContextMenu/BDContextMenu.plugin.js
-
 const { Plugin } = require('powercord/entities');
 const { React, getModule, getModuleByDisplayName } = require('powercord/webpack');
 const { getOwnerInstance, waitFor } = require('powercord/util');
 const { inject, uninject } = require('powercord/injector');
-const { ItemGroup, ImageMenuItem, MenuItem, SubMenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
+const { ImageMenuItem, MenuItem, SubMenuItem, ToggleMenuItem } = require('./core/components/ContextMenu');
+const { Icons: { Powercord } } = require('./core/components');
 
 class QuickActionsR extends Plugin {
   constructor (props) {
     super(props);
 
     this.state = {
-      initializedStore: false,
-      settings: require('./core/store/settings')(this),
       reloading: [],
       communityPlugins: [],
       unofficialPlugins: [],
@@ -31,32 +29,36 @@ class QuickActionsR extends Plugin {
   async startPlugin () {
     this.loadCSS(require('path').resolve(__dirname, 'core/styles/style.scss'));
 
-    if (!this.state.initializedStore) {
+    if (!powercord.pluginManager.get(this.entityID).store) {
       this.initializeStore();
     }
+
+    this.classes = {
+      ...await getModule([ 'app' ]),
+      ...await getModule([ 'chat', 'noChannel' ])
+    };
+
+    this.stores = {};
+    this.stores.emojiStore = (await getModule([ 'getGuildEmoji' ]));
+    this.stores.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
 
     await this.utils.getUnofficialPlugins();
     await this.utils.getCommunityThemes();
     await this.utils.getCommunityRepos();
 
-    this.state.emojiStore = (await getModule([ 'getGuildEmoji' ]));
-    this.state.sortedGuildsStore = (await getModule([ 'getSortedGuilds' ]));
-    this.state.SubMenuItem = (await getModuleByDisplayName('FluxContainer(SubMenuItem)'));
-
     this.patchSettingsContextMenu();
   }
 
   pluginWillUnload () {
-    uninject('quickActions-SubMenuItem-postRender');
     uninject('quickActions-SettingsContextMenu');
     uninject('quickActions-SubMenuItem-icon');
-    uninject('quickActions-SubMenuItem-render');
 
-    this.utils.forceUpdate(false);
+    this.utils.forceUpdate();
   }
 
   initializeStore () {
-    this.state.settings.forEach(plugins => {
+    const settings = require('./core/store/settings')(this);
+    settings.forEach(plugins => {
       this.settingsStore.set('plugins', plugins);
     });
 
@@ -66,19 +68,18 @@ class QuickActionsR extends Plugin {
         plugin.official = (/^pc-[a-zA-Z0-9]+$/).test(id);
       }
     });
-
-    if (this.settings.get('autoupdates', true)) {
-      this.utils.checkForUpdates();
-    }
-
-    this.state.initializedStore = true;
   }
 
   async patchSettingsContextMenu () {
-    const { SubMenuItem, hiddenPlugins } = this.state;
+    const { hiddenPlugins } = this.state;
+    const { image } = (await getModule([ 'itemToggle', 'checkbox' ]));
 
-    inject('quickActions-SubMenuItem-postRender', SubMenuItem.prototype, 'render', (_, res) => {
-      this.patchSubMenuItem(res.type.prototype);
+    inject('quickActions-SubMenuItem-icon', SubMenuItem.prototype, 'render', function (_, res) {
+      if (this.props.label === 'Powercord') {
+        res.props.children.props.children.splice(1, 0, React.createElement(Powercord, {
+          className: `quickActions-contextMenu-icon ${image}`
+        }));
+      }
 
       return res;
     });
@@ -103,23 +104,33 @@ class QuickActionsR extends Plugin {
         }
       }
 
-      items.push(this.buildSettingMenu('⭐ Quick Actions', this.pluginID));
+      items.push(this.buildSettingMenu('⭐ Quick Actions', this.entityID));
 
-      const parent = React.createElement(this.state.SubMenuItem, {
+      const parent = React.createElement(SubMenuItem, {
         label: 'Powercord',
         render: items,
         action: () => this.utils.openUserSettings()
       });
 
-      res.props.className += ' quickActions-contextMenu';
-      res.props.children.splice(0, 0, React.createElement(ItemGroup, { children: [ parent ] }));
+      res.props.className += 'userSettingsContextMenu';
+
+      const children = res.props.children.find(child => child);
+      const changelog = children.find(child => child && child.key === 'changelog');
+      if (changelog) {
+        children.splice(children.indexOf(changelog), 0, parent);
+      } else {
+        this.error('Could not find \'Change Log\' category; pushing element to main children instead!');
+
+        res.props.children.push(parent);
+      }
 
       return res;
     });
 
     this.utils.forceUpdate();
 
-    getOwnerInstance(await waitFor('.quickActions-contextMenu')).forceUpdate();
+    const contextMenu = getOwnerInstance(await waitFor('.userSettingsContextMenu'));
+    contextMenu.forceUpdate();
   }
 
   buildSettingMenu (name, id) {
@@ -182,8 +193,8 @@ class QuickActionsR extends Plugin {
 
     const props = {
       label: name,
-      seperated: id === this.pluginID,
-      action: () => id !== this.pluginID ? this.utils.showCategory(id_) : null
+      seperated: id === this.entityID,
+      action: () => id !== this.entityID ? this.utils.showCategory(id_) : null
     };
 
     if (items.length > 0) {
@@ -196,54 +207,6 @@ class QuickActionsR extends Plugin {
     return React.createElement(MenuItem, {
       ...props
     });
-  }
-
-  async patchSubMenuItem (component) {
-    const { itemImage, image } = (await getModule([ 'itemToggle', 'checkbox' ]));
-
-    uninject('quickActions-SubMenuItem-icon');
-    inject('quickActions-SubMenuItem-icon', component, 'render', function (_, res) {
-      if (this.props.label === 'Powercord') {
-        res.props.children.splice(1, 0, React.createElement('img', {
-          alt: '',
-          src: 'data:image/png;base64,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',
-          className: `quickActions-contextMenu-icon ${image}`
-        }));
-
-        res.props.className += ` ${itemImage} quickActions-contextMenu-submenu`;
-      }
-
-      return res;
-    });
-
-    this.patchSubMenuItemRender();
-  }
-
-  async patchSubMenuItemRender () {
-    const layer = `.${(await getModule([ 'layerContainer' ])).layer.replace(/ /g, '.')}`;
-    const subMenuQuery = await waitFor('.quickActions-contextMenu-submenu');
-    const instance = getOwnerInstance(subMenuQuery);
-
-    uninject('quickActions-SubMenuItem-render');
-    inject('quickActions-SubMenuItem-render', instance, 'render', (_, res) => {
-      if (document.querySelector(layer)) {
-        const instance = getOwnerInstance(document.querySelector(layer));
-        if (instance.containerInfo.children && instance.containerInfo.children[1]) {
-          const layer = instance.containerInfo.children[1];
-          const subContextMenu = layer.firstChild;
-          const scroller = subContextMenu.firstChild.firstChild;
-
-          if (instance.containerInfo.children[1].innerText.includes('⭐ Quick Actions')) {
-            layer.style.top = `${instance.containerInfo.children[0].getBoundingClientRect().top}px`;
-            scroller.style.maxHeight = '386.5px';
-          }
-        }
-      }
-
-      return res;
-    });
-
-    instance.forceUpdate();
   }
 
   buildContentMenu (checkForPlugins) {
@@ -299,13 +262,13 @@ class QuickActionsR extends Plugin {
             })
             : null, React.createElement(ImageMenuItem, {
             label: 'Reload Plugin',
-            image: 'fa-sync',
+            icon: 'sync-alt-duotone',
             styles: { color: '#43b581' },
             seperated: true,
             disabled: this.state.reloading[id],
             action: async (component) => {
               const { state: { props } } = component;
-              const { label, image } = props;
+              const { label, icon } = props;
 
               const loading = setInterval(() => {
                 if (props.label.length > 11) {
@@ -319,7 +282,7 @@ class QuickActionsR extends Plugin {
 
               this.state.reloading[id] = true;
 
-              props.image = 'fa-sync fa-spin';
+              props.icon = 'sync-alt-duotone fa-spin';
 
               setTimeout(async () => {
                 clearInterval(loading);
@@ -328,7 +291,7 @@ class QuickActionsR extends Plugin {
                   delete this.state.reloading[id];
 
                   props.label = 'Plugin Reloaded!';
-                  props.image = image;
+                  props.icon = icon;
 
                   setTimeout(() => {
                     props.label = label;
@@ -347,7 +310,7 @@ class QuickActionsR extends Plugin {
           }), !(/^pc-[a-zA-Z0-9]+$/).test(id)
             ? React.createElement(ImageMenuItem, {
               label: 'Uninstall Plugin',
-              image: 'fa-trash-alt',
+              icon: 'trash-alt-duotone',
               danger: true,
               action: () => this.utils.showContentModal(id, metadata, true)
             })
@@ -358,11 +321,11 @@ class QuickActionsR extends Plugin {
           ...props,
           render: [ React.createElement(ToggleMenuItem, {
             label: 'Enabled',
-          active: !isContentDisabled,
-          action: () => this.utils.toggleTheme(id)
+            active: !isContentDisabled,
+            action: () => this.utils.toggleTheme(id)
           }), React.createElement(ImageMenuItem, {
             label: 'Uninstall Theme',
-            image: 'fa-trash-alt',
+            icon: 'trash-alt-duotone',
             danger: true,
             seperated: true,
             action: () => this.utils.showContentModal(id, metadata, true)
@@ -378,7 +341,7 @@ class QuickActionsR extends Plugin {
       render: children
     }), React.createElement(ImageMenuItem, {
       label: `Open ${checkForPlugins ? 'Plugins' : 'Themes'} Folder`,
-      image: 'fa-folder-open',
+      icon: 'folder-open-duotone',
       styles: { color: '#7289da' },
       seperated: true,
       action: () => this.utils.openFolder(`${checkForPlugins
@@ -410,39 +373,39 @@ class QuickActionsR extends Plugin {
 
     const { communityPlugins } = this.state;
     const communityThemes = this.state.communityThemes.filter(theme => !powercord.styleManager.themes.has((theme.id).toLowerCase()))
-        .sort((a, b) => {
-          const aName = (a.name).toLowerCase().replace(/ /g, '-');
-          const bName = (b.name).toLowerCase().replace(/ /g, '-');
+      .sort((a, b) => {
+        const aName = (a.name).toLowerCase().replace(/ /g, '-');
+        const bName = (b.name).toLowerCase().replace(/ /g, '-');
 
-          const filter = aName < bName
-            ? -1
-            : 1 || 0;
+        const filter = aName < bName
+          ? -1
+          : 1 || 0;
 
-          return filter;
-        });
+        return filter;
+      });
 
     if (this.settings.get(`showExplore${checkForPlugins ? 'Plugins' : 'Themes'}`, true)) {
-        items.splice(0, 0, React.createElement(SubMenuItem, {
+      items.splice(0, 0, React.createElement(SubMenuItem, {
         label: `Explore ${checkForPlugins ? `Plugins (${communityPlugins.length})` : `Themes (${communityThemes.length})`}`,
         render: (checkForPlugins ? communityPlugins : communityThemes)
           .map(content => React.createElement(SubMenuItem, {
             label: content.name.toLowerCase().replace(/ /g, '-'),
             desc: content.description,
-              render: [ React.createElement(ImageMenuItem, {
+            render: [ React.createElement(ImageMenuItem, {
               label: `Open in ${content.repo.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,
-              image: `fa-${content.repo.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brand`,
-                styles: { color: '#7289da' },
+              icon: `${content.repo.startsWith('https://gitlab.com/') ? 'gitlab' : 'github'}-brands`,
+              styles: { color: '#7289da' },
               action: () => require('electron').shell.openExternal(content.repo)
-              }), React.createElement(ImageMenuItem, {
+            }), React.createElement(ImageMenuItem, {
               label: `Install ${checkForPlugins ? 'Plugin' : 'Theme'}`,
-                image: 'fa-download',
-                styles: { color: '#43b581' },
-                seperated: true,
+              icon: 'download-duotone',
+              styles: { color: '#43b581' },
+              seperated: true,
               action: () => this.utils.showContentModal(content.id, content)
-              }) ]
-            }))
-        }));
-      }
+            }) ]
+          }))
+      }));
+    }
 
     return submenu;
   }

@@ -1,15 +1,18 @@
 const { React, getModule } = require('powercord/webpack');
 const { Tooltip } = require('powercord/components');
 
+/* eslint-disable multiline-ternary, object-property-newline */
 module.exports = class ImageMenuItem extends React.Component {
   constructor (props) {
     super(props);
 
+    this.styles = { regular: 'r', light: 'l', duotone: 'd', brands: 'b' };
     this.state = {
-      itemClasses: '',
+      classes: '',
       props: {
         label: props.label,
         image: props.image,
+        icon: props.icon,
         hint: props.hint
       }
     };
@@ -17,7 +20,7 @@ module.exports = class ImageMenuItem extends React.Component {
 
   async componentWillMount () {
     this.setState({
-      itemClasses: (await getModule([ 'itemToggle', 'checkbox' ]))
+      classes: (await getModule([ 'itemToggle', 'checkbox' ]))
     });
   }
 
@@ -32,7 +35,7 @@ module.exports = class ImageMenuItem extends React.Component {
   }
 
   render () {
-    const { itemClasses } = this.state;
+    const { classes } = this.state;
 
     for (const key of Object.keys(this.state.props)) {
       if (!this.props.static) {
@@ -45,27 +48,28 @@ module.exports = class ImageMenuItem extends React.Component {
         <div
           className={
             `quickActions-contextMenu-button ${[
-              itemClasses.item,
-              itemClasses.itemImage,
-              itemClasses.clickable
-            ].join(' ')} ${this.props.disabled ? 'disabled' : ''}`}
+              classes.item,
+              classes.itemImage,
+              classes.clickable,
+              this.props.disabled ? 'disabled' : null
+            ].filter(Boolean).join(' ')}`}
           title={this.props.desc || ''}
-          onClick={this.handleClick.bind(this)}
+          onClick={this.props.action ? this.handleClick.bind(this) : null}
         >
-          <span style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
+          <span className={classes.label} style={this.props.danger ? { color: '#f04747' } : this.props.styles}>
             {this.props.label}
           </span>
 
-          {this.props.image
-            ? this.getItemImage()
-            : <div className={itemClasses.hint}>{this.props.hint}</div>}
+          {this.props.image ? this.getItemImage() : this.props.icon
+            ? this.getItemIcon()
+            : <div className={classes.hint}>{this.props.hint}</div>}
         </div>
       </Tooltip>
     );
 
     if (this.props.seperated) {
       return (
-        <div className={`${itemClasses.itemGroup} seperated`}>
+        <div className={`${classes.itemGroup} seperated`}>
           {itemImage}
         </div>
       );
@@ -75,19 +79,23 @@ module.exports = class ImageMenuItem extends React.Component {
   }
 
   getItemImage () {
-    const { itemClasses } = this.state;
+    const { classes } = this.state;
 
-    return (
-      this.props.image.startsWith('fa-')
-        ? <div
-          className={`${this.props.image.endsWith('-regular')
-            ? 'far'
-            : this.props.image.endsWith('-brand')
-              ? 'fab'
-              : 'fas'}
-            ${this.props.image.replace(/-regular|-brand/gi, '')} fa-fw`} />
-        : <img alt='' className={`${itemClasses.image} ${this.props.className || ''}`}
-          src={this.props.image} />
-    );
+    return <img alt='' className={[ this.props.className || null, classes.image ].filter(Boolean).join(' ')}
+      src={this.props.image} />;
+  }
+
+  getItemIcon () {
+    const styleRegex = new RegExp(/[a-z]+(?!.*-)/);
+    const style = Object.keys(this.styles).find(style => style === this.props.icon.split(' ')[0].match(styleRegex)[0]);
+    const icon = `fa-${this.props.icon.replace(`-${style}`, '')} fa-fw`;
+
+    let prefix = 'fas';
+
+    if (this.styles[style]) {
+      prefix = `fa${this.styles[style]}`;
+    }
+
+    return <div className={`${prefix} ${icon}`} />;
   }
 };

@@ -5,20 +5,20 @@ module.exports = class ItemGroup extends React.Component {
     super(props);
 
     this.state = {
-      itemClasses: ''
+      classes: ''
     };
   }
 
   async componentWillMount () {
     this.setState({
-      itemClasses: (await getModule([ 'itemToggle', 'checkbox' ]))
+      classes: (await getModule([ 'itemToggle', 'checkbox' ]))
     });
   }
 
   render () {
-    const { itemClasses } = this.state;
+    const { classes } = this.state;
     const itemGroup = React.createElement('div', {
-      className: `quickActions-contextMenu-itemGroup ${itemClasses.itemGroup}`,
+      className: `quickActions-contextMenu-itemGroup ${classes.itemGroup}`,
       children: this.props.children || []
     });
 

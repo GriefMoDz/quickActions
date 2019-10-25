@@ -9,7 +9,7 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | Plugin Name                | Plugin Shortcode (URI)   | Version | Official\* | Repository URL                                             |
 | -------------------------- | ------------------------ |:-------:|:----------:|:----------------------------------------------------------:|
 | advancedTitleBar**         | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar)
-| ~~Alias**~~                | ~~alias~~                | ~~v1.0.3~~  | ~~⭕~~        | ~~[[Link]](../../../../powercord-community/alias)~~
+| ~~Alias~~                  | ~~alias~~                | ~~v1.0.3~~  | ~~⭕~~        | ~~[[Link]](../../../../powercord-community/alias)~~
 | Auditory                   | auditory                 | v1.0.7  | ⭕         | [[Link]](../../../../powercord-community/auditory)
 | Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.0  | ⭕         | [[Link]](../../../autoplayGifAvatars)
 | Better Friends**           | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
@@ -24,7 +24,8 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | Lightify                   | lightify                 | v0.0.1  | ⭕         | [[Link]](../../../../GeoffreyWesthoff/lightify)
 | Mu                         | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
 | Plugin Manager             | pc-pluginManager         | v0.1.1  | ✔️         | n/a
-| Plugin Updater             | powercord-plugin-updater | v1.0.7  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-plugin-updater)
+| Plugin Updater             | powercord-plugin-updater | v1.0.8  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-plugin-updater)
+| Quick React**              | powercord-quick-react    | v1.1.1  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-quick-react)
 | Quote                      | quote                    | v1.4.2  | ⭕         | [[Link]](../../../../NurMarvin/quote)
 | Role Color Everywhere      | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API               | pc-general               | v1.0.0  | ✔️         | n/a
@@ -33,7 +34,7 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | Swerve                     | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
 | ~~Theme Development Injector~~ | ~~customa-dev-injector~~     | ~~v1.0.2~~  | ~~⭕~~        | ~~[[Link]](https://gitlab.com/Customa/customa-dev-injector)~~
 | Translate                  | pc-translate             | v1.0.0  | ✔️         | n/a
-| Updater                    | pc-updater               | v1.0.0  | ✔️         | n/a
+| ~~Updater~~                    | ~~pc-updater~~               | ~~v1.0.0~~  | ~~✔️~~         | ~~n/a~~
 | Wallpaper Changer**        | wallpaper-changer        | v1.1.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 
 \*Plugin is shipped with Powercord by default (will work straight out of the box once enabled).<br/>
