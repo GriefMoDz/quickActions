@@ -19,6 +19,7 @@ class QuickActionsR extends Plugin {
     };
 
     this.utils = require('./core/utils')(this);
+    this.pluginManager = `pc-${powercord.gitInfos.branch === 'v2' ? 'pluginManager' : 'moduleManager-plugins'}`;
     this.state.hiddenPlugins = this.utils.getPlugins().hiddenPlugins;
   }
 
@@ -89,14 +90,15 @@ class QuickActionsR extends Plugin {
       const items = [];
 
       powercord.api.settings.tabs.forEach(item => {
-        items.push(item.section === 'pc-pluginManager'
+        // eslint-disable-next-line multiline-ternary
+        items.push(item.section === this.pluginManager
           ? this.buildContentMenu(true)
           : this.buildSettingMenu(item.label, item.section));
       });
 
       const showHiddenPlugins = this.settings.get('showHiddenPlugins', false);
       if (powercord.pluginManager.isEnabled('pc-styleManager') && (showHiddenPlugins || !hiddenPlugins.includes('pc-styleManager'))) {
-        const pluginsMenu = items.find(item => item.props.label === 'Plugins');
+        const pluginsMenu = items.find(item => item && item.props && item.props.label === 'Plugins');
         if (pluginsMenu) {
           items.splice(items.indexOf(pluginsMenu) + 1, 0, this.buildContentMenu());
         } else {
@@ -217,7 +219,7 @@ class QuickActionsR extends Plugin {
     const submenu = React.createElement(SubMenuItem, {
       label: checkForPlugins ? 'Plugins' : 'Themes',
       render: items,
-      action: () => checkForPlugins ? this.utils.showCategory('pc-pluginManager') : null
+      action: () => checkForPlugins ? this.utils.showCategory(this.pluginManager) : null
     });
 
     const children = [];
@@ -235,7 +237,7 @@ class QuickActionsR extends Plugin {
       let child;
 
       if (checkForPlugins) {
-        const enforcedPlugins = [ 'pc-settings', 'pc-pluginManager', 'pc-updater' ];
+        const enforcedPlugins = [ 'pc-settings', this.pluginManager.replace('-plugins', ''), 'pc-updater' ];
 
         child = React.createElement(SubMenuItem, {
           ...props,
@@ -354,12 +356,16 @@ class QuickActionsR extends Plugin {
       this.state.communityPlugins = communityPlugins.filter(plugin => !this.utils.getNormalizedPlugins()
         .find(pluginId => pluginId === this.utils.normalizeToCleanText(plugin.id)))
         .sort((a, b) => {
-          const aName = (a.name).toLowerCase().replace(/ /g, '-');
-          const bName = (b.name).toLowerCase().replace(/ /g, '-');
+          let filter;
 
-          const filter = aName < bName
-            ? -1
-            : 1 || 0;
+          if (a.name && b.name) {
+            const aName = (a.name).toLowerCase().replace(/ /g, '-');
+            const bName = (b.name).toLowerCase().replace(/ /g, '-');
+
+            filter = aName < bName
+              ? -1
+              : 1 || 0;
+          }
 
           return filter;
         });
@@ -374,12 +380,16 @@ class QuickActionsR extends Plugin {
     const { communityPlugins } = this.state;
     const communityThemes = this.state.communityThemes.filter(theme => !powercord.styleManager.themes.has((theme.id).toLowerCase()))
       .sort((a, b) => {
-        const aName = (a.name).toLowerCase().replace(/ /g, '-');
-        const bName = (b.name).toLowerCase().replace(/ /g, '-');
+        let filter;
 
-        const filter = aName < bName
-          ? -1
-          : 1 || 0;
+        if (a.name && b.name) {
+          const aName = (a.name).toLowerCase().replace(/ /g, '-');
+          const bName = (b.name).toLowerCase().replace(/ /g, '-');
+
+          filter = aName < bName
+            ? -1
+            : 1 || 0;
+        }
 
         return filter;
       });
@@ -389,7 +399,7 @@ class QuickActionsR extends Plugin {
         label: `Explore ${checkForPlugins ? `Plugins (${communityPlugins.length})` : `Themes (${communityThemes.length})`}`,
         render: (checkForPlugins ? communityPlugins : communityThemes)
           .map(content => React.createElement(SubMenuItem, {
-            label: content.name.toLowerCase().replace(/ /g, '-'),
+            label: (content.name && content.name.toLowerCase().replace(/ /g, '-')) || `<Unknown ${checkForPlugins ? 'Plugin' : 'Theme'}>`,
             desc: content.description,
             render: [ React.createElement(ImageMenuItem, {
               label: `Open in ${content.repo.startsWith('https://gitlab.com/') ? 'GitLab' : 'GitHub'}`,

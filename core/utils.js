@@ -9,8 +9,6 @@ module.exports = (plugin = null) => {
   const { settings, state } = plugin;
   const { communityRepos, communityThemes, unofficialPlugins } = state;
 
-  const announcements = powercord.pluginManager.get('pc-announcements');
-
   return ({
     getPlugins () {
       const disabledPlugins = powercord.settings.get('disabledPlugins', []);
@@ -148,16 +146,17 @@ module.exports = (plugin = null) => {
       await contentManager.unmount(contentId);
       await rmdirRf(require('path').resolve(contentManager.contentDir, contentId));
 
-      if (announcements) {
-        announcements.sendNotice({
-          id: 'quickActions-content-uninstalled',
-          type: announcements.Notice.TYPES.ORANGE,
-          message: `Good news! "${contentName}" was successfully uninstalled; nothing is required from you as we've already gone ahead and have unloaded the ${contentType}.`,
-          alwaysDisplay: true
-        });
-
-        return setTimeout(() => announcements.closeNotice('quickActions-content-uninstalled'), 3e4);
-      }
+      powercord.api.toasts.sendToast('quickActions-content-uninstalled', {
+        type: 'success',
+        header: `Good news! "${contentName}" was successfully uninstalled!`,
+        content: `Nothing else is required from you as we've already gone ahead and have unloaded the ${contentType}.`,
+        buttons: [ {
+          text: 'OK',
+          color: 'green',
+          type: 'outlined'
+        } ],
+        timeout: 3e4
+      });
     },
 
     async installContent (contentType, contentId, cloneUrl) {
@@ -165,11 +164,9 @@ module.exports = (plugin = null) => {
       const contentManager = contentType === 'theme' ? styleManager : pluginManager;
       contentManager.contentDir = contentType === 'theme' ? contentManager.themesDir : contentManager.pluginDir;
 
-      announcements.sendNotice({
-        id: 'quickActions-content-installing',
-        type: announcements.Notice.TYPES.BLURPLE,
-        message: `"${contentId}" is now installing in the background; we'll let you know once it's done.`,
-        alwaysDisplay: true
+      powercord.api.toasts.sendToast('quickActions-content-installing', {
+        header: `"${contentId}" is now installing in the background; we'll let you know once it's done.`,
+        timeout: 3e4
       });
 
       await require('util').promisify(exec)(`git clone ${cloneUrl}`, { cwd: contentManager.contentDir })
@@ -184,25 +181,29 @@ module.exports = (plugin = null) => {
           const content = contentManager.get(contentId.toLowerCase());
           const pluginSettingsButton = {
             text: 'Open Plugin Settings',
-            onClick: () => {
-              announcements.closeNotice('quickActions-content-installed');
-
-              this.showCategory(content.registered.settings[0]);
-            }
+            color: 'brand',
+            hoverColor: 'green',
+            type: 'outlined',
+            onClick: () => this.showCategory(content.registered.settings[0])
           };
 
-          if (announcements) {
-            announcements.closeNotice('quickActions-content-installing');
-            announcements.sendNotice({
-              id: 'quickActions-content-installed',
-              type: announcements.Notice.TYPES.GREEN,
-              message: `Good news! "${content.manifest.name}" was successfully installed; nothing is required from you as we've already gone ahead and have loaded the ${contentType}.`,
-              button: content.registered && powercord.api.settings.tabs.find(tab => tab.section === content.registered.settings[0]) ? pluginSettingsButton : null,
-              alwaysDisplay: true
-            });
+          powercord.api.toasts.closeToast('quickActions-content-installing');
 
-            return setTimeout(() => announcements.closeNotice('quickActions-content-installed'), 3e4);
-          }
+          setTimeout(() => {
+            powercord.api.toasts.sendToast('quickActions-content-installed', {
+              type: 'success',
+              header: `Good news! "${content.manifest.name}" was successfully installed!`,
+              content: `Nothing else is required from you as we've already gone ahead and have loaded the ${contentType}.`,
+              buttons: [ content.registered && powercord.api.settings.tabs.find(tab => tab.section === content.registered.settings[0])
+                ? pluginSettingsButton
+                : null, {
+                text: 'OK',
+                color: 'green',
+                type: 'outlined'
+              } ],
+              timeout: 3e4
+            });
+          }, 500);
         });
     },
 

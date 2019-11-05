@@ -11,7 +11,7 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | advancedTitleBar**         | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar)
 | ~~Alias~~                  | ~~alias~~                | ~~v1.0.3~~  | ~~⭕~~        | ~~[[Link]](../../../../powercord-community/alias)~~
 | Auditory                   | auditory                 | v1.0.7  | ⭕         | [[Link]](../../../../powercord-community/auditory)
-| Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.0  | ⭕         | [[Link]](../../../autoplayGifAvatars)
+| Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.2  | ⭕         | [[Link]](../../../autoplayGifAvatars)
 | Better Friends**           | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
 | Bookmoji                   | bookmoji                 | v1.0.2  | ⭕         | [[Link]](../../../../powercord-community/bookmoji)
 | Clickable Message Edits    | pc-clickableEdits        | v0.2.0  | ✔️         | n/a
@@ -22,10 +22,10 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | Hastebin                   | pc-hastebin              | v1.0.0  | ✔️         | n/a
 | Helpful Utilities          | pc-helpful-utilities     | v1.0.0  | ⭕         | [[Link]](../../../../axelgreavette/pc-helpful-utilities)
 | Lightify                   | lightify                 | v0.0.1  | ⭕         | [[Link]](../../../../GeoffreyWesthoff/lightify)
+| Module Manager             | pc-moduleManager         | v0.1.1  | ✔️         | n/a
 | Mu                         | powercord-multiuser      | v0.1.0  | ⭕         | [[Link]](../../../../halcyxn/powercord-multiuser)
-| Plugin Manager             | pc-pluginManager         | v0.1.1  | ✔️         | n/a
 | Plugin Updater             | powercord-plugin-updater | v1.0.8  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-plugin-updater)
-| Quick React**              | powercord-quick-react    | v1.1.1  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-quick-react)
+| Quick React**              | powercord-quick-react    | v1.1.2  | ⭕         | [[Link]](../../../../cloudrac3r/powercord-quick-react)
 | Quote                      | quote                    | v1.4.2  | ⭕         | [[Link]](../../../../NurMarvin/quote)
 | Role Color Everywhere      | rolecolor-everywhere     | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/rolecolor-everywhere)
 | Settings API               | pc-general               | v1.0.0  | ✔️         | n/a
