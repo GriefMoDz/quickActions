@@ -59,10 +59,12 @@ module.exports = class NewSubMenuItem extends React.PureComponent {
     await waitFor(`.${classes.contextMenu.split(' ')[0]}`);
 
     const contextMenus = document.querySelectorAll(`.${classes.contextMenu.split(' ')[0]}`);
-    const contextMenu = contextMenus[contextMenus.length - 1].__reactInternalInstance$;
-    const updater = contextMenu.return.memoizedProps.onHeightUpdate;
-    if (typeof updater === 'function') {
-      updater();
+    if (contextMenus.length > 0) {
+      const contextMenu = contextMenus[contextMenus.length - 1].__reactInternalInstance$;
+      const updater = contextMenu.return.memoizedProps.onHeightUpdate;
+      if (typeof updater === 'function') {
+        updater();
+      }
     }
   }
 

@@ -1106,7 +1106,7 @@ module.exports = (plugin) => [ {
     },
     hide: true
   },
-  'powercord-plugin-updater': {
+  'pc-plugin-updater': {
     settings: {
       pluginDirectory: {
         name: 'Plugin Directory',
@@ -1151,7 +1151,7 @@ module.exports = (plugin) => [ {
       }
     }
   },
-  'powercord-quick-react': {
+  'pc-quick-react': {
     settings: {
       emojis: {
         name: 'Emoji List',
