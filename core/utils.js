@@ -146,14 +146,14 @@ module.exports = (plugin = null) => {
       await contentManager.unmount(contentId);
       await rmdirRf(require('path').resolve(contentManager.contentDir, contentId));
 
-      powercord.api.toasts.sendToast('quickActions-content-uninstalled', {
+      powercord.api.notices.sendToast('quickActions-content-uninstalled', {
         type: 'success',
         header: `Good news! "${contentName}" was successfully uninstalled!`,
         content: `Nothing else is required from you as we've already gone ahead and have unloaded the ${contentType}.`,
         buttons: [ {
           text: 'OK',
           color: 'green',
-          type: 'outlined'
+          look: 'outlined'
         } ],
         timeout: 3e4
       });
@@ -164,7 +164,7 @@ module.exports = (plugin = null) => {
       const contentManager = contentType === 'theme' ? styleManager : pluginManager;
       contentManager.contentDir = contentType === 'theme' ? contentManager.themesDir : contentManager.pluginDir;
 
-      powercord.api.toasts.sendToast('quickActions-content-installing', {
+      powercord.api.notices.sendToast('quickActions-content-installing', {
         header: `"${contentId}" is now installing in the background; we'll let you know once it's done.`,
         timeout: 3e4
       });
@@ -182,15 +182,14 @@ module.exports = (plugin = null) => {
           const pluginSettingsButton = {
             text: 'Open Plugin Settings',
             color: 'brand',
-            hoverColor: 'green',
-            type: 'outlined',
+            look: 'outlined',
             onClick: () => this.showCategory(content.registered.settings[0])
           };
 
-          powercord.api.toasts.closeToast('quickActions-content-installing');
+          powercord.api.notices.closeToast('quickActions-content-installing');
 
           setTimeout(() => {
-            powercord.api.toasts.sendToast('quickActions-content-installed', {
+            powercord.api.notices.sendToast('quickActions-content-installed', {
               type: 'success',
               header: `Good news! "${content.manifest.name}" was successfully installed!`,
               content: `Nothing else is required from you as we've already gone ahead and have loaded the ${contentType}.`,
@@ -199,7 +198,7 @@ module.exports = (plugin = null) => {
                 : null, {
                 text: 'OK',
                 color: 'green',
-                type: 'outlined'
+                look: 'outlined'
               } ],
               timeout: 3e4
             });
