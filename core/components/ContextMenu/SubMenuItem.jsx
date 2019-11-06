@@ -1,6 +1,6 @@
 const { AsyncComponent } = require('powercord/components');
 const { React, getModule, getModuleByDisplayName, contextMenu, constants: { Colors } } = require('powercord/webpack');
-const { getOwnerInstance, waitFor } = require('powercord/util');
+const { waitFor } = require('powercord/util');
 const { ItemGroup } = require('./index.js');
 
 const Clickable = AsyncComponent.from(getModuleByDisplayName('Clickable'));
@@ -56,8 +56,11 @@ module.exports = class NewSubMenuItem extends React.PureComponent {
   }
 
   async componentDidUpdate () {
-    const contextMenu = getOwnerInstance(await waitFor(`.${classes.contextMenu}`));
-    const updater = contextMenu.props.onHeightUpdate || contextMenu._reactInternalFiber.return.memoizedProps.onHeightUpdate;
+    await waitFor(`.${classes.contextMenu.split(' ')[0]}`);
+
+    const contextMenus = document.querySelectorAll(`.${classes.contextMenu.split(' ')[0]}`);
+    const contextMenu = contextMenus[contextMenus.length - 1].__reactInternalInstance$;
+    const updater = contextMenu.return.memoizedProps.onHeightUpdate;
     if (typeof updater === 'function') {
       updater();
     }
