@@ -17,7 +17,7 @@ module.exports = class NewToggleMenuItem extends React.Component {
 
   render () {
     const itemToggle = React.createElement(Tooltip, {
-      text: this.props.label.length >= 20 ? this.props.label : '',
+      text: this.props.label.length >= 20 ? this.props.label : null,
       hideOnClick: false,
       position: 'right'
     }, React.createElement('div', {

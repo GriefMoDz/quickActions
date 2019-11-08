@@ -52,7 +52,8 @@ module.exports = (plugin) => [ {
       beastiness: {
         name: 'Beastiness',
         desc: 'Changing this value will change the amount of detail the visualizer\n' +
-          'will pick up on, how often it updates and certain visual effects.',
+          'will pick up on, how often it updates and certain visual effects.\n' +
+          'Higher values may increase CPU usage.',
         default: 1,
         type: 'slider',
         color: (id) => powercord.api.settings.store.getSetting(id, 'color', null),
@@ -117,6 +118,12 @@ module.exports = (plugin) => [ {
           method: 'reload',
           type: 'pluginManager'
         }
+      },
+      pds: {
+        name: 'PDS Mode',
+        desc: 'Party and don\'t stop (quite CPU intensive).',
+        default: false,
+        seperate: true
       }
     }
   },
@@ -194,7 +201,6 @@ module.exports = (plugin) => [ {
         default: true,
         func: {
           method: 'reload',
-          arguments: 'StatusPopup',
           type: 'pluginManager'
         }
       }
@@ -860,11 +866,17 @@ module.exports = (plugin) => [ {
               custom: true
             }
           },
+          yeetSelfXSS: {
+            name: 'Disable Self-XSS Warning',
+            desc: 'Prevents Discord from showing a warning message when opening devtools.',
+            default: false,
+            seperate: true
+          },
           openOverlayDevTools: {
             name: 'Overlay DevTools',
             desc: 'Should Powercord open overlay devtools when it\ngets injected? (useful for developing themes).',
             default: false,
-            seperate: true
+            disabled: true
           },
           hideToken: {
             name: 'Keep Token Stored',
@@ -933,7 +945,7 @@ module.exports = (plugin) => [ {
       domain: {
         name: 'Domain',
         desc: 'The domain used for the Hastebin server.',
-        default: 'https://haste.aetheryx.xyz',
+        default: 'https://hasteb.in',
         type: 'button',
         icon: 'home-lg-duotone',
         seperate: true,
@@ -1333,6 +1345,16 @@ module.exports = (plugin) => [ {
       members: {
         name: 'Members List',
         desc: 'Should role names in member list be colored.',
+        default: true
+      },
+      status: {
+        name: 'Status',
+        desc: 'Should user statuses in member list be colored.',
+        default: true
+      },
+      messages: {
+        name: 'Messages',
+        desc: 'Should messages be colored.',
         default: true
       }
     }
