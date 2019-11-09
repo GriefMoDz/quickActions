@@ -5,8 +5,10 @@ const { ItemGroup } = require('./index.js');
 
 const Clickable = AsyncComponent.from(getModuleByDisplayName('Clickable'));
 const Icon = AsyncComponent.from(getModuleByDisplayName('Icon'));
-const ReferencePositionLayer = AsyncComponent.from(getModuleByDisplayName('ReferencePositionLayer'));
 const VerticalScroller = AsyncComponent.from(getModuleByDisplayName('VerticalScroller'));
+
+const { AppReferencePositionLayer } = Object.values(require('powercord/webpack').instance.cache)
+  .filter(m => m.exports && m.exports.AppReferencePositionLayer).map(m => m.exports)[0];
 
 let isFragment = null;
 let classes = null;
@@ -97,7 +99,7 @@ module.exports = class NewSubMenuItem extends React.PureComponent {
         name: 'Nova_Caret',
         className: classes.caret
       }), this.state.open
-        ? React.createElement(ReferencePositionLayer, {
+        ? React.createElement(AppReferencePositionLayer, {
           position: 'right',
           align: 'bottom',
           autoInvert: true,
