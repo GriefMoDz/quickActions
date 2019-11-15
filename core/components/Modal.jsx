@@ -1,6 +1,6 @@
 const { shell: { openExternal } } = require('electron');
 const { React, getModule } = require('powercord/webpack');
-const { Tooltip, Button, Icon, Icons } = require('powercord/components');
+const { Tooltip, Button, Icon, Icons, Icons: { FontAwesome } } = require('powercord/components');
 const { Confirm } = require('powercord/components/modal');
 const { TextInput } = require('powercord/components/settings');
 const { close: closeModal } = require('powercord/modal');
@@ -52,7 +52,13 @@ module.exports = class Modal extends React.Component {
           {contentInfo && (
             <div className='quickActions-modal-contentInfo'>
               <div className='quickActions-modal-contentInfo-header'>
-                <h5>{contentInfo.name}</h5>
+                <h5>
+                  {contentInfo.name}{contentInfo.verified
+                    ? <Tooltip text='Verified' position='top' hideOnClick={false}>
+                      <span className ='verified'><FontAwesome icon='badge-check-duotone'/></span>
+                    </Tooltip>
+                    : null}
+                </h5>
               </div>
               <div className='quickActions-modal-contentInfo-container'>
                 <div className='author'>

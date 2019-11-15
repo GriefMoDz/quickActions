@@ -19,7 +19,8 @@ module.exports = class NewToggleMenuItem extends React.Component {
     const itemToggle = React.createElement(Tooltip, {
       text: this.props.label.length >= 20 ? this.props.label : null,
       hideOnClick: false,
-      position: 'right'
+      position: 'right',
+      delay: 750
     }, React.createElement('div', {
       className: 'quickActions-contextMenu-checkbox',
       title: this.props.desc || ''

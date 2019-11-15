@@ -62,8 +62,8 @@ module.exports = (plugin = null) => {
         state.communityRepos = await Promise.all(await repos
           .filter(repo => !repo.archived && repo.license)
           .map(async repo => {
-            const manifest = await get(`https://raw.githubusercontent.com/powercord-community/${repo.name}/master/manifest.json`)
-              .then(res => JSON.parse(res.body));
+            const manifest = await fetch(`https://raw.githubusercontent.com/powercord-community/${repo.name}/master/manifest.json`)
+              .then(res => res.json());
 
             return ({
               id: repo.name,
@@ -74,7 +74,8 @@ module.exports = (plugin = null) => {
                 : repo.description,
               author: repo.description.split('Developer: @')[1] || manifest.author,
               license: repo.license ? repo.license.spdx_id : 'UNLICENCED',
-              repo: repo.html_url
+              repo: repo.html_url,
+              verified: true
             });
           })
         );

@@ -123,41 +123,105 @@ module.exports = (plugin) => [ {
         name: 'PDS Mode',
         desc: 'Party and don\'t stop (quite CPU intensive).',
         default: false,
-        seperate: true
+        seperate: true,
+        func: {
+          method: 'reload',
+          type: 'pluginManager'
+        }
       }
     }
   },
   autoplayGifAvatars: {
     settings: {
+      account: {
+        name: 'Account',
+        children: {
+          account: {
+            name: 'Autoplay Avatar',
+            desc: 'If available, should your animated avatar autoplay in the account details container?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'accountAvatars'
+            }
+          }
+        },
+        type: 'submenu'
+      },
       chat: {
-        name: 'Autoplay Chat',
-        desc: 'Should animated avatars for Nitro users autoplay in the chat area?',
-        default: true,
-        func: {
-          method: 'reload',
-          type: 'pluginManager',
-          arguments: 'chatAvatars'
-        }
+        name: 'Chat',
+        children: {
+          chat: {
+            name: 'Autoplay Chat',
+            desc: 'Should animated avatars for Nitro users autoplay in the chat area?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'chatAvatars'
+            }
+          }
+        },
+        type: 'submenu'
+      },
+      home: {
+        name: 'Home',
+        children: {
+          home: {
+            name: 'Autoplay Avatars',
+            desc: 'Should animated avatars for Nitro users autoplay in the home/direct messages page?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'home'
+            }
+          }
+        },
+        type: 'submenu'
       },
       memberList: {
-        name: 'Autoplay Member List',
-        desc: 'Should animated avatars for Nitro users autoplay in the member list?',
-        default: true,
-        func: {
-          method: 'reload',
-          type: 'pluginManager',
-          arguments: 'memberListAvatars'
-        }
+        name: 'Member List',
+        children: {
+          'memberList-avatars': {
+            name: 'Autoplay Avatars',
+            desc: 'Should animated avatars for Nitro users autoplay in the member list?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'memberList'
+            }
+          },
+          'memberList-statuses': {
+            name: 'Autoplay Statuses',
+            desc: 'Should animated emojis on custom statuses autoplay in the member list?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'memberList'
+            }
+          }
+        },
+        type: 'submenu'
       },
       guildList: {
-        name: 'Autoplay Guild List',
-        desc: 'Should animated guild icons for boosted servers autoplay in the guild list?',
-        default: true,
-        func: {
-          method: 'reload',
-          type: 'pluginManager',
-          arguments: 'guildList'
-        }
+        name: 'Guild List',
+        children: {
+          guildList: {
+            name: 'Autoplay Icons',
+            desc: 'Should animated guild icons for boosted servers autoplay in the guild list?',
+            default: true,
+            func: {
+              method: 'reload',
+              type: 'pluginManager',
+              arguments: 'guildList'
+            }
+          }
+        },
+        type: 'submenu'
       }
     }
   },
@@ -428,6 +492,16 @@ module.exports = (plugin) => [ {
           arguments: 'compact-extra-buttons',
           type: 'pluginManager'
         }
+      },
+      hideDisabledEmojis: {
+        name: 'Hide Disabled Emojis',
+        desc: 'When toggled, hides disabled emojis in emoji picker.',
+        default: false,
+        func: {
+          method: 'toggleTweakJS',
+          arguments: 'hide-disabled-emojis',
+          type: 'pluginManager'
+        }
       }
     }
   },
@@ -501,6 +575,65 @@ module.exports = (plugin) => [ {
 
           plugin.utils.forceUpdate();
         }
+      }
+    }
+  },
+  morebadges: {
+    settings: {
+      messages: {
+        name: 'Messages',
+        desc: 'Display badges in chat messages.',
+        default: true
+      },
+      members: {
+        name: 'Member List',
+        desc: 'Display badges in the list of members.',
+        default: true
+      },
+      dms: {
+        name: 'DM Channels List',
+        desc: 'Display badges in the list of DMs.',
+        default: true
+      },
+      displayedBadges: {
+        name: 'Displayed Badges',
+        desc: 'Hide some badges you don\'t care about.',
+        seperate: true,
+        children: {
+          displayStaff: {
+            name: 'Discord Staff',
+            default: true
+          },
+          displayPartner: {
+            name: 'Discord Partner',
+            default: true
+          },
+          displayHypeSquad: {
+            name: 'Discord HypeSquad (Events)',
+            default: true
+          },
+          displayHypeSquadOnline: {
+            name: 'Discord HypeSquad (Houses)',
+            default: true
+          },
+          displayHunter: {
+            name: 'Bug Hunter',
+            default: true
+          },
+          displayEarly: {
+            name: 'Early Supporter',
+            default: true
+          },
+          displayNitro: {
+            name: 'Discord Nitro',
+            default: true
+          },
+          displayBoosting: {
+            name: 'Nitro Boosting',
+            default: true
+          }
+        },
+        type: 'submenu'
       }
     }
   },
@@ -850,6 +983,11 @@ module.exports = (plugin) => [ {
         seperate: true,
         hide: () => !powercord.account
       },
+      aprilFools: {
+        name: 'April Fools',
+        desc: 'Disabling this makes you 10x less cool. :(',
+        default: true
+      },
       advancedSettings: {
         name: 'Advanced Settings',
         desc: 'Exercise caution changing anything in this category\nif you don\'t know what you\'re doing. **Seriously**.',
@@ -945,7 +1083,7 @@ module.exports = (plugin) => [ {
       domain: {
         name: 'Domain',
         desc: 'The domain used for the Hastebin server.',
-        default: 'https://hasteb.in',
+        default: 'https://haste.powercord.dev',
         type: 'button',
         icon: 'home-lg-duotone',
         seperate: true,
@@ -1372,6 +1510,14 @@ module.exports = (plugin) => [ {
           realtime: true,
           custom: true
         }
+      }
+    }
+  },
+  ucbadges: {
+    settings: {
+      ignoreMutedChannels: {
+        name: 'Ignore Muted Channels',
+        default: false
       }
     }
   },

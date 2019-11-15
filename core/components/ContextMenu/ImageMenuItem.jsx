@@ -44,7 +44,7 @@ module.exports = class ImageMenuItem extends React.Component {
     }
 
     const itemImage = (
-      <Tooltip text={this.props.label.length >= 21 ? this.props.label : null} position='right'>
+      <Tooltip text={this.props.label.length >= 21 ? this.props.label : null} position='right' delay={750}>
         <div
           className={
             `quickActions-contextMenu-button ${[

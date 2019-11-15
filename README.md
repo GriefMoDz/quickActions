@@ -11,7 +11,8 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | advancedTitleBar**         | advanced-title-bar       | v1.0.0  | ⭕         | [[Link]](../../../../powercord-community/advanced-title-bar)
 | ~~Alias~~                  | ~~alias~~                | ~~v1.0.3~~  | ~~⭕~~        | ~~[[Link]](../../../../powercord-community/alias)~~
 | Auditory                   | auditory                 | v1.0.7  | ⭕         | [[Link]](../../../../powercord-community/auditory)
-| Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.2  | ⭕         | [[Link]](../../../autoplayGifAvatars)
+| Autoplay GIF Avatars       | autoplayGifAvatars       | v1.0.3  | ⭕         | [[Link]](../../../autoplayGifAvatars)
+| Badges Everywhere          | badges-everywhere        | v1.0.1  | ⭕         | [[Link]](../../../../powercord-community/badges-everywhere)
 | Better Friends**           | betterfriends            | v3.2.1  | ⭕         | [[Link]](../../../../powercord-community/betterfriends)
 | Bookmoji                   | bookmoji                 | v1.0.2  | ⭕         | [[Link]](../../../../powercord-community/bookmoji)
 | Clickable Message Edits    | pc-clickableEdits        | v0.2.0  | ✔️         | n/a
@@ -34,7 +35,8 @@ Quick Actions supports a vast selection of the settings utilized by the followin
 | Swerve                     | swerve                   | v1.0.1  | ⭕         | [[Link]](../../../../Nevvulo/swerve)
 | ~~Theme Development Injector~~ | ~~customa-dev-injector~~     | ~~v1.0.2~~  | ~~⭕~~        | ~~[[Link]](https://gitlab.com/Customa/customa-dev-injector)~~
 | Translate                  | pc-translate             | v1.0.0  | ✔️         | n/a
-| ~~Updater~~                    | ~~pc-updater~~               | ~~v1.0.0~~  | ~~✔️~~         | ~~n/a~~
+| ~~Updater~~                 | ~~pc-updater~~          | ~~v1.0.0~~  | ~~✔️~~         | ~~n/a~~
+| Unread Count Badges        | unread-count-badges      | v1.0.1  | ⭕         | [[Link]](../../../../juby210-PL/unread-count-badges)
 | Wallpaper Changer**        | wallpaper-changer        | v1.1.0  | ⭕         | [[Link]](../../../../powercord-community/wallpaper-changer)
 
 \*Plugin is shipped with Powercord by default (will work straight out of the box once enabled).<br/>
