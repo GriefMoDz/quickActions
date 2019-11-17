@@ -114,7 +114,7 @@ class QuickActionsR extends Plugin {
         action: () => this.utils.openUserSettings()
       });
 
-      res.props.className += 'userSettingsContextMenu';
+      res.props.className += ' userSettingsContextMenu';
 
       const children = res.props.children.find(child => child);
       const changelog = children.find(child => child && child.key === 'changelog');
