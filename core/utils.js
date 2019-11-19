@@ -6,7 +6,7 @@ const { exec, spawn } = require('child_process');
 const { actions: { updateSetting } } = powercord.api.settings;
 
 module.exports = (plugin = null) => {
-  const { settings, state } = plugin;
+  const { settings, state, manifest: { version } } = plugin;
   const { communityRepos, communityThemes, unofficialPlugins } = state;
 
   return ({
@@ -41,7 +41,7 @@ module.exports = (plugin = null) => {
       if (unofficialPlugins.length === 0) {
         plugin.debug('Requesting unofficial plug-ins from host...');
 
-        const plugins = await get('https://api.griefmodz.xyz/plugins').then(res =>
+        const plugins = await get(`https://api.griefmodz.xyz/plugins/?v=${version}`).then(res =>
           res.body);
 
         state.unofficialPlugins = await plugins.map(plugin => {
@@ -50,7 +50,7 @@ module.exports = (plugin = null) => {
           return plugin;
         });
 
-        plugin.debug(`Found '${plugins.length}' unofficial plug-ins!`, { plugins });
+        plugin.debug(`Found '${plugins.length}' unofficial plug-ins!`, [ plugins ]);
       }
     },
 
@@ -86,7 +86,7 @@ module.exports = (plugin = null) => {
       if (communityThemes.length === 0) {
         plugin.debug('Requesting community themes from host...');
 
-        const themes = await get('https://api.griefmodz.xyz/themes').then(res =>
+        const themes = await get(`https://api.griefmodz.xyz/themes/?v=${version}`).then(res =>
           res.body);
 
         state.communityThemes = await themes.map(theme => {
@@ -95,7 +95,7 @@ module.exports = (plugin = null) => {
           return theme;
         });
 
-        plugin.debug(`Found '${themes.length}' community themes!`, { themes });
+        plugin.debug(`Found '${themes.length}' community themes!`, [ themes ]);
       }
     },
 

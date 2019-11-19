@@ -7,14 +7,13 @@ const Clickable = AsyncComponent.from(getModuleByDisplayName('Clickable'));
 const Icon = AsyncComponent.from(getModuleByDisplayName('Icon'));
 const VerticalScroller = AsyncComponent.from(getModuleByDisplayName('VerticalScroller'));
 
-const { AppReferencePositionLayer } = Object.values(require('powercord/webpack').instance.cache)
-  .filter(m => m.exports && m.exports.AppReferencePositionLayer).map(m => m.exports)[0];
-
+let AppReferencePositionLayer = null;
 let isFragment = null;
 let classes = null;
 
 setImmediate(async () => {
-  isFragment = { isFragment } = (await getModule([ 'isFragment' ])).isFragment;
+  ({ AppReferencePositionLayer } = (await getModule([ 'AppReferencePositionLayer' ])));
+  ({ isFragment } = (await getModule([ 'isFragment' ])));
   classes = {
     ...await getModule([ 'scrollbar', 'scrollerWrap' ]),
     ...await getModule([ 'itemToggle', 'checkbox' ])

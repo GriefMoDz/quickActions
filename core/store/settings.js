@@ -1,4 +1,4 @@
-const { React, getModule } = require('powercord/webpack');
+const { React, getModule, contextMenu } = require('powercord/webpack');
 const { forceUpdateElement, waitFor } = require('powercord/util');
 const { close: closeModal } = require('powercord/modal');
 const { actions: { updateSetting } } = powercord.api.settings;
@@ -20,7 +20,7 @@ module.exports = (plugin) => [ {
         onValueRender: (value) => parseInt(value),
         onValueChange: async (id, key, value) => {
           const titleBarClasses = (await getModule([ 'titleBar' ]));
-          const titleBar = `.${titleBarClasses.titleBar.replace(/ /g, '')}`;
+          const titleBar = `.${titleBarClasses.titleBar.split(' ')[0]}`;
 
           updateSetting(id, key, parseInt(value));
           forceUpdateElement(titleBar);
@@ -986,6 +986,13 @@ module.exports = (plugin) => [ {
       aprilFools: {
         name: 'April Fools',
         desc: 'Disabling this makes you 10x less cool. :(',
+        default: true,
+        seperate: true
+      },
+      replaceClyde: {
+        name: 'Eradicate Clyde',
+        desc: 'Replaces Clyde in Powercord commands with a mixed range of avatars and\n' +
+        'usernames selected by plug-in developers - fallbacks to "Powercord" by default.',
         default: true
       },
       advancedSettings: {
@@ -1183,78 +1190,141 @@ module.exports = (plugin) => [ {
   },
   'pc-updater': {
     settings: {
-      checkForUpdates: {
-        name: 'Check for Updates',
-        children: {
-          checkForUpdates: {
-            name: 'Receive Updates',
-            desc: 'Whether Powercord should check for updates.',
-            default: true
-          },
-          checking: {
-            name: 'Check Now!',
-            type: 'button',
-            icon: 'sync-alt-duotone',
-            color: '#7289da',
-            seperate: true,
-            action: async (id, _, __, ___, component) => {
-              const { state: { props } } = component;
-              const { label, icon } = props;
-
-              props.label = 'Checking';
-
-              const loading = setInterval(() => {
-                if (props.label.length > 10) {
-                  props.label = 'Checking';
-                } else {
-                  props.label += '.';
-                }
-
-                plugin.utils.forceUpdate();
-              }, 250);
-
-              props.icon = 'sync-alt-duotone fa-spin';
-
-              powercord.pluginManager.get(id).checkForUpdateLegacy(null, true).then(async () => {
-                const { playSound } = (await getModule([ 'playSound' ]));
-
-                clearInterval(loading);
-
-                if (document.getElementById('powercord-updater')) {
-                  props.label = 'Update Available!';
-
-                  playSound('stream_started', 0.25);
-                } else {
-                  props.label = 'Already Up-to-Date!';
-                }
-
-                props.icon = icon;
-
-                plugin.utils.forceUpdate();
-
-                setTimeout(() => {
-                  props.label = label;
-
-                  plugin.utils.forceUpdate();
-                }, 5e3);
-              });
-            },
-            disabled: (id) => powercord.pluginManager.get(id).checking
-          }
-        },
-        type: 'submenu'
-      },
-      interval: {
-        name: 'Update Interval',
-        desc: 'How frequently Powercord checks for updates (in minutes).',
-        default: '15',
+      checking: {
+        name: 'Check Now!',
         type: 'button',
-        icon: 'alarm-clock-duotone',
+        icon: 'sync-alt-duotone',
+        color: '#43b581',
         seperate: true,
-        modal: true
+        action: async (id, _, __, ___, component) => {
+          const { state: { props } } = component;
+          const { label, icon } = props;
+
+          props.label = 'Checking';
+
+          const loading = setInterval(() => {
+            if (props.label.length > 10) {
+              props.label = 'Checking';
+            } else {
+              props.label += '.';
+            }
+
+            plugin.utils.forceUpdate();
+          }, 250);
+
+          props.icon = 'sync-alt-duotone fa-spin';
+
+          powercord.pluginManager.get(id).checkForUpdates(null, true).then(async () => {
+            const { playSound } = (await getModule([ 'playSound' ]));
+
+            clearInterval(loading);
+
+            if (document.getElementById('powercord-updater')) {
+              props.label = 'Updates Available!';
+
+              playSound('stream_started', 0.25);
+            } else {
+              props.label = 'Already Up-to-Date!';
+            }
+
+            props.icon = icon;
+
+            plugin.utils.forceUpdate();
+
+            setTimeout(() => {
+              props.label = label;
+
+              plugin.utils.forceUpdate();
+            }, 5e3);
+          });
+        },
+        disabled: (id) => powercord.api.settings.store.getSetting(id,
+          'disabled', false) || powercord.api.settings.store.getSetting(id,
+          'paused', false)
+      },
+      options: {
+        name: 'Options',
+        seperate: true,
+        children: {
+          automatic: {
+            name: 'Update Automatically',
+            desc: 'Powercord can download and install updates in background\n' +
+            'without annoying you too much. Note that updates will require\n' +
+            'user action if a reload is required, or if there is a conflict.',
+            default: false,
+            seperate: true
+          },
+          interval: {
+            name: 'Update Check Interval',
+            desc: 'How frequently Powercord will check for updates (in minutes). Minimum 10 minutes.',
+            default: 15,
+            type: 'button',
+            icon: 'alarm-clock-duotone',
+            seperate: true,
+            modal: {
+              validate: true,
+              realtime: true
+            }
+          },
+          concurrency: {
+            name: 'Update Concurrency Limit',
+            desc: 'How many concurrent tasks Powercord will run in background\n' +
+              'to check for updates. Minimum 1. If unsure, leave 2.',
+            default: 2,
+            type: 'button',
+            icon: 'exchange-duotone',
+            modal: {
+              validate: true,
+              realtime: true
+            }
+          },
+        },
+        type: 'submenu',
+        hide: (id) => powercord.api.settings.store.getSetting(id,
+          'disabled', false)
+      },
+      openChangeLog: {
+        name: 'Open Change Log',
+        desc: 'Missed the changelog, or want to see it again?',
+        type: 'button',
+        icon: 'file-search-duotone',
+        color: '#7289da',
+        seperate: true,
+        action: (id) => {
+          powercord.pluginManager.get(id).openChangeLogs();
+          contextMenu.closeContextMenu();
+        }
+      },
+      changeReleaseChannel: {
+        name: 'Change Release Channel',
+        desc: 'You can choose between the stable branch, or the\n' +
+        'development branch. Stable branch will only get major\n' +
+        'updates, security and critical updates. If unsure, stay on stable.',
+        children: (id) => {
+          const children = [];
+          const { branch } = powercord.gitInfos;
+
+          children.push(React.createElement(ImageMenuItem, {
+            label: `Switch to ${branch === 'v2' ? 'Dev' : 'Stable'}`,
+            hint: branch === 'v2' ? 'Stable' : 'Dev',
+            danger: true,
+            seperate: true,
+            action: () => plugin.utils.openModal(React.createElement(GenericModal, {
+              red: true,
+              header: `Change release channel to '${branch === 'v2' ? 'v2-dev' : 'v2'}'`,
+              desc: 'Are you sure you want to change your release channel? Powercord will reload your Discord client.',
+              confirmText: `Switch to "${branch === 'v2' ? 'v2-dev' : 'v2'}"`,
+              cancelText: 'Cancel',
+              onConfirm: () => powercord.pluginManager.get(id).changeBranch(branch === 'v2' ? 'v2-dev' : 'v2')
+            }))
+          }));
+
+          return children;
+        },
+        type: 'submenu',
+        seperate: true
       }
-    },
-    hide: true
+    }
   },
   'powercord-plugin-updater': {
     id: 'pc-plugin-updater',

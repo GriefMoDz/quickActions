@@ -19,7 +19,6 @@ class QuickActionsR extends Plugin {
     };
 
     this.utils = require('./core/utils')(this);
-    this.pluginManager = `pc-${powercord.gitInfos.branch === 'v2' ? 'pluginManager' : 'moduleManager-plugins'}`;
     this.state.hiddenPlugins = this.utils.getPlugins().hiddenPlugins;
   }
 
@@ -30,7 +29,7 @@ class QuickActionsR extends Plugin {
   async startPlugin () {
     this.loadCSS(require('path').resolve(__dirname, 'core/styles/style.scss'));
 
-    if (!powercord.pluginManager.get(this.entityID).store) {
+    if (!this.store) {
       this.initializeStore();
     }
 
@@ -91,7 +90,7 @@ class QuickActionsR extends Plugin {
 
       powercord.api.settings.tabs.forEach(item => {
         // eslint-disable-next-line multiline-ternary
-        items.push(item.section === this.pluginManager
+        items.push(item.section === 'pc-moduleManager-plugins'
           ? this.buildContentMenu(true)
           : this.buildSettingMenu(item.label, item.section));
       });
@@ -219,7 +218,7 @@ class QuickActionsR extends Plugin {
     const submenu = React.createElement(SubMenuItem, {
       label: checkForPlugins ? 'Plugins' : 'Themes',
       render: items,
-      action: () => checkForPlugins ? this.utils.showCategory(this.pluginManager) : null
+      action: () => checkForPlugins ? this.utils.showCategory('pc-moduleManager-plugins') : null
     });
 
     const children = [];
@@ -237,7 +236,7 @@ class QuickActionsR extends Plugin {
       let child;
 
       if (checkForPlugins) {
-        const enforcedPlugins = [ 'pc-settings', this.pluginManager.replace('-plugins', ''), 'pc-updater' ];
+        const enforcedPlugins = [ 'pc-settings', 'pc-moduleManager', 'pc-updater' ];
 
         child = React.createElement(SubMenuItem, {
           ...props,

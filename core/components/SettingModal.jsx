@@ -258,7 +258,8 @@ module.exports = class SettingModal extends React.Component {
     const { setting } = this.options;
     const domain = /^https?:\/\/[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
     const validators = {
-      interval: (Number(value) && Number(value) >= 1) ? Number(value) : 15
+      interval: (Number(value) && Number(value) >= 10) ? Math.ceil(Number(value)) : 10,
+      concurrency: (Number(value) && Number(value) >= 1) ? Math.ceil(Number(value)) : 1
     };
 
     if (value.length <= 0) {

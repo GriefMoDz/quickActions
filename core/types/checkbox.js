@@ -11,7 +11,7 @@ module.exports = (id, key, setting, main) => React.createElement(ToggleMenuItem,
   className: 'quickActions-contextMenu-checkbox-fw',
   seperated: setting.seperate,
   action: (state) => {
-    toggleSetting(id, key);
+    toggleSetting(id, key, setting.default);
 
     if (setting.action) {
       setting.action.bind(this, state, id, key, setting)();

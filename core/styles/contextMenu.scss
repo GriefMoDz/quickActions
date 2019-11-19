@@ -1,0 +1,34 @@
+
+/* Context Menu */
+.quickActions-contextMenu {
+  &-button {
+    transition: opacity .3s ease;
+    max-width: 172px;
+  
+    &.disabled {
+      opacity: .3 !important;
+      pointer-events: none !important;
+    }
+  
+    > span {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      transition: color .1s ease-in-out;
+    }
+  }
+  
+  &-checkbox-fw {
+    max-width: 172px;
+  }
+  
+  &-slider {
+    padding-top: 10px;
+  }
+  
+  &-submenu {
+    .quickActions-contextMenu-icon {
+      width: 17px;
+    }
+  }
+}

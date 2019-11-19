@@ -1,0 +1,161 @@
+
+/* Modal */
+.quickActions-modal {
+  &#emojiUtility-defaultCloneId > form {
+    height: 220px;
+    transition: height .15s ease-in-out 0s;
+  }
+
+  &#quote-format > form {
+    height: 303.7px;
+    transition: height .15s ease-in-out 0s;
+  }
+
+  #quickActions-selectBox div[class*='-indicatorContainer'] > svg {
+    transform: rotate(0deg);
+    transition: transform .3s ease;
+  }
+
+  #quickActions-selectBox > .css-2yldzf-control .css-1flfamv-indicatorContainer > svg {
+    transform: rotate(-180deg);
+  }
+
+  #quickActions-textArea {
+    resize: none;
+    overflow: hidden;
+  }
+
+  .quickActions-slider {
+    margin-top: 10px;
+  }
+
+  &#quickActions-mu-users {
+    button:not([class*='reset-']):last-child {
+      color: #f04747;
+
+      &:hover {
+        div[class*='contents-'] {
+          background-image: linear-gradient(0deg, transparent, transparent 1px, #f04747 0,
+            #f04747 2px, transparent 0);
+        }
+      }
+    }
+  }
+
+  &-inner {
+    color: var(--text-normal);
+    line-height: 20px;
+
+    [class*='divider-'] {
+      display: none;
+    }
+  
+    [class*='marginBottom20-'] {
+      margin-bottom: 0;
+    }
+
+    .quickActions-modal-contentInfo {
+      background-color: var(--deprecated-card-bg);
+      border: 1px var(--background-tertiary) solid;
+      border-radius: 3px;
+      margin-top: 20px;
+      padding: 20px;
+
+      &-header {
+        margin-bottom: 10px;
+      }
+
+      .verified {
+        color: #43b581;
+        margin-left: 5px;
+      }
+
+      &-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        > div {
+          display: flex;
+          width: 31%;
+          margin: 10px 3px;
+          align-items: center;
+          flex: 1 1 auto;
+
+          > div {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+
+            + span {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      &-footer {
+        border-top: 1px var(--background-modifier-accent) solid;
+        padding-top: 8px;
+        margin-top: 4px;
+      }
+    }
+
+    &-desc[id='update-passphrase'] {
+      margin-bottom: 20px;
+    }
+  
+    &-desc-hint {
+      b {
+        color: #43b581;
+        text-transform: uppercase;
+      }
+    }
+  
+    &-spacer {
+      margin-top: 20px;
+    }
+  }
+}
+
+.quickActions-settingModal {
+  [class*='divider-'] {
+    display: none;
+  }
+
+  [class*='marginBottom20-'] {
+    margin-bottom: 0;
+  }
+}
+
+.quickActions-icon {
+  display: inline;
+
+  svg {
+    width: 15px;
+    margin-left: 2px;
+    height: 15px;
+    position: absolute;
+  }
+}
+
+.quickActions-hint {
+  display: inline;
+  opacity: .4;
+  transition: opacity .3s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 15px;
+    margin-left: 2px;
+    height: 15px;
+    position: absolute;
+  }
+
+  &+ span {
+    padding-left: 20px;
+  }
+}

@@ -1,8 +1,8 @@
 const { AsyncComponent } = require('powercord/components');
-const { React, getModuleByDisplayName } = require('powercord/webpack');
+const { React, getAllModules } = require('powercord/webpack');
 const { ItemGroup } = require('./index.js');
 
-const MenuItem = AsyncComponent.from(getModuleByDisplayName('MenuItem'));
+const MenuItem = AsyncComponent.from(getAllModules(m => m.name === 'd', false)[1]);
 
 module.exports = class NewMenuItem extends React.Component {
   render () {
